@@ -102,7 +102,7 @@ func _draw_command(cmd: DrawCommand) -> void:
 
 	var points := cmd.points
 
-	if cmd.draw_type == DrawCommand.type.CIRCLE and points.size() > 0:
+	if cmd.draw_type == DrawCommand.Type.CIRCLE and points.size() > 0:
 		points = _circle_points(points[0], cmd.circle_radius)
 
 	if cmd.fill_color.a > 0:
@@ -114,7 +114,7 @@ func _draw_command(cmd: DrawCommand) -> void:
 
 	if cmd.stroke_color.a > 0 and cmd.stroke_width > 0:
 		var line := Line2D.new()
-		if cmd.draw_type == DrawCommand.type.CIRCLE or not cmd.path_open:
+		if cmd.draw_type == DrawCommand.Type.CIRCLE or not cmd.path_open:
 			var closed := points.duplicate()
 			if closed.size() > 0:
 				closed.append(closed[0])

@@ -89,7 +89,7 @@ func _pdc_parse_command(file: FileAccess) -> DrawCommand:
 	for _i in range(num_points):
 		var x = _pdc_int16(file)
 		var y = _pdc_int16(file)
-		if type_val == DrawCommand.type.PRECISE_PATH:
+		if type_val == DrawCommand.Type.PRECISE_PATH:
 			points.append(Vector2(x / 8.0, y / 8.0))
 		else:
 			points.append(Vector2(x, y))
@@ -101,7 +101,7 @@ func _pdc_parse_command(file: FileAccess) -> DrawCommand:
 	cmd.stroke_width = stroke_width_val
 	cmd.fill_color = _pdc_color(fill_color_val)
 	cmd.points = points
-	if type_val == DrawCommand.type.CIRCLE:
+	if type_val == DrawCommand.Type.CIRCLE:
 		cmd.circle_radius = path_open_or_radius
 	else:
 		cmd.path_open = (path_open_or_radius & 1) != 0
