@@ -1,0 +1,54 @@
+[gd_scene format=3 uid="uid://dsun2824rmyw3"]
+
+[ext_resource type="Script" uid="uid://bcptpa01xe2n8" path="res://scenes/interface/input_layer.gd" id="1_8k6yv"]
+[ext_resource type="Script" uid="uid://jra2u4f43tgg" path="res://scenes/interface/document_layer.gd" id="2_j6oae"]
+[ext_resource type="Texture2D" uid="uid://bds8amcrndr37" path="res://assets/icon.svg" id="2_yoo36"]
+
+[node name="CanvasArea" type="Control" unique_id=1795288712]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="DocumentLayer" type="Control" parent="." unique_id=2005867574]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_j6oae")
+
+[node name="Node2D" type="Node2D" parent="DocumentLayer" unique_id=1696822751]
+
+[node name="Icon" type="Sprite2D" parent="DocumentLayer/Node2D" unique_id=2059323379]
+position = Vector2(640, 320)
+texture = ExtResource("2_yoo36")
+
+[node name="Line2D" type="Line2D" parent="DocumentLayer/Node2D" unique_id=1562095003]
+points = PackedVector2Array(696, 304, 744, 336, 624, 424, 696, 304)
+
+[node name="Camera2D" type="Camera2D" parent="DocumentLayer/Node2D" unique_id=885756828]
+
+[node name="GizmoLayer" type="Control" parent="." unique_id=563483399]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="InputLayer" type="Control" parent="." unique_id=622983852]
+clip_contents = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_8k6yv")

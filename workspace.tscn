@@ -1,12 +1,9 @@
 [gd_scene format=3 uid="uid://xhjmhvjarcpr"]
 
 [ext_resource type="Script" uid="uid://dllc801fevpfu" path="res://workspace.gd" id="1_cn5mv"]
-[ext_resource type="PackedScene" uid="uid://bkhcu7s0fnpnq" path="res://tools/PDCVisualizer.tscn" id="2_a61m0"]
 
 [node name="Workspace" type="Node2D" unique_id=1676426147]
 script = ExtResource("1_cn5mv")
-
-[node name="PdcVisualizer" parent="." unique_id=1278395009 instance=ExtResource("2_a61m0")]
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=2050972420]
 zoom = Vector2(4, 4)
