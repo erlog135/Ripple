@@ -2,6 +2,9 @@ extends Node
 
 signal pdc_loaded(pdc: DrawCommandSequence)
 
+func _ready():
+	pdc_loaded.connect(func(pdc: DrawCommandSequence): ProjectData.set_current_sequence(pdc))
+
 func new_file():
 	print_debug("hi")
 
