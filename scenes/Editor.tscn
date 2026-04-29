@@ -1,0 +1,170 @@
+[gd_scene format=3 uid="uid://c3myodinq1ol5"]
+
+[ext_resource type="PackedScene" uid="uid://vrudldeag2yr" path="res://scenes/interface/TopMenuBar.tscn" id="1_ndpqs"]
+
+[node name="Editor" type="Control" unique_id=1840015314]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1594344963]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TopMenuBar" parent="VBoxContainer" unique_id=2124299505 instance=ExtResource("1_ndpqs")]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="Toolbelt" type="Panel" parent="VBoxContainer" unique_id=87617283]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Toolbelt" unique_id=899139387]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Toolbelt"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BusyArea" type="HBoxContainer" parent="VBoxContainer" unique_id=926309464]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/BusyArea" unique_id=585861789]
+layout_mode = 2
+size_flags_horizontal = 3
+split_offsets = PackedInt32Array(210, -209)
+split_offset = 210
+
+[node name="VSplitContainer" type="VSplitContainer" parent="VBoxContainer/BusyArea/HSplitContainer" unique_id=1686839539]
+layout_mode = 2
+
+[node name="Tools" type="Panel" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer" unique_id=1380212103]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer/Tools" unique_id=1330213914]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Tools"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FillStroke" type="Panel" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer" unique_id=491785293]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer/FillStroke" unique_id=1705038229]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Fill & Stroke"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="VSplitContainer3" type="VSplitContainer" parent="VBoxContainer/BusyArea/HSplitContainer" unique_id=1564072419]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CanvasArea" type="Panel" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer3" unique_id=1141131642]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer3/CanvasArea" unique_id=674021385]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Canvas Area"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Timeline" type="Panel" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer3" unique_id=955754358]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.5
+
+[node name="Label" type="Label" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer3/Timeline" unique_id=1003933211]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Animation Timeline"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="VSplitContainer2" type="VSplitContainer" parent="VBoxContainer/BusyArea/HSplitContainer" unique_id=213196365]
+layout_mode = 2
+
+[node name="Preview" type="Panel" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer2" unique_id=598848381]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer2/Preview" unique_id=1842980290]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Hardware Preview"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Layers" type="Panel" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer2" unique_id=1039252092]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer2/Layers" unique_id=1029746139]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Layers"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Hints" type="Panel" parent="VBoxContainer" unique_id=1272784267]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Hints" unique_id=1214642760]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Editor Hints"
+horizontal_alignment = 1
+vertical_alignment = 1
