@@ -15,9 +15,24 @@ run/main_scene="uid://xhjmhvjarcpr"
 config/features=PackedStringArray("4.6")
 config/icon="res://assets/icon.svg"
 
+[autoload]
+
+EditorState="*uid://b6s1sw0v64r3m"
+ProjectData="*uid://c26xb2kb3l6lu"
+Fileman="*uid://g6ff4o7yrlds"
+UIManager="*uid://o2vslngr0bbm"
+ClipboardManager="*uid://40e3oifkfdw"
+HistoryManager="*uid://dexaqhg00kjjs"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+
 [file_customization]
 
 folder_colors={
+"res://scenes/": "green",
 "res://test/": "teal"
 }
 
