@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://c3myodinq1ol5"]
 
 [ext_resource type="PackedScene" uid="uid://vrudldeag2yr" path="res://scenes/interface/TopMenuBar.tscn" id="1_ndpqs"]
+[ext_resource type="PackedScene" uid="uid://dsun2824rmyw3" path="res://scenes/interface/CanvasArea.tscn" id="2_3kl07"]
 
 [node name="Editor" type="Control" unique_id=1840015314]
 layout_mode = 3
@@ -86,21 +87,9 @@ vertical_alignment = 1
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="CanvasArea" type="Panel" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer3" unique_id=1141131642]
-custom_minimum_size = Vector2(0, 40)
+[node name="CanvasArea" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer3" unique_id=1795288712 instance=ExtResource("2_3kl07")]
 layout_mode = 2
 size_flags_vertical = 3
-
-[node name="Label" type="Label" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer3/CanvasArea" unique_id=674021385]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "Canvas Area"
-horizontal_alignment = 1
-vertical_alignment = 1
 
 [node name="Timeline" type="Panel" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer3" unique_id=955754358]
 custom_minimum_size = Vector2(0, 40)

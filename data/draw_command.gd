@@ -1,7 +1,7 @@
 class_name DrawCommand extends RefCounted
 
 enum Type {INVALID, PATH, CIRCLE, PRECISE_PATH}
-var draw_type: int = Type.INVALID
+var draw_type: Type = Type.INVALID
 var hidden: bool
 var stroke_color: Color
 var stroke_width: int

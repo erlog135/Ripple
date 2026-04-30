@@ -1,10 +1,13 @@
 [gd_scene format=3 uid="uid://dsun2824rmyw3"]
 
 [ext_resource type="Script" uid="uid://bcptpa01xe2n8" path="res://scenes/interface/input_layer.gd" id="1_8k6yv"]
-[ext_resource type="Script" uid="uid://jra2u4f43tgg" path="res://scenes/interface/document_layer.gd" id="2_j6oae"]
+[ext_resource type="Script" uid="uid://3t0ed0pncwpo" path="res://scenes/interface/document_camera.gd" id="1_13olm"]
+[ext_resource type="Script" uid="uid://c7q1kdxx3hywi" path="res://scenes/interface/document_layer.gd" id="2_j6oae"]
 [ext_resource type="Texture2D" uid="uid://bds8amcrndr37" path="res://assets/icon.svg" id="2_yoo36"]
+[ext_resource type="Script" uid="uid://jra2u4f43tgg" path="res://scenes/interface/document.gd" id="3_h8p71"]
 
 [node name="CanvasArea" type="Control" unique_id=1795288712]
+clip_contents = true
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -13,28 +16,35 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="DocumentLayer" type="Control" parent="." unique_id=2005867574]
+[node name="DocumentLayer" type="SubViewportContainer" parent="." unique_id=97255973]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
+stretch = true
 script = ExtResource("2_j6oae")
 
-[node name="Node2D" type="Node2D" parent="DocumentLayer" unique_id=1696822751]
+[node name="SubViewport" type="SubViewport" parent="DocumentLayer" unique_id=1953662212]
+handle_input_locally = false
+size = Vector2i(1280, 720)
 
-[node name="Icon" type="Sprite2D" parent="DocumentLayer/Node2D" unique_id=2059323379]
+[node name="DocumentCamera" type="Camera2D" parent="DocumentLayer/SubViewport" unique_id=885756828]
+offset = Vector2(640, 360)
+script = ExtResource("1_13olm")
+
+[node name="Document" type="Node2D" parent="DocumentLayer/SubViewport" unique_id=1696822751]
+script = ExtResource("3_h8p71")
+
+[node name="Icon" type="Sprite2D" parent="DocumentLayer/SubViewport/Document" unique_id=2059323379]
 position = Vector2(640, 320)
 texture = ExtResource("2_yoo36")
 
-[node name="Line2D" type="Line2D" parent="DocumentLayer/Node2D" unique_id=1562095003]
+[node name="Line2D" type="Line2D" parent="DocumentLayer/SubViewport/Document" unique_id=1562095003]
 points = PackedVector2Array(696, 304, 744, 336, 624, 424, 696, 304)
 
-[node name="Camera2D" type="Camera2D" parent="DocumentLayer/Node2D" unique_id=885756828]
-
-[node name="GizmoLayer" type="Control" parent="." unique_id=563483399]
+[node name="HUDLayer" type="Control" parent="." unique_id=563483399]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -42,6 +52,37 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="InfoLabels" type="HBoxContainer" parent="HUDLayer" unique_id=650003624]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 20
+alignment = 2
+
+[node name="ImageDimensions" type="Label" parent="HUDLayer/InfoLabels" unique_id=1117593119]
+layout_mode = 2
+text = "Image: 80x80"
+horizontal_alignment = 1
+
+[node name="FileSize" type="Label" parent="HUDLayer/InfoLabels" unique_id=2120023147]
+layout_mode = 2
+text = "File: 250 bytes"
+horizontal_alignment = 1
+
+[node name="CursorPosition" type="Label" parent="HUDLayer/InfoLabels" unique_id=973851150]
+layout_mode = 2
+text = "Cursor pos: 40,40"
+horizontal_alignment = 1
+
+[node name="SelectionDimensions" type="Label" parent="HUDLayer/InfoLabels" unique_id=226022848]
+layout_mode = 2
+text = "Selection:  80x80"
+horizontal_alignment = 1
 
 [node name="InputLayer" type="Control" parent="." unique_id=622983852]
 clip_contents = true

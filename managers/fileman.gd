@@ -120,6 +120,101 @@ func _pdc_color(val: int) -> Color:
 	var b_val = val & 3
 	return Color(r_val / 3.0, g_val / 3.0, b_val / 3.0, a_val / 3.0)
 
+func gd_to_pdc(path: String, sequence: DrawCommandSequence) -> bool:
+	if sequence == null or sequence.frames.is_empty():
+		push_error("Cannot export empty sequence")
+		return false
+
+	var file = FileAccess.open(path, FileAccess.WRITE)
+	if not file:
+		push_error("Failed to open file for writing: " + path)
+		return false
+
+	file.set_big_endian(false)
+
+	if sequence.frames.size() == 1:
+		file.store_buffer("PDCI".to_ascii_buffer())
+		file.store_32(_pdc_image_data_size(sequence.frames[0]))
+		_pdc_write_image(file, sequence.frames[0])
+	else:
+		file.store_buffer("PDCS".to_ascii_buffer())
+		file.store_32(_pdc_sequence_data_size(sequence))
+		_pdc_write_sequence(file, sequence)
+
+	return true
+
+func _pdc_write_image(file: FileAccess, image: DrawCommandImage) -> void:
+	file.store_8(1)  # version
+	file.store_8(0)  # reserved
+	_pdc_write_int16(file, image.bounds.x)
+	_pdc_write_int16(file, image.bounds.y)
+	_pdc_write_command_list(file, image.commands)
+
+func _pdc_write_sequence(file: FileAccess, sequence: DrawCommandSequence) -> void:
+	file.store_8(1)  # version
+	file.store_8(0)  # reserved
+	var bounds = sequence.frames[0].bounds
+	_pdc_write_int16(file, bounds.x)
+	_pdc_write_int16(file, bounds.y)
+	file.store_16(sequence.play_count)
+	file.store_16(sequence.frames.size())
+	for i in range(sequence.frames.size()):
+		var duration = sequence.frame_durations_ms[i] if i < sequence.frame_durations_ms.size() else 0
+		file.store_16(duration)
+		_pdc_write_command_list(file, sequence.frames[i].commands)
+
+func _pdc_write_command_list(file: FileAccess, commands: Array[DrawCommand]) -> void:
+	file.store_16(commands.size())
+	for cmd in commands:
+		_pdc_write_command(file, cmd)
+
+func _pdc_write_command(file: FileAccess, cmd: DrawCommand) -> void:
+	file.store_8(cmd.draw_type)
+	file.store_8(1 if cmd.hidden else 0)
+	file.store_8(_pdc_color_encode(cmd.stroke_color))
+	file.store_8(cmd.stroke_width)
+	file.store_8(_pdc_color_encode(cmd.fill_color))
+	if cmd.draw_type == DrawCommand.Type.CIRCLE:
+		file.store_16(cmd.circle_radius)
+	else:
+		file.store_16(1 if cmd.path_open else 0)
+	file.store_16(cmd.points.size())
+	for pt in cmd.points:
+		if cmd.draw_type == DrawCommand.Type.PRECISE_PATH:
+			_pdc_write_int16(file, roundi(pt.x * 8))
+			_pdc_write_int16(file, roundi(pt.y * 8))
+		else:
+			_pdc_write_int16(file, roundi(pt.x))
+			_pdc_write_int16(file, roundi(pt.y))
+
+func _pdc_write_int16(file: FileAccess, val: int) -> void:
+	file.store_16(val & 0xFFFF)
+
+func _pdc_color_encode(color: Color) -> int:
+	var a = clampi(roundi(color.a * 3), 0, 3)
+	var r = clampi(roundi(color.r * 3), 0, 3)
+	var g = clampi(roundi(color.g * 3), 0, 3)
+	var b = clampi(roundi(color.b * 3), 0, 3)
+	return (a << 6) | (r << 4) | (g << 2) | b
+
+func _pdc_command_size(cmd: DrawCommand) -> int:
+	return 9 + cmd.points.size() * 4
+
+func _pdc_command_list_size(commands: Array[DrawCommand]) -> int:
+	var size = 2  # num_commands uint16
+	for cmd in commands:
+		size += _pdc_command_size(cmd)
+	return size
+
+func _pdc_image_data_size(image: DrawCommandImage) -> int:
+	return 6 + _pdc_command_list_size(image.commands)  # version + reserved + viewbox
+
+func _pdc_sequence_data_size(sequence: DrawCommandSequence) -> int:
+	var size = 10  # version + reserved + viewbox + play_count + frame_count
+	for image in sequence.frames:
+		size += 2 + _pdc_command_list_size(image.commands)  # duration + command list
+	return size
+
 func save_project(path):
 	pass
 
