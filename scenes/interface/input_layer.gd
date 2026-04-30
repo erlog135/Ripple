@@ -2,6 +2,9 @@ extends Control
 
 
 func _gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		EditorState.update_mouse_position(event.position)
+
 	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 		if EditorState.active_tool == EditorState.Tool.PAN:
 			EditorState.pan(-event.relative)
