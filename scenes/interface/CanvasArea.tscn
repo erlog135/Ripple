@@ -90,6 +90,11 @@ layout_mode = 2
 text = "Selection:  80x80"
 horizontal_alignment = 1
 
+[node name="ZoomLevel" type="Label" parent="HUDLayer/InfoLabels" unique_id=1740279319]
+layout_mode = 2
+text = "Zoom: 100%"
+horizontal_alignment = 1
+
 [node name="InputLayer" type="Control" parent="." unique_id=622983852]
 clip_contents = true
 layout_mode = 1
