@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://dkotjhm13dn23"]
+
+[ext_resource type="Script" uid="uid://ciqgwamssq7io" path="res://scenes/interface/aux_windows/tools_window.gd" id="1_cd067"]
+
+[node name="ToolsWindow" type="Control" unique_id=1568918098]
+layout_mode = 3
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_cd067")
+
+[node name="Label" type="Label" parent="." unique_id=45431820]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "TOOLS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ToolList" type="ItemList" parent="." unique_id=701426499]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+allow_search = false
+auto_width = true
+item_count = 5
+item_0/text = "Select"
+item_1/text = "Line Pen"
+item_2/text = "Circle"
+item_3/text = "Rectangle"
+item_4/text = "Pan"

@@ -2,6 +2,8 @@
 
 [ext_resource type="PackedScene" uid="uid://vrudldeag2yr" path="res://scenes/interface/TopMenuBar.tscn" id="1_ndpqs"]
 [ext_resource type="PackedScene" uid="uid://dsun2824rmyw3" path="res://scenes/interface/CanvasArea.tscn" id="2_3kl07"]
+[ext_resource type="PackedScene" uid="uid://dkotjhm13dn23" path="res://scenes/interface/aux_windows/ToolsWindow.tscn" id="2_diyc1"]
+[ext_resource type="PackedScene" uid="uid://da7bxcr1u5aj" path="res://scenes/interface/aux_windows/FillStrokeWindow.tscn" id="3_wmxca"]
 
 [node name="Editor" type="Control" unique_id=1840015314]
 layout_mode = 3
@@ -42,62 +44,42 @@ vertical_alignment = 1
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/BusyArea" unique_id=585861789]
+[node name="Panels" type="HSplitContainer" parent="VBoxContainer/BusyArea" unique_id=585861789]
 layout_mode = 2
 size_flags_horizontal = 3
-split_offsets = PackedInt32Array(210, -209)
+split_offsets = PackedInt32Array(210, -197)
 split_offset = 210
 
-[node name="VSplitContainer" type="VSplitContainer" parent="VBoxContainer/BusyArea/HSplitContainer" unique_id=1686839539]
+[node name="LeftPanel" type="VSplitContainer" parent="VBoxContainer/BusyArea/Panels" unique_id=1686839539]
+clip_contents = true
 layout_mode = 2
 
-[node name="Tools" type="Panel" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer" unique_id=1380212103]
-custom_minimum_size = Vector2(0, 40)
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="Label" type="Label" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer/Tools" unique_id=1330213914]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "Tools"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="FillStroke" type="Panel" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer" unique_id=491785293]
-custom_minimum_size = Vector2(0, 40)
+[node name="ToolsWindow" parent="VBoxContainer/BusyArea/Panels/LeftPanel" unique_id=1568918098 instance=ExtResource("2_diyc1")]
+clip_contents = true
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer/FillStroke" unique_id=1705038229]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "Fill & Stroke"
-horizontal_alignment = 1
-vertical_alignment = 1
+[node name="FillStrokeWindow" parent="VBoxContainer/BusyArea/Panels/LeftPanel" unique_id=766531804 instance=ExtResource("3_wmxca")]
+clip_contents = true
+layout_mode = 2
+size_flags_vertical = 3
 
-[node name="VSplitContainer3" type="VSplitContainer" parent="VBoxContainer/BusyArea/HSplitContainer" unique_id=1564072419]
+[node name="MidPanel" type="VSplitContainer" parent="VBoxContainer/BusyArea/Panels" unique_id=1564072419]
+clip_contents = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="CanvasArea" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer3" unique_id=1795288712 instance=ExtResource("2_3kl07")]
+[node name="CanvasArea" parent="VBoxContainer/BusyArea/Panels/MidPanel" unique_id=1795288712 instance=ExtResource("2_3kl07")]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Timeline" type="Panel" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer3" unique_id=955754358]
+[node name="Timeline" type="Panel" parent="VBoxContainer/BusyArea/Panels/MidPanel" unique_id=955754358]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.5
 
-[node name="Label" type="Label" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer3/Timeline" unique_id=1003933211]
+[node name="Label" type="Label" parent="VBoxContainer/BusyArea/Panels/MidPanel/Timeline" unique_id=1003933211]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -108,15 +90,16 @@ text = "Animation Timeline"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="VSplitContainer2" type="VSplitContainer" parent="VBoxContainer/BusyArea/HSplitContainer" unique_id=213196365]
+[node name="RightPanel" type="VSplitContainer" parent="VBoxContainer/BusyArea/Panels" unique_id=213196365]
+clip_contents = true
 layout_mode = 2
 
-[node name="Preview" type="Panel" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer2" unique_id=598848381]
+[node name="Preview" type="Panel" parent="VBoxContainer/BusyArea/Panels/RightPanel" unique_id=598848381]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer2/Preview" unique_id=1842980290]
+[node name="Label" type="Label" parent="VBoxContainer/BusyArea/Panels/RightPanel/Preview" unique_id=1842980290]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -127,12 +110,12 @@ text = "Hardware Preview"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Layers" type="Panel" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer2" unique_id=1039252092]
+[node name="Layers" type="Panel" parent="VBoxContainer/BusyArea/Panels/RightPanel" unique_id=1039252092]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="VBoxContainer/BusyArea/HSplitContainer/VSplitContainer2/Layers" unique_id=1029746139]
+[node name="Label" type="Label" parent="VBoxContainer/BusyArea/Panels/RightPanel/Layers" unique_id=1029746139]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
