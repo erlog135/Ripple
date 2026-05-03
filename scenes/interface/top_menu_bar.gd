@@ -5,28 +5,32 @@ var file_items = [
 
 ]
 
-
+var edit_items = [
+	{"Select All": EditorState.select_all},
+	{"Deselect": EditorState.deselect_all}
+]
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	populate_menus()
 	
 
-
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	pass
 
-func populate_menus() -> void:
-	var file_popup = $HBoxContainer/File.get_popup()
-	var file_functions: Array[Callable]
+# Helper to setup a popup with items and functions
+func populate_popup_with_items(popup: PopupMenu, items: Array) -> void:
+	var functions: Array[Callable] = []
 	var current_id := 0
-	for item in file_items:
+	for item in items:
 		if not item.keys().size():
 			continue
-		
-		file_popup.add_item(item.keys().front(),current_id)
-		file_functions.append(item.values().front())
-		
+		popup.add_item(item.keys().front(), current_id)
+		functions.append(item.values().front())
 		current_id += 1
-	file_popup.id_pressed.connect(func(id: int): file_functions[id].call())
+	popup.id_pressed.connect(func(id: int): functions[id].call())
+
+func populate_menus() -> void:
+	populate_popup_with_items($HBoxContainer/File.get_popup(), file_items)
+	populate_popup_with_items($HBoxContainer/Edit.get_popup(), edit_items)

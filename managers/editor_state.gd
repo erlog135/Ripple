@@ -29,6 +29,9 @@ var current_zoom: float = 1.0
 var current_pan: Vector2 = Vector2.ZERO
 var current_camera_pos: Vector2 = Vector2.ZERO
 
+var selected_command_indices: Array[int] = []
+var selected_point_indices: Dictionary[int, Array] = {}
+
 func change_tool(tool: Tool) -> void:
 	active_tool = tool
 	tool_changed.emit(tool)
@@ -52,3 +55,27 @@ func update_canvas_area_rect(rect: Rect2) -> void:
 
 func update_mouse_position(screen_pos: Vector2) -> void:
 	mouse_position_changed.emit(screen_pos)
+
+func select_all() -> void:
+	selected_command_indices.clear()
+	selected_point_indices.clear()
+
+	if not ProjectData.current_sequence:
+		return
+	
+	var frame: DrawCommandImage = ProjectData.current_sequence.frames[current_frame]
+	for cmd_idx in range(frame.commands.size()):
+		var cmd: DrawCommand = frame.commands[cmd_idx]
+		selected_command_indices.append(cmd_idx)
+		
+		var points: Array[int] = []
+		for pt_idx in range(cmd.points.size()):
+			points.append(pt_idx)
+		selected_point_indices.set(cmd_idx, points)
+		
+	selection_changed.emit(true)
+
+func deselect_all() -> void:
+	selected_command_indices.clear()
+	selected_point_indices.clear()
+	selection_changed.emit(true)
