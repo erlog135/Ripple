@@ -13,7 +13,7 @@ signal current_frame_changed(frame: int)
 
 const ZOOM_STEP := 0.1
 const MIN_ZOOM  := 0.2
-const MAX_ZOOM  := 50.0
+const MAX_ZOOM  := 80.0
 
 enum Tool {
 	SELECT,

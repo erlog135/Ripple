@@ -90,7 +90,7 @@ func _pdc_parse_command(file: FileAccess) -> DrawCommand:
 		var x = _pdc_int16(file)
 		var y = _pdc_int16(file)
 		if type_val == DrawCommand.Type.PRECISE_PATH:
-			points.append(Vector2(x / 8.0, y / 8.0))
+			points.append(Vector2(x / 8.0 + 0.5, y / 8.0 + 0.5))
 		else:
 			points.append(Vector2(x, y))
 
@@ -181,8 +181,8 @@ func _pdc_write_command(file: FileAccess, cmd: DrawCommand) -> void:
 	file.store_16(cmd.points.size())
 	for pt in cmd.points:
 		if cmd.draw_type == DrawCommand.Type.PRECISE_PATH:
-			_pdc_write_int16(file, roundi(pt.x * 8))
-			_pdc_write_int16(file, roundi(pt.y * 8))
+			_pdc_write_int16(file, roundi((pt.x - 0.5) * 8))
+			_pdc_write_int16(file, roundi((pt.y - 0.5) * 8))
 		else:
 			_pdc_write_int16(file, roundi(pt.x))
 			_pdc_write_int16(file, roundi(pt.y))
