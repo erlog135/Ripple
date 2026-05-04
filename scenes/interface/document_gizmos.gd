@@ -8,6 +8,7 @@ const SKELLY_SELECTED_PATH_COLOR := GColor.VERY_LIGHT_BLUE
 
 const SKELLY_POINT_RADIUS_PX := 8.0
 const SKELLY_PATH_WIDTH_PX := 1.0
+const SELECTION_BOX_COLOR := Color(0.4, 0.7, 1.0, 0.85)
 
 
 func _ready() -> void:
@@ -28,6 +29,7 @@ func _draw() -> void:
 	if EditorState.current_zoom >= 10.0:
 		_draw_pixel_grid()
 	_draw_skeletons()
+	_draw_selection_box()
 
 func _draw_pixel_grid() -> void:
 	var sequence := ProjectData.current_sequence
@@ -86,6 +88,59 @@ func _draw_path_skeleton(cmd: DrawCommand, sel_pts: Array, line_w: float, pt_r: 
 	for i in range(n):
 		var pt_color := SKELLY_SELECTED_POINT_COLOR if i in sel_pts else SKELLY_POINT_COLOR
 		draw_circle(cmd.points[i], pt_r, pt_color)
+
+func _draw_selection_box() -> void:
+	var sequence := ProjectData.current_sequence
+	if sequence == null or sequence.frames.is_empty():
+		return
+	var frame_idx := EditorState.current_frame
+	if frame_idx >= sequence.frames.size():
+		return
+	var frame := sequence.frames[frame_idx]
+
+	var selected_positions: Array[Vector2] = []
+	for cmd_idx in EditorState.selected_point_indices:
+		var cmd: DrawCommand = frame.commands[cmd_idx]
+		if cmd.hidden:
+			continue
+		for pt_idx in EditorState.selected_point_indices[cmd_idx]:
+			if pt_idx < cmd.points.size():
+				selected_positions.append(cmd.points[pt_idx])
+
+	if selected_positions.size() < 2:
+		return
+
+	var min_pos := selected_positions[0]
+	var max_pos := selected_positions[0]
+	for pos in selected_positions:
+		min_pos = min_pos.min(pos)
+		max_pos = max_pos.max(pos)
+
+	var line_w := SKELLY_PATH_WIDTH_PX / EditorState.current_zoom
+	var rect := Rect2(min_pos - Vector2(line_w, line_w), max_pos - min_pos + Vector2(line_w * 2.0, line_w * 2.0))
+	draw_rect(rect, SELECTION_BOX_COLOR, false, line_w)
+
+func get_point_at(world_pos: Vector2) -> Array:
+	var sequence := ProjectData.current_sequence
+	if sequence == null or sequence.frames.is_empty():
+		return []
+	var frame_idx := EditorState.current_frame
+	if frame_idx >= sequence.frames.size():
+		return []
+	var frame := sequence.frames[frame_idx]
+	var hit_radius := SKELLY_POINT_RADIUS_PX / EditorState.current_zoom
+	var best_dist := hit_radius
+	var best: Array = []
+	for cmd_idx in range(frame.commands.size()):
+		var cmd: DrawCommand = frame.commands[cmd_idx]
+		if cmd.hidden:
+			continue
+		for pt_idx in range(cmd.points.size()):
+			var dist := world_pos.distance_to(cmd.points[pt_idx])
+			if dist < best_dist:
+				best_dist = dist
+				best = [cmd_idx, pt_idx]
+	return best
 
 func _draw_circle_skeleton(cmd: DrawCommand, sel_pts: Array, line_w: float, pt_r: float) -> void:
 	if cmd.points.is_empty():

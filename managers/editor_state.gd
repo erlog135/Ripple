@@ -79,3 +79,18 @@ func deselect_all() -> void:
 	selected_command_indices.clear()
 	selected_point_indices.clear()
 	selection_changed.emit(true)
+
+func select_point(cmd_idx: int, pt_idx: int, additive: bool) -> void:
+	if not additive:
+		selected_command_indices.clear()
+		selected_point_indices.clear()
+
+	if cmd_idx not in selected_command_indices:
+		selected_command_indices.append(cmd_idx)
+
+	var pts: Array = selected_point_indices.get(cmd_idx, [])
+	if pt_idx not in pts:
+		pts.append(pt_idx)
+	selected_point_indices[cmd_idx] = pts
+
+	selection_changed.emit(true)
