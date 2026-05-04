@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://da7bxcr1u5aj"]
 
+[ext_resource type="Script" uid="uid://chbb5epr5t07j" path="res://scenes/interface/aux_windows/fill_stroke_window.gd" id="1_fl6xs"]
+
 [node name="FillStrokeWindow" type="Control" unique_id=766531804]
 layout_mode = 3
 anchors_preset = 15
@@ -7,6 +9,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_fl6xs")
 
 [node name="Label" type="Label" parent="." unique_id=1313980074]
 layout_mode = 1
@@ -27,7 +30,7 @@ offset_top = 32.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=319997352]
+[node name="Options" type="VBoxContainer" parent="Panel" unique_id=319997352]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -35,45 +38,47 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="FillColor" type="HBoxContainer" parent="Panel/VBoxContainer" unique_id=1408875895]
+[node name="FillColor" type="HBoxContainer" parent="Panel/Options" unique_id=1408875895]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Panel/VBoxContainer/FillColor" unique_id=1490989401]
+[node name="Label" type="Label" parent="Panel/Options/FillColor" unique_id=1490989401]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Fill Color"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ColorRect" type="ColorRect" parent="Panel/VBoxContainer/FillColor" unique_id=168975516]
+[node name="ColorRect" type="ColorRect" parent="Panel/Options/FillColor" unique_id=168975516]
 layout_mode = 2
 size_flags_horizontal = 3
+color = Color(0, 0, 0, 1)
 
-[node name="StrokeColor" type="HBoxContainer" parent="Panel/VBoxContainer" unique_id=1976280762]
+[node name="StrokeColor" type="HBoxContainer" parent="Panel/Options" unique_id=1976280762]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Panel/VBoxContainer/StrokeColor" unique_id=1579337994]
+[node name="Label" type="Label" parent="Panel/Options/StrokeColor" unique_id=1579337994]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Stroke Color"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ColorRect" type="ColorRect" parent="Panel/VBoxContainer/StrokeColor" unique_id=366528599]
+[node name="ColorRect" type="ColorRect" parent="Panel/Options/StrokeColor" unique_id=366528599]
 layout_mode = 2
 size_flags_horizontal = 3
+color = Color(0, 0, 0, 1)
 
-[node name="StrokeWidth" type="HBoxContainer" parent="Panel/VBoxContainer" unique_id=1421563024]
+[node name="StrokeWidth" type="HBoxContainer" parent="Panel/Options" unique_id=1421563024]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Panel/VBoxContainer/StrokeWidth" unique_id=636313195]
+[node name="Label" type="Label" parent="Panel/Options/StrokeWidth" unique_id=636313195]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Stroke Width"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="SpinBox" type="SpinBox" parent="Panel/VBoxContainer/StrokeWidth" unique_id=551570525]
+[node name="SpinBox" type="SpinBox" parent="Panel/Options/StrokeWidth" unique_id=551570525]
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 255.0
