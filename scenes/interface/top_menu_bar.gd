@@ -6,6 +6,8 @@ var file_items = [
 ]
 
 var edit_items = [
+	{"Undo": HistoryManager.undo},
+	{"Redo": HistoryManager.redo},
 	{"Select All": EditorState.select_all},
 	{"Deselect": EditorState.deselect_all}
 ]

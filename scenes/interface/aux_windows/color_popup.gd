@@ -58,3 +58,11 @@ func _select_color_rect(color_rect: ColorRect) -> void:
 	selected_color = color_rect.color
 	selector.position = color_rect.position
 	color_selected.emit(selected_color)
+
+func select_color(color: Color) -> void:
+	for child in grid_container.get_children():
+		if child is ColorRect and child.color == color:
+			_select_color_rect(child)
+			return
+	selected_color = color
+	color_selected.emit(color)
