@@ -23,7 +23,7 @@ enum Tool {
 	PAN
 }
 
-var active_tool: Tool = Tool.PAN
+var active_tool: Tool = Tool.SELECT
 var current_frame: int = 0
 var current_zoom: float = 1.0
 var current_pan: Vector2 = Vector2.ZERO

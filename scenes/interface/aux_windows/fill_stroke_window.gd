@@ -33,36 +33,33 @@ func _on_fill_color_selected(color: Color) -> void:
 	fill_rect.color = color
 	if _syncing:
 		return
-	_commit_property_change(&"fill_color", color, "Set Fill Color")
+	var indices := EditorState.selected_command_indices
+	if indices.is_empty() or not ProjectData.current_sequence:
+		return
+	HistoryManager.commit(SetFillColorAction.new(EditorState.current_frame, indices, color))
 
 
 func _on_stroke_color_selected(color: Color) -> void:
 	stroke_rect.color = color
 	if _syncing:
 		return
-	_commit_property_change(&"stroke_color", color, "Set Stroke Color")
+	var indices := EditorState.selected_command_indices
+	if indices.is_empty() or not ProjectData.current_sequence:
+		return
+	HistoryManager.commit(SetStrokeColorAction.new(EditorState.current_frame, indices, color))
 
 
 func _on_stroke_width_changed(value: float) -> void:
 	if _syncing:
 		return
-	_commit_property_change(&"stroke_width", int(value), "Set Stroke Width", UndoRedo.MERGE_ENDS)
-
-
-func _commit_property_change(property: StringName, new_value: Variant, action_name: String, merge_mode := UndoRedo.MERGE_DISABLE) -> void:
 	var indices := EditorState.selected_command_indices
 	if indices.is_empty() or not ProjectData.current_sequence:
 		return
-	var frame: DrawCommandImage = ProjectData.current_sequence.frames[EditorState.current_frame]
-	var ur := HistoryManager.undo_redo
-	ur.create_action(action_name, merge_mode)
-	for idx in indices:
-		var cmd: DrawCommand = frame.commands[idx]
-		ur.add_undo_property(cmd, property, cmd.get(property))
-		ur.add_do_property(cmd, property, new_value)
-	ur.add_do_method(func(): ProjectData.data_changed.emit(false))
-	ur.add_undo_method(func(): ProjectData.data_changed.emit(false))
-	ur.commit_action()
+	HistoryManager.commit(
+		SetStrokeWidthAction.new(EditorState.current_frame, indices, int(value)),
+		UndoRedo.MERGE_ENDS,
+	)
+
 
 
 func _on_selection_changed(_by_user: bool) -> void:
