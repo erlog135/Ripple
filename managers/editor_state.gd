@@ -8,6 +8,7 @@ signal options_changed
 signal mouse_position_changed(screen_pos: Vector2)
 signal zoom_changed(screen_pos: Vector2, zoom_factor: float)
 signal pan_changed(screen_offset: Vector2)
+signal drag_updated(offset: Vector2, dragging: bool)
 
 signal current_frame_changed(frame: int)
 
@@ -17,6 +18,7 @@ const MAX_ZOOM  := 80.0
 
 enum Tool {
 	SELECT,
+	MOVE,
 	LINE_PEN,
 	CIRCLE,
 	RECTANGLE,
@@ -28,6 +30,8 @@ var current_frame: int = 0
 var current_zoom: float = 1.0
 var current_pan: Vector2 = Vector2.ZERO
 var current_camera_pos: Vector2 = Vector2.ZERO
+var drag_offset: Vector2 = Vector2.ZERO
+var is_dragging_selection: bool = false
 
 var selected_command_indices: Array[int] = []
 var selected_point_indices: Dictionary[int, Array] = {}
@@ -55,6 +59,11 @@ func update_canvas_area_rect(rect: Rect2) -> void:
 
 func update_mouse_position(screen_pos: Vector2) -> void:
 	mouse_position_changed.emit(screen_pos)
+
+func update_drag(offset: Vector2, dragging: bool) -> void:
+	drag_offset = offset
+	is_dragging_selection = dragging
+	drag_updated.emit(drag_offset, is_dragging_selection)
 
 func select_all() -> void:
 	selected_command_indices.clear()

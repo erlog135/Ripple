@@ -7,7 +7,7 @@ const SKELLY_PATH_COLOR := Color(0.5, 0.5, 0.5, 1.0)
 const SKELLY_SELECTED_PATH_COLOR := GColor.VERY_LIGHT_BLUE
 
 const SKELLY_POINT_RADIUS_PX := 8.0
-const SKELLY_PATH_WIDTH_PX := 1.0
+const SKELLY_PATH_WIDTH_PX := 2.0
 const SELECTION_BOX_COLOR := Color(0.4, 0.7, 1.0, 0.85)
 const DRAG_SELECTION_BOX_COLOR := Color(0.4, 0.7, 1.0, 0.45)
 
@@ -19,6 +19,8 @@ func _ready() -> void:
 	ProjectData.data_changed.connect(_on_data_changed)
 	EditorState.zoom_changed.connect(_on_zoom_changed)
 	EditorState.selection_changed.connect(_on_selection_changed)
+	EditorState.tool_changed.connect(_on_tool_changed)
+	EditorState.drag_updated.connect(_on_drag_updated)
 
 func _on_data_changed(_by_user: bool) -> void:
 	queue_redraw()
@@ -27,6 +29,12 @@ func _on_zoom_changed(_screen_pos: Vector2, _factor: float) -> void:
 	queue_redraw()
 
 func _on_selection_changed(_by_user: bool) -> void:
+	queue_redraw()
+
+func _on_tool_changed(_tool: EditorState.Tool) -> void:
+	queue_redraw()
+
+func _on_drag_updated(_offset: Vector2, _dragging: bool) -> void:
 	queue_redraw()
 
 func _draw() -> void:
@@ -63,36 +71,46 @@ func _draw_skeletons() -> void:
 	var frame := sequence.frames[frame_idx]
 	var line_w := SKELLY_PATH_WIDTH_PX / EditorState.current_zoom
 	var pt_r := SKELLY_POINT_RADIUS_PX / EditorState.current_zoom
+	var show_only_selected := EditorState.active_tool != EditorState.Tool.SELECT
 
 	for cmd_idx in range(frame.commands.size()):
 		var cmd: DrawCommand = frame.commands[cmd_idx]
 		if cmd.hidden:
 			continue
 		var sel_pts: Array = EditorState.selected_point_indices.get(cmd_idx, [])
+		if show_only_selected and sel_pts.is_empty():
+			continue
 		match cmd.draw_type:
 			DrawCommand.Type.PATH, DrawCommand.Type.PRECISE_PATH:
-				_draw_path_skeleton(cmd, sel_pts, line_w, pt_r)
+				_draw_path_skeleton(cmd, cmd_idx, sel_pts, line_w, pt_r, show_only_selected)
 			DrawCommand.Type.CIRCLE:
-				_draw_circle_skeleton(cmd, sel_pts, line_w, pt_r)
+				_draw_circle_skeleton(cmd, cmd_idx, sel_pts, line_w, pt_r, show_only_selected)
 
-func _draw_path_skeleton(cmd: DrawCommand, sel_pts: Array, line_w: float, pt_r: float) -> void:
-	var n := cmd.points.size()
+func _draw_path_skeleton(cmd: DrawCommand, cmd_idx: int, sel_pts: Array, line_w: float, pt_r: float, show_only_selected: bool) -> void:
+	var points := _points_with_drag_offset(cmd.points, cmd_idx)
+	var n := points.size()
 	if n == 0:
 		return
 
 	for i in range(n - 1):
 		var seg_selected := (i in sel_pts) and ((i + 1) in sel_pts)
+		if show_only_selected and not seg_selected:
+			continue
 		var seg_color := SKELLY_SELECTED_PATH_COLOR if seg_selected else SKELLY_PATH_COLOR
-		draw_line(cmd.points[i], cmd.points[i + 1], seg_color, line_w)
+		draw_line(points[i], points[i + 1], seg_color, line_w)
 
 	if not cmd.path_open and n > 2:
 		var seg_selected := ((n - 1) in sel_pts) and (0 in sel_pts)
+		if show_only_selected and not seg_selected:
+			return
 		var seg_color := SKELLY_SELECTED_PATH_COLOR if seg_selected else SKELLY_PATH_COLOR
-		draw_line(cmd.points[n - 1], cmd.points[0], seg_color, line_w)
+		draw_line(points[n - 1], points[0], seg_color, line_w)
 
 	for i in range(n):
+		if show_only_selected and not (i in sel_pts):
+			continue
 		var pt_color := SKELLY_SELECTED_POINT_COLOR if i in sel_pts else SKELLY_POINT_COLOR
-		draw_circle(cmd.points[i], pt_r, pt_color)
+		draw_circle(points[i], pt_r, pt_color)
 
 func _draw_selection_box() -> void:
 	var sequence := ProjectData.current_sequence
@@ -110,7 +128,7 @@ func _draw_selection_box() -> void:
 			continue
 		for pt_idx in EditorState.selected_point_indices[cmd_idx]:
 			if pt_idx < cmd.points.size():
-				selected_positions.append(cmd.points[pt_idx])
+				selected_positions.append(_point_with_drag_offset(cmd.points[pt_idx], cmd_idx, pt_idx))
 
 	if selected_positions.size() < 2:
 		return
@@ -168,23 +186,72 @@ func get_points_in_rect(rect: Rect2) -> Array:
 		if cmd.hidden:
 			continue
 		for pt_idx in range(cmd.points.size()):
-			if rect.has_point(cmd.points[pt_idx]):
+			if rect.has_point(_point_with_drag_offset(cmd.points[pt_idx], cmd_idx, pt_idx)):
 				selected.append([cmd_idx, pt_idx])
 	return selected
+
+func get_best_point_in_rect(rect: Rect2, world_pos: Vector2) -> Array:
+	var hits: Array = get_points_in_rect(rect)
+	if hits.is_empty():
+		return []
+
+	var sequence := ProjectData.current_sequence
+	if sequence == null or sequence.frames.is_empty():
+		return []
+	var frame_idx := EditorState.current_frame
+	if frame_idx >= sequence.frames.size():
+		return []
+	var frame := sequence.frames[frame_idx]
+
+	var best_hit: Array = hits[0]
+	var best_dist := world_pos.distance_squared_to(
+		_point_with_drag_offset(frame.commands[best_hit[0]].points[best_hit[1]], best_hit[0], best_hit[1])
+	)
+	for i in range(1, hits.size()):
+		var hit: Array = hits[i]
+		var dist := world_pos.distance_squared_to(
+			_point_with_drag_offset(frame.commands[hit[0]].points[hit[1]], hit[0], hit[1])
+		)
+		if dist < best_dist:
+			best_dist = dist
+			best_hit = hit
+	return best_hit
 
 func set_drag_selection_rect(rect: Rect2, active: bool) -> void:
 	_drag_selection_rect = rect
 	_drag_selection_active = active
 	queue_redraw()
 
-func _draw_circle_skeleton(cmd: DrawCommand, sel_pts: Array, line_w: float, pt_r: float) -> void:
+func _draw_circle_skeleton(cmd: DrawCommand, cmd_idx: int, sel_pts: Array, line_w: float, pt_r: float, show_only_selected: bool) -> void:
 	if cmd.points.is_empty():
 		return
 
-	var center := cmd.points[0]
+	var center := _point_with_drag_offset(cmd.points[0], cmd_idx, 0)
 	var is_selected := 0 in sel_pts
+	if show_only_selected and not is_selected:
+		return
 	var outline_color := SKELLY_SELECTED_PATH_COLOR if is_selected else SKELLY_PATH_COLOR
 	var pt_color := SKELLY_SELECTED_POINT_COLOR if is_selected else SKELLY_POINT_COLOR
 
 	draw_arc(center, float(cmd.circle_radius), 0.0, TAU, 64, outline_color, line_w)
 	draw_circle(center, pt_r, pt_color)
+
+func _point_with_drag_offset(point: Vector2, cmd_idx: int, pt_idx: int) -> Vector2:
+	if not EditorState.is_dragging_selection or EditorState.drag_offset == Vector2.ZERO:
+		return point
+	var selected_pts: Array = EditorState.selected_point_indices.get(cmd_idx, [])
+	if pt_idx in selected_pts:
+		return point + EditorState.drag_offset
+	return point
+
+func _points_with_drag_offset(points: PackedVector2Array, cmd_idx: int) -> PackedVector2Array:
+	if not EditorState.is_dragging_selection or EditorState.drag_offset == Vector2.ZERO:
+		return points
+	var selected_pts: Array = EditorState.selected_point_indices.get(cmd_idx, [])
+	if selected_pts.is_empty():
+		return points
+	var shifted: PackedVector2Array = points.duplicate()
+	for pt_idx in selected_pts:
+		if pt_idx >= 0 and pt_idx < shifted.size():
+			shifted[pt_idx] += EditorState.drag_offset
+	return shifted
