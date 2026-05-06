@@ -34,7 +34,7 @@ func _on_fill_color_selected(color: Color) -> void:
 	if _syncing:
 		return
 	var indices := EditorState.selected_command_indices
-	if indices.is_empty() or not ProjectData.current_sequence:
+	if indices.is_empty() or ProjectData.get_current_image() == null:
 		return
 	HistoryManager.commit(SetFillColorAction.new(EditorState.current_frame, indices, color))
 
@@ -44,7 +44,7 @@ func _on_stroke_color_selected(color: Color) -> void:
 	if _syncing:
 		return
 	var indices := EditorState.selected_command_indices
-	if indices.is_empty() or not ProjectData.current_sequence:
+	if indices.is_empty() or ProjectData.get_current_image() == null:
 		return
 	HistoryManager.commit(SetStrokeColorAction.new(EditorState.current_frame, indices, color))
 
@@ -53,7 +53,7 @@ func _on_stroke_width_changed(value: float) -> void:
 	if _syncing:
 		return
 	var indices := EditorState.selected_command_indices
-	if indices.is_empty() or not ProjectData.current_sequence:
+	if indices.is_empty() or ProjectData.get_current_image() == null:
 		return
 	HistoryManager.commit(
 		SetStrokeWidthAction.new(EditorState.current_frame, indices, int(value)),
@@ -64,10 +64,10 @@ func _on_stroke_width_changed(value: float) -> void:
 
 func _on_selection_changed(_by_user: bool) -> void:
 	var indices: Array[int] = EditorState.selected_command_indices
-	if indices.is_empty() or not ProjectData.current_sequence:
+	var frame: DrawCommandImage = ProjectData.get_current_image()
+	if indices.is_empty() or frame == null:
 		return
 
-	var frame: DrawCommandImage = ProjectData.current_sequence.frames[EditorState.current_frame]
 	var first: DrawCommand = frame.commands[indices[0]]
 	var shared_fill := first.fill_color
 	var shared_stroke := first.stroke_color

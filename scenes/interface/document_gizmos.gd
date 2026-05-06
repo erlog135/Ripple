@@ -45,11 +45,11 @@ func _draw() -> void:
 	_draw_selection_box()
 
 func _draw_pixel_grid() -> void:
-	var sequence := ProjectData.current_sequence
-	if sequence == null or sequence.frames.is_empty():
+	var frame: DrawCommandImage = ProjectData.get_current_image()
+	if frame == null:
 		return
 
-	var bounds: Vector2i = sequence.frames[0].bounds
+	var bounds: Vector2i = frame.bounds
 	if bounds.x <= 0 or bounds.y <= 0:
 		return
 
@@ -60,15 +60,10 @@ func _draw_pixel_grid() -> void:
 		draw_line(Vector2(0, y), Vector2(bounds.x, y), GRID_COLOR, 1.0 / EditorState.current_zoom)
 
 func _draw_skeletons() -> void:
-	var sequence := ProjectData.current_sequence
-	if sequence == null or sequence.frames.is_empty():
+	var frame: DrawCommandImage = ProjectData.get_current_image()
+	if frame == null:
 		return
 
-	var frame_idx := EditorState.current_frame
-	if frame_idx >= sequence.frames.size():
-		return
-
-	var frame := sequence.frames[frame_idx]
 	var line_w := SKELLY_PATH_WIDTH_PX / EditorState.current_zoom
 	var pt_r := SKELLY_POINT_RADIUS_PX / EditorState.current_zoom
 	var show_only_selected := EditorState.active_tool != EditorState.Tool.SELECT
@@ -113,13 +108,9 @@ func _draw_path_skeleton(cmd: DrawCommand, cmd_idx: int, sel_pts: Array, line_w:
 		draw_circle(points[i], pt_r, pt_color)
 
 func _draw_selection_box() -> void:
-	var sequence := ProjectData.current_sequence
-	if sequence == null or sequence.frames.is_empty():
+	var frame: DrawCommandImage = ProjectData.get_current_image()
+	if frame == null:
 		return
-	var frame_idx := EditorState.current_frame
-	if frame_idx >= sequence.frames.size():
-		return
-	var frame := sequence.frames[frame_idx]
 
 	var selected_positions: Array[Vector2] = []
 	for cmd_idx in EditorState.selected_point_indices:
@@ -151,13 +142,9 @@ func _draw_drag_selection_box() -> void:
 	draw_rect(_drag_selection_rect, DRAG_SELECTION_BOX_COLOR, false, line_w)
 
 func get_point_at(world_pos: Vector2) -> Array:
-	var sequence := ProjectData.current_sequence
-	if sequence == null or sequence.frames.is_empty():
+	var frame: DrawCommandImage = ProjectData.get_current_image()
+	if frame == null:
 		return []
-	var frame_idx := EditorState.current_frame
-	if frame_idx >= sequence.frames.size():
-		return []
-	var frame := sequence.frames[frame_idx]
 	var hit_radius := SKELLY_POINT_RADIUS_PX / EditorState.current_zoom
 	var best_dist := hit_radius
 	var best: Array = []
@@ -173,13 +160,9 @@ func get_point_at(world_pos: Vector2) -> Array:
 	return best
 
 func get_points_in_rect(rect: Rect2) -> Array:
-	var sequence := ProjectData.current_sequence
-	if sequence == null or sequence.frames.is_empty():
+	var frame: DrawCommandImage = ProjectData.get_current_image()
+	if frame == null:
 		return []
-	var frame_idx := EditorState.current_frame
-	if frame_idx >= sequence.frames.size():
-		return []
-	var frame := sequence.frames[frame_idx]
 	var selected: Array = []
 	for cmd_idx in range(frame.commands.size()):
 		var cmd: DrawCommand = frame.commands[cmd_idx]
@@ -195,13 +178,9 @@ func get_best_point_in_rect(rect: Rect2, world_pos: Vector2) -> Array:
 	if hits.is_empty():
 		return []
 
-	var sequence := ProjectData.current_sequence
-	if sequence == null or sequence.frames.is_empty():
+	var frame: DrawCommandImage = ProjectData.get_current_image()
+	if frame == null:
 		return []
-	var frame_idx := EditorState.current_frame
-	if frame_idx >= sequence.frames.size():
-		return []
-	var frame := sequence.frames[frame_idx]
 
 	var best_hit: Array = hits[0]
 	var best_dist := world_pos.distance_squared_to(

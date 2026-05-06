@@ -69,10 +69,10 @@ func select_all() -> void:
 	selected_command_indices.clear()
 	selected_point_indices.clear()
 
-	if not ProjectData.current_sequence:
+	var frame: DrawCommandImage = ProjectData.get_current_image()
+	if frame == null:
 		return
-	
-	var frame: DrawCommandImage = ProjectData.current_sequence.frames[current_frame]
+
 	for cmd_idx in range(frame.commands.size()):
 		var cmd: DrawCommand = frame.commands[cmd_idx]
 		selected_command_indices.append(cmd_idx)

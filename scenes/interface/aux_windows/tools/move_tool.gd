@@ -32,13 +32,10 @@ func cancel() -> void:
 	EditorState.update_drag(Vector2.ZERO, false)
 
 func _commit_drag(total_offset: Vector2) -> void:
-	var sequence := ProjectData.current_sequence
-	if sequence == null or sequence.frames.is_empty():
-		return
 	var frame_idx := EditorState.current_frame
-	if frame_idx >= sequence.frames.size():
+	var frame: DrawCommandImage = ProjectData.get_current_image()
+	if frame == null:
 		return
-	var frame: DrawCommandImage = sequence.frames[frame_idx]
 
 	var command_indices: Array[int] = []
 	var moved_points_arrays: Array = []

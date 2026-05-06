@@ -10,29 +10,25 @@ func _ready() -> void:
 	ProjectData.data_changed.connect(_on_data_changed)
 	EditorState.current_frame_changed.connect(_on_current_frame_changed)
 	EditorState.drag_updated.connect(_on_drag_updated)
-	_render_sequence(ProjectData.current_sequence)
+	_render_current_image()
 
 func _on_data_changed(_by_user: bool) -> void:
-	_render_sequence(ProjectData.current_sequence)
+	_render_current_image()
 
 func _on_current_frame_changed(_frame: int) -> void:
-	_render_sequence(ProjectData.current_sequence)
+	_render_current_image()
 
 func _on_drag_updated(_offset: Vector2, _dragging: bool) -> void:
-	_render_sequence(ProjectData.current_sequence)
+	_render_current_image()
 
-func _render_sequence(sequence: DrawCommandSequence) -> void:
+func _render_current_image() -> void:
 	for child in _vector_canvas.get_children():
 		child.queue_free()
 
-	if sequence == null or sequence.frames.is_empty():
+	var image: DrawCommandImage = ProjectData.get_current_image()
+	if image == null:
 		return
 
-	var frame_idx := EditorState.current_frame
-	if frame_idx >= sequence.frames.size():
-		return
-
-	var image: DrawCommandImage = sequence.frames[frame_idx]
 	for cmd_idx in range(image.commands.size()):
 		_draw_command(image.commands[cmd_idx], cmd_idx)
 
