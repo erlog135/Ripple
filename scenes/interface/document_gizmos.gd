@@ -9,6 +9,10 @@ const SKELLY_SELECTED_PATH_COLOR := GColor.VERY_LIGHT_BLUE
 const SKELLY_POINT_RADIUS_PX := 8.0
 const SKELLY_PATH_WIDTH_PX := 1.0
 const SELECTION_BOX_COLOR := Color(0.4, 0.7, 1.0, 0.85)
+const DRAG_SELECTION_BOX_COLOR := Color(0.4, 0.7, 1.0, 0.45)
+
+var _drag_selection_rect := Rect2()
+var _drag_selection_active := false
 
 
 func _ready() -> void:
@@ -29,6 +33,7 @@ func _draw() -> void:
 	if EditorState.current_zoom >= 10.0:
 		_draw_pixel_grid()
 	_draw_skeletons()
+	_draw_drag_selection_box()
 	_draw_selection_box()
 
 func _draw_pixel_grid() -> void:
@@ -120,6 +125,13 @@ func _draw_selection_box() -> void:
 	var rect := Rect2(min_pos - Vector2(line_w, line_w), max_pos - min_pos + Vector2(line_w * 2.0, line_w * 2.0))
 	draw_rect(rect, SELECTION_BOX_COLOR, false, line_w)
 
+func _draw_drag_selection_box() -> void:
+	if not _drag_selection_active:
+		return
+
+	var line_w := SKELLY_PATH_WIDTH_PX / EditorState.current_zoom
+	draw_rect(_drag_selection_rect, DRAG_SELECTION_BOX_COLOR, false, line_w)
+
 func get_point_at(world_pos: Vector2) -> Array:
 	var sequence := ProjectData.current_sequence
 	if sequence == null or sequence.frames.is_empty():
@@ -141,6 +153,29 @@ func get_point_at(world_pos: Vector2) -> Array:
 				best_dist = dist
 				best = [cmd_idx, pt_idx]
 	return best
+
+func get_points_in_rect(rect: Rect2) -> Array:
+	var sequence := ProjectData.current_sequence
+	if sequence == null or sequence.frames.is_empty():
+		return []
+	var frame_idx := EditorState.current_frame
+	if frame_idx >= sequence.frames.size():
+		return []
+	var frame := sequence.frames[frame_idx]
+	var selected: Array = []
+	for cmd_idx in range(frame.commands.size()):
+		var cmd: DrawCommand = frame.commands[cmd_idx]
+		if cmd.hidden:
+			continue
+		for pt_idx in range(cmd.points.size()):
+			if rect.has_point(cmd.points[pt_idx]):
+				selected.append([cmd_idx, pt_idx])
+	return selected
+
+func set_drag_selection_rect(rect: Rect2, active: bool) -> void:
+	_drag_selection_rect = rect
+	_drag_selection_active = active
+	queue_redraw()
 
 func _draw_circle_skeleton(cmd: DrawCommand, sel_pts: Array, line_w: float, pt_r: float) -> void:
 	if cmd.points.is_empty():
