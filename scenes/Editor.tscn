@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://dsun2824rmyw3" path="res://scenes/interface/CanvasArea.tscn" id="2_3kl07"]
 [ext_resource type="PackedScene" uid="uid://dkotjhm13dn23" path="res://scenes/interface/aux_windows/ToolsWindow.tscn" id="2_diyc1"]
 [ext_resource type="PackedScene" uid="uid://da7bxcr1u5aj" path="res://scenes/interface/aux_windows/FillStrokeWindow.tscn" id="3_wmxca"]
+[ext_resource type="PackedScene" uid="uid://dwex3u1hmrm4m" path="res://scenes/interface/aux_windows/LayerWindow.tscn" id="4_u6trk"]
 
 [node name="Editor" type="Control" unique_id=1840015314]
 layout_mode = 3
@@ -110,21 +111,10 @@ text = "Hardware Preview"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Layers" type="Panel" parent="VBoxContainer/BusyArea/Panels/RightPanel" unique_id=1039252092]
-custom_minimum_size = Vector2(0, 40)
+[node name="LayerWindow" parent="VBoxContainer/BusyArea/Panels/RightPanel" unique_id=1039252092 instance=ExtResource("4_u6trk")]
+clip_contents = true
 layout_mode = 2
 size_flags_vertical = 3
-
-[node name="Label" type="Label" parent="VBoxContainer/BusyArea/Panels/RightPanel/Layers" unique_id=1029746139]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "Layers"
-horizontal_alignment = 1
-vertical_alignment = 1
 
 [node name="Hints" type="Panel" parent="VBoxContainer" unique_id=1272784267]
 custom_minimum_size = Vector2(0, 40)

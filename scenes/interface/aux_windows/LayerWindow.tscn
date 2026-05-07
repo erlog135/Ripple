@@ -31,5 +31,5 @@ offset_top = 32.0
 grow_horizontal = 2
 grow_vertical = 2
 allow_search = false
+hide_folding = true
 hide_root = true
-drop_mode_flags = 2
