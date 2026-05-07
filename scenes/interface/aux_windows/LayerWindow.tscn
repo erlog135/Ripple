@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://dwex3u1hmrm4m"]
+
+[ext_resource type="Script" uid="uid://camluogvfe000" path="res://scenes/interface/aux_windows/layer_window.gd" id="1_4xcvi"]
+
+[node name="LayerWindow" type="Control" unique_id=350560567]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_4xcvi")
+
+[node name="Label" type="Label" parent="." unique_id=667607164]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "LAYERS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Tree" type="Tree" parent="." unique_id=1256012373]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+allow_search = false
+hide_root = true
+drop_mode_flags = 2
