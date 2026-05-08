@@ -162,9 +162,15 @@ func _display_index_to_command_insert_index(command_count: int, display_index: i
 	return command_count - 1 - display_index
 
 
-func _on_tree_multi_selected(_item: TreeItem, _column: int, _selected: bool) -> void:
+func _on_tree_multi_selected(item: TreeItem, column: int, selected: bool) -> void:
 	if _syncing_tree_selection:
 		return
+	# REPLACE_MODE multi-select: plain click should select only the clicked row (fixes stale row).
+	if selected and not Input.is_key_pressed(KEY_CTRL) and not Input.is_key_pressed(KEY_SHIFT):
+		_syncing_tree_selection = true
+		tree.deselect_all()
+		item.select(column)
+		_syncing_tree_selection = false
 	_apply_editor_selection_from_tree()
 
 func _on_tree_empty_clicked(_position: Vector2, _mouse_button_index: int) -> void:

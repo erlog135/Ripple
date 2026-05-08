@@ -96,10 +96,9 @@ func _draw_path_skeleton(cmd: DrawCommand, cmd_idx: int, sel_pts: Array, line_w:
 
 	if not cmd.path_open and n > 2:
 		var seg_selected := ((n - 1) in sel_pts) and (0 in sel_pts)
-		if show_only_selected and not seg_selected:
-			return
-		var seg_color := SKELLY_SELECTED_PATH_COLOR if seg_selected else SKELLY_PATH_COLOR
-		draw_line(points[n - 1], points[0], seg_color, line_w)
+		if not show_only_selected or seg_selected:
+			var seg_color := SKELLY_SELECTED_PATH_COLOR if seg_selected else SKELLY_PATH_COLOR
+			draw_line(points[n - 1], points[0], seg_color, line_w)
 
 	for i in range(n):
 		if show_only_selected and not (i in sel_pts):
