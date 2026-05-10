@@ -2,7 +2,8 @@ extends PopupPanel
 
 signal color_selected(color: Color)
 
-@onready var grid_container: GridContainer = $GridContainer
+@onready var grid_container: GridContainer = $VBoxContainer/GridContainer
+@onready var transparent_rect: TextureRect = $VBoxContainer/GridContainer/TransparentRect
 @onready var selector: Line2D = $Selector
 
 const COLOR_RECT_SIZE := Vector2(32, 32)
@@ -10,7 +11,7 @@ const COLOR_RECT_PADDING := 4
 const SELECTOR_SIZE := Vector2(40, 40)
 
 const palette = [
-	[GColor.BLACK,GColor.DARK_GRAY,GColor.LIGHT_GRAY,GColor.WHITE,GColor.CLEAR,GColor.CLEAR],
+	[GColor.BLACK,GColor.DARK_GRAY,GColor.LIGHT_GRAY,GColor.WHITE,GColor.CLEAR,null],
 	[GColor.CLEAR,GColor.CLEAR,GColor.CLEAR,GColor.FOLLY,GColor.CLEAR,GColor.CLEAR],
 	[GColor.ROSE_VALE,GColor.BULGARIAN_ROSE,GColor.DARK_CANDY_APPLE_RED,GColor.RED,GColor.SUNSET_ORANGE,GColor.MELON],
 	[GColor.CLEAR,GColor.CLEAR,GColor.CLEAR,GColor.ORANGE,GColor.CLEAR,GColor.CLEAR],
@@ -35,34 +36,59 @@ var selected_color: Color = GColor.BLACK
 
 func _ready() -> void:
 	_populate_grid()
-	_select_color_rect(grid_container.get_child(0))
+	var first_swatch := grid_container.get_child(0) as ColorRect
+	_select_swatch(first_swatch, first_swatch.color)
 
 func _populate_grid() -> void:
-	for row in palette:
-		for color in row:
-			var color_rect: ColorRect = ColorRect.new()
-			color_rect.color = color
-			color_rect.custom_minimum_size = COLOR_RECT_SIZE
+	var parent := transparent_rect.get_parent()
+	if parent:
+		parent.remove_child(transparent_rect)
+	for i in range(grid_container.get_child_count() - 1, -1, -1):
+		var c := grid_container.get_child(i)
+		grid_container.remove_child(c)
+		c.queue_free()
 
-			if color != GColor.CLEAR:
+	var inserted_transparent := false
+	for row in palette:
+		for entry in row:
+			if entry == null:
+				grid_container.add_child(transparent_rect)
+				inserted_transparent = true
+				continue
+			var color_rect := ColorRect.new()
+			color_rect.color = entry
+			color_rect.custom_minimum_size = COLOR_RECT_SIZE
+			if entry != GColor.CLEAR:
 				_register_color_rect(color_rect)
-				
 			grid_container.add_child(color_rect)
+	assert(inserted_transparent, "palette must contain null for TransparentRect slot")
+
+	transparent_rect.custom_minimum_size = COLOR_RECT_SIZE
+	_register_transparent_rect()
 
 func _register_color_rect(color_rect: ColorRect) -> void:
 	color_rect.gui_input.connect(func(event: InputEvent):
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			_select_color_rect(color_rect))
+			_select_swatch(color_rect, color_rect.color))
 
-func _select_color_rect(color_rect: ColorRect) -> void:
-	selected_color = color_rect.color
-	selector.position = color_rect.position
+func _register_transparent_rect() -> void:
+	transparent_rect.mouse_filter = Control.MOUSE_FILTER_STOP
+	transparent_rect.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			_select_swatch(transparent_rect, GColor.CLEAR))
+
+func _select_swatch(swatch: Control, color: Color) -> void:
+	selected_color = color
+	selector.position = swatch.position + grid_container.position
 	color_selected.emit(selected_color)
 
 func select_color(color: Color) -> void:
+	if color == GColor.CLEAR:
+		_select_swatch(transparent_rect, GColor.CLEAR)
+		return
 	for child in grid_container.get_children():
 		if child is ColorRect and child.color == color:
-			_select_color_rect(child)
+			_select_swatch(child as Control, color)
 			return
 	selected_color = color
 	color_selected.emit(color)

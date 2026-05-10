@@ -2,10 +2,12 @@ extends Control
 
 const SelectionTool = preload("res://scenes/interface/aux_windows/tools/selection_tool.gd")
 const MoveTool = preload("res://scenes/interface/aux_windows/tools/move_tool.gd")
+const PenToolScr = preload("res://scenes/interface/aux_windows/tools/line_pen_tool.gd")
 
 @onready var _gizmos = $"../DocumentLayer/SubViewport/DocumentGizmos"
 @onready var _selection_tool = SelectionTool.new()
 @onready var _move_tool = MoveTool.new()
+@onready var _line_pen_tool: RefCounted = PenToolScr.new()
 
 
 func _ready() -> void:
@@ -15,6 +17,8 @@ func _ready() -> void:
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		EditorState.update_mouse_position(event.position)
+		if EditorState.active_tool == EditorState.Tool.LINE_PEN:
+			_line_pen_tool.handle_mouse_motion(_screen_to_world(event.position))
 
 	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 		if EditorState.active_tool == EditorState.Tool.PAN:
@@ -42,6 +46,10 @@ func _gui_input(event: InputEvent) -> void:
 				_move_tool.handle_left_press(world_pos)
 			else:
 				_move_tool.handle_left_release(world_pos)
+		elif EditorState.active_tool == EditorState.Tool.LINE_PEN:
+			var lp_world_pos := _screen_to_world(event.position)
+			if event.pressed:
+				_line_pen_tool.handle_left_press(lp_world_pos, _gizmos)
 		elif event.pressed:
 			_selection_tool.cancel(_gizmos)
 

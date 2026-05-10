@@ -1,22 +1,36 @@
 [gd_scene format=3 uid="uid://opfiwgeouvns"]
 
 [ext_resource type="Script" uid="uid://oasvn6ben807" path="res://scenes/interface/aux_windows/color_popup.gd" id="1_ld7i8"]
+[ext_resource type="Texture2D" uid="uid://c7gvigdx18sgl" path="res://assets/icons/transparent.png" id="2_8sfd2"]
 
 [node name="ColorPopup" type="PopupPanel" unique_id=1818672886]
 oversampling_override = 1.0
 title = "Color Picker"
-size = Vector2i(40, 40)
+size = Vector2i(121, 67)
 visible = true
 script = ExtResource("1_ld7i8")
-
-[node name="GridContainer" type="GridContainer" parent="." unique_id=2095960325]
-offset_left = 4.0
-offset_top = 4.0
-offset_right = 36.0
-offset_bottom = 36.0
-columns = 6
 
 [node name="Selector" type="Line2D" parent="." unique_id=555104634]
 points = PackedVector2Array(2, 2, 38, 2, 38, 38, 2, 38)
 closed = true
 width = 4.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1668661509]
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 117.0
+offset_bottom = 63.0
+
+[node name="Label" type="Label" parent="VBoxContainer" unique_id=1928568998]
+layout_mode = 2
+text = "SELECT COLOR"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GridContainer" type="GridContainer" parent="VBoxContainer" unique_id=2095960325]
+layout_mode = 2
+columns = 6
+
+[node name="TransparentRect" type="TextureRect" parent="VBoxContainer/GridContainer" unique_id=1963613045]
+layout_mode = 2
+texture = ExtResource("2_8sfd2")

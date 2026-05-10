@@ -10,6 +10,8 @@ const SKELLY_POINT_RADIUS_PX := 8.0
 const SKELLY_PATH_WIDTH_PX := 2.0
 const SELECTION_BOX_COLOR := Color(0.4, 0.7, 1.0, 0.85)
 const DRAG_SELECTION_BOX_COLOR := Color(0.4, 0.7, 1.0, 0.45)
+const LINE_PEN_PREVIEW_COLOR := Color(0.0, 0.5, 1.0, 0.8)
+const PenToolScr = preload("res://scenes/interface/aux_windows/tools/line_pen_tool.gd")
 
 var _drag_selection_rect := Rect2()
 var _drag_selection_active := false
@@ -21,6 +23,7 @@ func _ready() -> void:
 	EditorState.selection_changed.connect(_on_selection_changed)
 	EditorState.tool_changed.connect(_on_tool_changed)
 	EditorState.drag_updated.connect(_on_drag_updated)
+	EditorState.line_pen_hover_changed.connect(_on_line_pen_hover_changed)
 
 func _on_data_changed(_by_user: bool) -> void:
 	queue_redraw()
@@ -37,10 +40,14 @@ func _on_tool_changed(_tool: EditorState.Tool) -> void:
 func _on_drag_updated(_offset: Vector2, _dragging: bool) -> void:
 	queue_redraw()
 
+func _on_line_pen_hover_changed() -> void:
+	queue_redraw()
+
 func _draw() -> void:
 	if EditorState.current_zoom >= 10.0:
 		_draw_pixel_grid()
 	_draw_skeletons()
+	_draw_line_pen_preview()
 	_draw_drag_selection_box()
 	_draw_selection_box()
 
@@ -80,6 +87,40 @@ func _draw_skeletons() -> void:
 				_draw_path_skeleton(cmd, cmd_idx, sel_pts, line_w, pt_r, show_only_selected)
 			DrawCommand.Type.CIRCLE:
 				_draw_circle_skeleton(cmd, cmd_idx, sel_pts, line_w, pt_r, show_only_selected)
+
+
+func _draw_line_pen_preview() -> void:
+	if EditorState.active_tool != EditorState.Tool.LINE_PEN:
+		return
+	var frame: DrawCommandImage = ProjectData.get_current_image()
+	if frame == null:
+		return
+	var ctx: Dictionary = PenToolScr.line_pen_rubber_band_context(frame)
+	if ctx.is_empty():
+		return
+	var cmd_idx: int = ctx[&"cmd_idx"]
+	if cmd_idx < 0 or cmd_idx >= frame.commands.size():
+		return
+	var cmd: DrawCommand = frame.commands[cmd_idx]
+	var pts: Array = ctx[&"pts"]
+	var hover: Vector2 = EditorState.line_pen_hover_world
+	var line_w := SKELLY_PATH_WIDTH_PX / EditorState.current_zoom
+	if pts.size() == 1:
+		var pi: int = int(pts[0])
+		if pi < 0 or pi >= cmd.points.size():
+			return
+		var a := _point_with_drag_offset(cmd.points[pi], cmd_idx, pi)
+		draw_line(a, hover, LINE_PEN_PREVIEW_COLOR, line_w)
+	elif pts.size() == 2:
+		var ia := int(pts[0])
+		var ib := int(pts[1])
+		if ia < 0 or ia >= cmd.points.size() or ib < 0 or ib >= cmd.points.size():
+			return
+		var pa := _point_with_drag_offset(cmd.points[ia], cmd_idx, ia)
+		var pb := _point_with_drag_offset(cmd.points[ib], cmd_idx, ib)
+		draw_line(pa, hover, LINE_PEN_PREVIEW_COLOR, line_w)
+		draw_line(hover, pb, LINE_PEN_PREVIEW_COLOR, line_w)
+
 
 func _draw_path_skeleton(cmd: DrawCommand, cmd_idx: int, sel_pts: Array, line_w: float, pt_r: float, show_only_selected: bool) -> void:
 	var points := _points_with_drag_offset(cmd.points, cmd_idx)

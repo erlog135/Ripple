@@ -11,6 +11,7 @@ var stroke_popup: PopupPanel
 var _syncing := false
 
 func _ready() -> void:
+	call_deferred(&"_sync_current_from_editor_ui")
 	fill_popup = COLOR_POPUP.instantiate()
 	fill_rect.add_child(fill_popup)
 	fill_popup.color_selected.connect(_on_fill_color_selected)
@@ -29,8 +30,17 @@ func _ready() -> void:
 	EditorState.selection_changed.connect(_on_selection_changed)
 
 
+func _sync_current_from_editor_ui() -> void:
+	EditorState.set_current_fill_stroke(
+		fill_rect.color,
+		stroke_rect.color,
+		int(stroke_width_spin.value),
+	)
+
+
 func _on_fill_color_selected(color: Color) -> void:
 	fill_rect.color = color
+	EditorState.set_current_fill_color(color)
 	if _syncing:
 		return
 	var indices := EditorState.selected_command_indices
@@ -41,6 +51,7 @@ func _on_fill_color_selected(color: Color) -> void:
 
 func _on_stroke_color_selected(color: Color) -> void:
 	stroke_rect.color = color
+	EditorState.set_current_stroke_color(color)
 	if _syncing:
 		return
 	var indices := EditorState.selected_command_indices
@@ -50,6 +61,7 @@ func _on_stroke_color_selected(color: Color) -> void:
 
 
 func _on_stroke_width_changed(value: float) -> void:
+	EditorState.set_current_stroke_width(int(value))
 	if _syncing:
 		return
 	var indices := EditorState.selected_command_indices
@@ -82,4 +94,5 @@ func _on_selection_changed(_by_user: bool) -> void:
 	fill_popup.select_color(shared_fill)
 	stroke_popup.select_color(shared_stroke)
 	stroke_width_spin.value = shared_width
+	EditorState.set_current_fill_stroke(shared_fill, shared_stroke, shared_width)
 	_syncing = false
