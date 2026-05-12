@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://lkjmvossobbc"]
+
+[ext_resource type="Texture2D" uid="uid://c7gvigdx18sgl" path="res://assets/icons/transparent.png" id="1_iovx0"]
+
+[node name="FrameItem" type="Control" unique_id=324150636]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 64.0
+offset_bottom = 64.0
+
+[node name="Panel" type="Panel" parent="." unique_id=1865049266]
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 64.0
+
+[node name="TextureRect" type="TextureRect" parent="Panel" unique_id=950037640]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 56.0
+offset_bottom = 56.0
+texture = ExtResource("1_iovx0")
+
+[node name="DragHandle" type="VSeparator" parent="Panel" unique_id=612211061]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 8.0
+offset_right = 4.0
+offset_bottom = -8.0
+grow_horizontal = 0
+grow_vertical = 2
+mouse_default_cursor_shape = 10
