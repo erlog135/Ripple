@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://dkotjhm13dn23" path="res://scenes/interface/aux_windows/ToolsWindow.tscn" id="2_diyc1"]
 [ext_resource type="PackedScene" uid="uid://da7bxcr1u5aj" path="res://scenes/interface/aux_windows/FillStrokeWindow.tscn" id="3_wmxca"]
 [ext_resource type="PackedScene" uid="uid://dwex3u1hmrm4m" path="res://scenes/interface/aux_windows/LayerWindow.tscn" id="4_u6trk"]
+[ext_resource type="PackedScene" uid="uid://bsuhmppbhkr2x" path="res://scenes/interface/aux_windows/AnimatorWindow.tscn" id="5_wa12f"]
 
 [node name="Editor" type="Control" unique_id=1840015314]
 layout_mode = 3
@@ -74,22 +75,10 @@ size_flags_horizontal = 3
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Timeline" type="Panel" parent="VBoxContainer/BusyArea/Panels/MidPanel" unique_id=955754358]
-custom_minimum_size = Vector2(0, 40)
+[node name="AnimatorWindow" parent="VBoxContainer/BusyArea/Panels/MidPanel" unique_id=277590820 instance=ExtResource("5_wa12f")]
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.5
-
-[node name="Label" type="Label" parent="VBoxContainer/BusyArea/Panels/MidPanel/Timeline" unique_id=1003933211]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "Animation Timeline"
-horizontal_alignment = 1
-vertical_alignment = 1
 
 [node name="RightPanel" type="VSplitContainer" parent="VBoxContainer/BusyArea/Panels" unique_id=213196365]
 clip_contents = true

@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bsuhmppbhkr2x"]
 
-[ext_resource type="Texture2D" uid="uid://i4lr5rhkaupb" path="res://assets/icons/hide.png" id="1_axup8"]
+[ext_resource type="Script" uid="uid://cp24gndjd5xu5" path="res://scenes/interface/aux_windows/animator_window.gd" id="1_sgg8o"]
+[ext_resource type="Texture2D" uid="uid://mfawmwdwkv4i" path="res://assets/icons/playhead_grabpoint.png" id="2_sgg8o"]
 
 [node name="AnimatorWindow" type="Control" unique_id=277590820]
 layout_mode = 3
@@ -9,6 +10,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_sgg8o")
 
 [node name="PlaybackPanel" type="Panel" parent="." unique_id=1387252710]
 layout_mode = 1
@@ -51,6 +53,31 @@ grow_vertical = 2
 toggle_mode = true
 text = "Play"
 
+[node name="LastFrameButton" type="Button" parent="PlaybackPanel" unique_id=221658795]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 64.0
+offset_right = 192.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Last Frame"
+
+[node name="FirstFrameButton" type="Button" parent="PlaybackPanel" unique_id=606162592]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -192.0
+offset_right = -64.0
+grow_horizontal = 2
+grow_vertical = 2
+toggle_mode = true
+text = "First Frame"
+
 [node name="CurrentFrame" type="SpinBox" parent="PlaybackPanel" unique_id=1577850282]
 layout_mode = 1
 anchors_preset = -1
@@ -75,7 +102,8 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -44.0
+offset_left = -132.0
+offset_bottom = -32.0
 grow_horizontal = 0
 grow_vertical = 2
 text = "Onion Skin"
@@ -88,6 +116,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -248.0
 offset_right = -161.5
+offset_bottom = -32.0
 grow_horizontal = 0
 grow_vertical = 2
 min_value = 1.0
@@ -95,6 +124,57 @@ max_value = 600.0
 value = 33.0
 rounded = true
 suffix = "ms"
+
+[node name="DuplicateFrameButton" type="Button" parent="PlaybackPanel" unique_id=1768115367]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -296.0
+offset_top = 32.0
+offset_right = -152.0
+grow_horizontal = 0
+grow_vertical = 2
+text = "Duplicate Frame"
+
+[node name="MoveFrameRightButton" type="Button" parent="PlaybackPanel" unique_id=1650776147]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -408.0
+offset_top = 32.0
+offset_right = -304.0
+grow_horizontal = 0
+grow_vertical = 2
+text = "Move Right"
+
+[node name="MoveFrameLeftButton" type="Button" parent="PlaybackPanel" unique_id=1369569173]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -520.0
+offset_top = 32.0
+offset_right = -416.0
+grow_horizontal = 0
+grow_vertical = 2
+text = "Move Left"
+
+[node name="NewFrameButton" type="Button" parent="PlaybackPanel" unique_id=667664672]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -144.0
+offset_top = 32.0
+grow_horizontal = 0
+grow_vertical = 2
+text = "New Frame"
 
 [node name="FramesPanel" type="Panel" parent="." unique_id=1783542036]
 layout_mode = 1
@@ -110,20 +190,22 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = 40.0
 grow_horizontal = 2
 grow_vertical = 2
+vertical_scroll_mode = 0
 
-[node name="Playhead" type="Node2D" parent="FramesPanel/ScrollContainer" unique_id=1758445357]
-
-[node name="TextureRect" type="TextureRect" parent="FramesPanel/ScrollContainer/Playhead" unique_id=492421025]
-offset_right = 40.0
-offset_bottom = 40.0
-texture = ExtResource("1_axup8")
-
-[node name="Line2D" type="Line2D" parent="FramesPanel/ScrollContainer/Playhead" unique_id=1874348204]
-points = PackedVector2Array(0, 0, 0, 640)
-
-[node name="HBoxContainer" type="HBoxContainer" parent="FramesPanel/ScrollContainer" unique_id=1593764416]
+[node name="Frames" type="HBoxContainer" parent="FramesPanel/ScrollContainer" unique_id=1593764416]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+
+[node name="Playhead" type="Node2D" parent="FramesPanel" unique_id=1758445357]
+
+[node name="GrabPoint" type="TextureRect" parent="FramesPanel/Playhead" unique_id=492421025]
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("2_sgg8o")
+
+[node name="Line2D" type="Line2D" parent="FramesPanel/Playhead" unique_id=1874348204]
+points = PackedVector2Array(0, 0, 0, 640)

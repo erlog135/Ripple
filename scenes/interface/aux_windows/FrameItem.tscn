@@ -1,19 +1,25 @@
 [gd_scene format=3 uid="uid://lkjmvossobbc"]
 
 [ext_resource type="Texture2D" uid="uid://c7gvigdx18sgl" path="res://assets/icons/transparent.png" id="1_iovx0"]
+[ext_resource type="Script" uid="uid://c1ww81tpn8cey" path="res://scenes/interface/aux_windows/frame_item.gd" id="1_vule5"]
 
 [node name="FrameItem" type="Control" unique_id=324150636]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 64.0
 offset_bottom = 64.0
+script = ExtResource("1_vule5")
 
 [node name="Panel" type="Panel" parent="." unique_id=1865049266]
-layout_mode = 0
-offset_right = 64.0
-offset_bottom = 64.0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="TextureRect" type="TextureRect" parent="Panel" unique_id=950037640]
+mouse_filter = 1
 layout_mode = 0
 offset_left = 8.0
 offset_top = 8.0
@@ -27,9 +33,27 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -4.0
 offset_top = 8.0
 offset_right = 4.0
 offset_bottom = -8.0
 grow_horizontal = 0
 grow_vertical = 2
 mouse_default_cursor_shape = 10
+
+[node name="InsertionIndicator" type="ColorRect" parent="Panel" unique_id=1545391215]
+mouse_filter = 1
+visible = false
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 64.0
+
+[node name="SelectorRect" type="ReferenceRect" parent="Panel" unique_id=1276409836]
+mouse_filter = 1
+visible = false
+layout_mode = 0
+offset_right = 64.0
+offset_bottom = 64.0
+border_color = Color(1, 1, 1, 1)
+border_width = 2.0
+editor_only = false

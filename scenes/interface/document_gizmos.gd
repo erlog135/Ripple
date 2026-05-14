@@ -19,6 +19,7 @@ var _drag_selection_active := false
 
 func _ready() -> void:
 	ProjectData.data_changed.connect(_on_data_changed)
+	EditorState.current_frame_changed.connect(_on_current_frame_changed)
 	EditorState.zoom_changed.connect(_on_zoom_changed)
 	EditorState.selection_changed.connect(_on_selection_changed)
 	EditorState.tool_changed.connect(_on_tool_changed)
@@ -27,6 +28,11 @@ func _ready() -> void:
 
 func _on_data_changed(_by_user: bool) -> void:
 	queue_redraw()
+
+
+func _on_current_frame_changed(_frame: int) -> void:
+	queue_redraw()
+
 
 func _on_zoom_changed(_screen_pos: Vector2, _factor: float) -> void:
 	queue_redraw()
@@ -44,6 +50,8 @@ func _on_line_pen_hover_changed() -> void:
 	queue_redraw()
 
 func _draw() -> void:
+	if EditorState.is_playing:
+		return
 	if EditorState.current_zoom >= 10.0:
 		_draw_pixel_grid()
 	_draw_skeletons()

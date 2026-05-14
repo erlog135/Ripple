@@ -25,12 +25,25 @@ func _ready() -> void:
 	tree.button_clicked.connect(_on_tree_button_clicked)
 
 	ProjectData.data_changed.connect(_on_data_changed)
+	EditorState.current_frame_changed.connect(_on_current_frame_changed)
+	EditorState.playback_state_changed.connect(_on_playback_state_changed)
 	EditorState.selection_changed.connect(_on_editor_selection_changed)
 	_rebuild_tree()
 
 
 func _on_data_changed(_by_user: bool) -> void:
 	_rebuild_tree()
+
+
+func _on_current_frame_changed(_frame: int) -> void:
+	if EditorState.is_playing:
+		return
+	_rebuild_tree()
+
+
+func _on_playback_state_changed(playing: bool) -> void:
+	if not playing:
+		_rebuild_tree()
 
 
 func _rebuild_tree() -> void:
@@ -180,8 +193,6 @@ func _on_tree_empty_clicked(_position: Vector2, _mouse_button_index: int) -> voi
 
 
 func _on_editor_selection_changed(_by_user: bool) -> void:
-	if not _by_user:
-		return
 	_sync_tree_selection_from_editor_state()
 
 

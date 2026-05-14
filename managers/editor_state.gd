@@ -11,7 +11,9 @@ signal pan_changed(screen_offset: Vector2)
 signal drag_updated(offset: Vector2, dragging: bool)
 
 signal current_frame_changed(frame: int)
+signal timeline_zoom_changed
 signal line_pen_hover_changed()
+signal playback_state_changed(playing: bool)
 
 const ZOOM_STEP := 0.1
 const MIN_ZOOM  := 0.2
@@ -28,6 +30,17 @@ enum Tool {
 
 var active_tool: Tool = Tool.SELECT
 var current_frame: int = 0
+## Timeline strip horizontal scale (pixels per ms).
+var timeline_zoom: float = 1.0
+## Multiplier for animator playback (not the canvas zoom).
+var playback_speed: float = 1.0
+## True while the AnimatorWindow is playing back; gizmo layers should skip drawing while this is set.
+var is_playing: bool = false:
+	set(value):
+		if is_playing == value:
+			return
+		is_playing = value
+		playback_state_changed.emit(is_playing)
 var current_zoom: float = 1.0
 var current_pan: Vector2 = Vector2.ZERO
 var current_camera_pos: Vector2 = Vector2.ZERO
@@ -78,6 +91,76 @@ func snap_world_position(world_pos: Vector2, draw_type: DrawCommand.Type, stroke
 	if draw_type == DrawCommand.Type.PRECISE_PATH:
 		return (p - Vector2(0.5, 0.5)).snapped(Vector2(0.125, 0.125)) + Vector2(0.5, 0.5)
 	return Vector2(roundi(p.x), roundi(p.y))
+
+
+func set_current_frame(frame: int) -> void:
+	if ProjectData.current_sequence != null:
+		var n: int = ProjectData.current_sequence.frames.size()
+		if n > 0:
+			frame = clampi(frame, 0, n - 1)
+		else:
+			frame = 0
+	current_frame = frame
+	_validate_selection_for_new_frame()
+	current_frame_changed.emit(current_frame)
+
+
+## Clears all selected commands and points, then emits selection_changed.
+func clear_selection() -> void:
+	selected_command_indices.clear()
+	selected_point_indices.clear()
+	selection_changed.emit(false)
+
+
+## Called whenever current_frame changes. Attempts to keep the existing selection
+## valid on the new frame. Out-of-bounds command indices are dropped entirely;
+## out-of-bounds point indices are pruned (the shape stays selected). Emits
+## selection_changed once at the end so gizmos/properties panels can redraw.
+func _validate_selection_for_new_frame() -> void:
+	if selected_command_indices.is_empty():
+		return
+
+	var commands := ProjectData.get_current_commands()
+	var cmd_count := commands.size()
+
+	# Drop any command indices that no longer exist on this frame.
+	var valid_cmd_indices: Array[int] = []
+	for cmd_idx: int in selected_command_indices:
+		if cmd_idx < cmd_count:
+			valid_cmd_indices.append(cmd_idx)
+	selected_command_indices = valid_cmd_indices
+
+	if selected_command_indices.is_empty():
+		selected_point_indices.clear()
+		selection_changed.emit(false)
+		return
+
+	# Prune the point-selection dictionary: remove entries whose command was
+	# dropped, and trim individual point indices that are now out of bounds.
+	var stale_keys: Array = []
+	for cmd_idx in selected_point_indices.keys():
+		if cmd_idx not in selected_command_indices:
+			stale_keys.append(cmd_idx)
+			continue
+		var cmd: DrawCommand = commands[cmd_idx]
+		var pts: Array = selected_point_indices[cmd_idx]
+		var valid_pts: Array = []
+		for pt_idx: int in pts:
+			if pt_idx < cmd.points.size():
+				valid_pts.append(pt_idx)
+		if valid_pts.is_empty():
+			stale_keys.append(cmd_idx)
+		else:
+			selected_point_indices[cmd_idx] = valid_pts
+	for key in stale_keys:
+		selected_point_indices.erase(key)
+
+	selection_changed.emit(false)
+
+
+func set_timeline_zoom(zoom: float) -> void:
+	timeline_zoom = clampf(zoom, 0.1, 10.0)
+	timeline_zoom_changed.emit()
 
 
 func change_tool(tool: Tool) -> void:
