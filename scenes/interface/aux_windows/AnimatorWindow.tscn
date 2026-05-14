@@ -203,9 +203,11 @@ size_flags_vertical = 3
 [node name="Playhead" type="Node2D" parent="FramesPanel" unique_id=1758445357]
 
 [node name="GrabPoint" type="TextureRect" parent="FramesPanel/Playhead" unique_id=492421025]
-offset_right = 40.0
-offset_bottom = 40.0
+offset_right = 32.0
+offset_bottom = 32.0
 texture = ExtResource("2_sgg8o")
+expand_mode = 1
 
 [node name="Line2D" type="Line2D" parent="FramesPanel/Playhead" unique_id=1874348204]
 points = PackedVector2Array(0, 0, 0, 640)
+width = 4.0
