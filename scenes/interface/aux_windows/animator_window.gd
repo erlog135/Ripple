@@ -163,6 +163,10 @@ func _set_playing(playing: bool) -> void:
 	_sync_process_state()
 	if _playing:
 		_playback_timer = 0.0
+		var seq := ProjectData.current_sequence
+		if seq != null and not seq.frames.is_empty() and not loop_toggle.button_pressed:
+			if EditorState.current_frame >= seq.frames.size() - 1:
+				EditorState.set_current_frame(0)
 	if play_button.button_pressed != playing:
 		play_button.set_pressed_no_signal(playing)
 

@@ -144,12 +144,12 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -408.0
+offset_left = -336.0
 offset_top = 32.0
 offset_right = -304.0
 grow_horizontal = 0
 grow_vertical = 2
-text = "Move Right"
+text = "➡️"
 
 [node name="MoveFrameLeftButton" type="Button" parent="PlaybackPanel" unique_id=1369569173]
 layout_mode = 1
@@ -157,12 +157,12 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -520.0
+offset_left = -376.0
 offset_top = 32.0
-offset_right = -416.0
+offset_right = -344.0
 grow_horizontal = 0
 grow_vertical = 2
-text = "Move Left"
+text = "⬅️"
 
 [node name="NewFrameButton" type="Button" parent="PlaybackPanel" unique_id=667664672]
 layout_mode = 1

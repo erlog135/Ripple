@@ -39,6 +39,7 @@ script = ExtResource("1_13olm")
 script = ExtResource("3_h8p71")
 
 [node name="Line2D2" type="Line2D" parent="DocumentLayer/SubViewport/Document" unique_id=1003032040]
+visible = false
 points = PackedVector2Array(0, 16, 0, -16, 8, 0, -8, 0)
 width = 2.0
 joint_mode = 2
@@ -76,7 +77,7 @@ horizontal_alignment = 1
 
 [node name="FileSize" type="Label" parent="HUDLayer/InfoLabels" unique_id=2120023147]
 layout_mode = 2
-text = "File: 250 bytes"
+text = "File size: ???"
 horizontal_alignment = 1
 
 [node name="CursorPosition" type="Label" parent="HUDLayer/InfoLabels" unique_id=973851150]
