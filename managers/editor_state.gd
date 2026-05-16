@@ -14,6 +14,7 @@ signal current_frame_changed(frame: int)
 signal timeline_zoom_changed
 signal line_pen_hover_changed()
 signal playback_state_changed(playing: bool)
+signal render_mode_changed(mode: RenderMode)
 
 const ZOOM_STEP := 0.1
 const MIN_ZOOM  := 0.2
@@ -28,7 +29,10 @@ enum Tool {
 	PAN
 }
 
+enum RenderMode { VECTOR, RASTER }
+
 var active_tool: Tool = Tool.SELECT
+var render_mode: RenderMode = RenderMode.VECTOR
 var current_frame: int = 0
 ## Timeline strip horizontal scale (pixels per ms).
 var timeline_zoom: float = 1.0
@@ -166,6 +170,12 @@ func set_timeline_zoom(zoom: float) -> void:
 func change_tool(tool: Tool) -> void:
 	active_tool = tool
 	tool_changed.emit(tool)
+
+func set_render_mode(mode: RenderMode) -> void:
+	if render_mode == mode:
+		return
+	render_mode = mode
+	render_mode_changed.emit(render_mode)
 
 func zoom_in(screen_pos: Vector2) -> void:
 	var factor := 1.0 + ZOOM_STEP

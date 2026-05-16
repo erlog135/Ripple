@@ -12,14 +12,14 @@ var edit_items = [
 	{"Deselect": EditorState.deselect_all}
 ]
 
-# Called when the node enters the scene tree for the first time.
+var view_items = [
+	{"Vector Mode": func(): EditorState.set_render_mode(EditorState.RenderMode.VECTOR)},
+	{"Raster Preview": func(): EditorState.set_render_mode(EditorState.RenderMode.RASTER)},
+]
+
 func _ready() -> void:
 	populate_menus()
-	
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
 
 # Helper to setup a popup with items and functions
 func populate_popup_with_items(popup: PopupMenu, items: Array) -> void:
@@ -36,3 +36,4 @@ func populate_popup_with_items(popup: PopupMenu, items: Array) -> void:
 func populate_menus() -> void:
 	populate_popup_with_items($HBoxContainer/File.get_popup(), file_items)
 	populate_popup_with_items($HBoxContainer/Edit.get_popup(), edit_items)
+	populate_popup_with_items($HBoxContainer/View.get_popup(), view_items)

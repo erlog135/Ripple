@@ -24,3 +24,8 @@ switch_on_hover = true
 layout_mode = 2
 text = "EDIT"
 switch_on_hover = true
+
+[node name="View" type="MenuButton" parent="HBoxContainer" unique_id=3847291056]
+layout_mode = 2
+text = "VIEW"
+switch_on_hover = true

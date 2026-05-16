@@ -177,13 +177,18 @@ func _on_new_frame_pressed() -> void:
 		return
 	var insert_at := mini(EditorState.current_frame + 1, seq.frames.size())
 	HistoryManager.commit(AddFrameAction.new(insert_at))
+	EditorState.set_current_frame(insert_at)
 
 
 func _on_duplicate_frame_pressed() -> void:
 	var seq := ProjectData.current_sequence
 	if seq == null or seq.frames.is_empty():
 		return
-	HistoryManager.commit(DuplicateFrameAction.new(EditorState.current_frame))
+	var src := EditorState.current_frame
+	if src < 0 or src >= seq.frames.size():
+		return
+	HistoryManager.commit(DuplicateFrameAction.new(src))
+	EditorState.set_current_frame(src + 1)
 
 
 func _on_first_frame_pressed() -> void:

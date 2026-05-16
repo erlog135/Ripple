@@ -1,15 +1,26 @@
 extends Node2D
 
 var _vector_canvas: Node2D
+var _raster_sprite: Sprite2D
 
 func _ready() -> void:
 	_vector_canvas = Node2D.new()
 	_vector_canvas.name = "VectorCanvas"
 	add_child(_vector_canvas)
 
+	_raster_sprite = Sprite2D.new()
+	_raster_sprite.name = "RasterSprite"
+	_raster_sprite.centered = false
+	_raster_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	add_child(_raster_sprite)
+
+	_apply_render_mode()
+
 	ProjectData.data_changed.connect(_on_data_changed)
 	EditorState.current_frame_changed.connect(_on_current_frame_changed)
 	EditorState.drag_updated.connect(_on_drag_updated)
+	EditorState.render_mode_changed.connect(_on_render_mode_changed)
+	RenderManager.preview_updated.connect(_on_preview_updated)
 	_render_current_image()
 
 func _on_data_changed(_by_user: bool) -> void:
@@ -21,7 +32,27 @@ func _on_current_frame_changed(_frame: int) -> void:
 func _on_drag_updated(_offset: Vector2, _dragging: bool) -> void:
 	_render_current_image()
 
+func _on_render_mode_changed(_mode: EditorState.RenderMode) -> void:
+	_apply_render_mode()
+	_render_current_image()
+
+func _on_preview_updated() -> void:
+	if EditorState.render_mode == EditorState.RenderMode.RASTER:
+		_render_raster()
+
+func _apply_render_mode() -> void:
+	var is_raster := EditorState.render_mode == EditorState.RenderMode.RASTER
+	_vector_canvas.visible = not is_raster
+	_raster_sprite.visible = is_raster
+
 func _render_current_image() -> void:
+	match EditorState.render_mode:
+		EditorState.RenderMode.VECTOR:
+			_render_vector()
+		EditorState.RenderMode.RASTER:
+			_render_raster()
+
+func _render_vector() -> void:
 	for child in _vector_canvas.get_children():
 		child.queue_free()
 
@@ -31,6 +62,9 @@ func _render_current_image() -> void:
 
 	for cmd_idx in range(image.commands.size()):
 		_draw_command(image.commands[cmd_idx], cmd_idx)
+
+func _render_raster() -> void:
+	_raster_sprite.texture = RenderManager.get_frame_texture(EditorState.current_frame)
 
 func _draw_command(cmd: DrawCommand, cmd_idx: int) -> void:
 	if cmd.hidden:

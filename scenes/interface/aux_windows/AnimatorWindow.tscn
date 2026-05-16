@@ -131,12 +131,12 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -296.0
+offset_left = -136.0
 offset_top = 32.0
-offset_right = -152.0
+offset_right = -72.0
 grow_horizontal = 0
 grow_vertical = 2
-text = "Duplicate Frame"
+text = "Dupe"
 
 [node name="MoveFrameRightButton" type="Button" parent="PlaybackPanel" unique_id=1650776147]
 layout_mode = 1
@@ -144,12 +144,12 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -336.0
+offset_left = -176.0
 offset_top = 32.0
-offset_right = -304.0
+offset_right = -144.0
 grow_horizontal = 0
 grow_vertical = 2
-text = "➡️"
+text = ">"
 
 [node name="MoveFrameLeftButton" type="Button" parent="PlaybackPanel" unique_id=1369569173]
 layout_mode = 1
@@ -157,12 +157,12 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -376.0
+offset_left = -216.0
 offset_top = 32.0
-offset_right = -344.0
+offset_right = -184.0
 grow_horizontal = 0
 grow_vertical = 2
-text = "⬅️"
+text = "<"
 
 [node name="NewFrameButton" type="Button" parent="PlaybackPanel" unique_id=667664672]
 layout_mode = 1
@@ -170,11 +170,11 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -144.0
+offset_left = -64.0
 offset_top = 32.0
 grow_horizontal = 0
 grow_vertical = 2
-text = "New Frame"
+text = "New"
 
 [node name="FramesPanel" type="Panel" parent="." unique_id=1783542036]
 layout_mode = 1
@@ -203,8 +203,8 @@ size_flags_vertical = 3
 [node name="Playhead" type="Node2D" parent="FramesPanel" unique_id=1758445357]
 
 [node name="GrabPoint" type="TextureRect" parent="FramesPanel/Playhead" unique_id=492421025]
-offset_right = 32.0
-offset_bottom = 32.0
+offset_right = 24.0
+offset_bottom = 24.0
 texture = ExtResource("2_sgg8o")
 expand_mode = 1
 
