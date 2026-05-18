@@ -1,39 +1,42 @@
-extends MenuBar
+extends Control
 
-var file_items = [
-	{"New": Fileman.open_file_dialog}
+const DROPDOWN_SCENE := preload("res://scenes/interface/menus/MenuDropdown.tscn")
 
-]
+@onready var _buttons_row: HBoxContainer = $HBoxContainer
 
-var edit_items = [
-	{"Undo": HistoryManager.undo},
-	{"Redo": HistoryManager.redo},
-	{"Select All": EditorState.select_all},
-	{"Deselect": EditorState.deselect_all}
-]
+var _dropdown: PopupPanel
+var _open_category: String = ""
 
-var view_items = [
-	{"Vector Mode": func(): EditorState.set_render_mode(EditorState.RenderMode.VECTOR)},
-	{"Raster Preview": func(): EditorState.set_render_mode(EditorState.RenderMode.RASTER)},
-]
 
 func _ready() -> void:
-	populate_menus()
+	_dropdown = DROPDOWN_SCENE.instantiate()
+	add_child(_dropdown)
+	_dropdown.closed.connect(_on_dropdown_closed)
+	_build_category_buttons()
 
 
-# Helper to setup a popup with items and functions
-func populate_popup_with_items(popup: PopupMenu, items: Array) -> void:
-	var functions: Array[Callable] = []
-	var current_id := 0
-	for item in items:
-		if not item.keys().size():
-			continue
-		popup.add_item(item.keys().front(), current_id)
-		functions.append(item.values().front())
-		current_id += 1
-	popup.id_pressed.connect(func(id: int): functions[id].call())
+func _build_category_buttons() -> void:
+	for child: Node in _buttons_row.get_children():
+		child.queue_free()
 
-func populate_menus() -> void:
-	populate_popup_with_items($HBoxContainer/File.get_popup(), file_items)
-	populate_popup_with_items($HBoxContainer/Edit.get_popup(), edit_items)
-	populate_popup_with_items($HBoxContainer/View.get_popup(), view_items)
+	for category: String in MenuSchema.menu_data.keys():
+		var button := MenuCategoryButton.new()
+		button.category_name = category
+		button.text = category.to_upper()
+		button.menu_requested.connect(_on_category_requested.bind(category, button))
+		_buttons_row.add_child(button)
+
+
+func _on_category_requested(category: String, button: Button) -> void:
+	if _dropdown.visible and _open_category == category:
+		_dropdown.hide()
+		return
+
+	var items: Array = MenuSchema.menu_data.get(category, [])
+	_dropdown.populate(items)
+	_dropdown.open_below(button)
+	_open_category = category
+
+
+func _on_dropdown_closed() -> void:
+	_open_category = ""
