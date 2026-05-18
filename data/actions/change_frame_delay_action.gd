@@ -20,7 +20,7 @@ func do_action() -> void:
 	if _frame_index < 0 or _frame_index >= sequence.frame_durations_ms.size():
 		return
 	sequence.frame_durations_ms[_frame_index] = _new_delay_ms
-	ProjectData.data_changed.emit(false)
+	ProjectData.data_changed.emit(false, -1)
 
 
 func undo_action() -> void:
@@ -30,4 +30,4 @@ func undo_action() -> void:
 	if _frame_index < 0 or _frame_index >= sequence.frame_durations_ms.size():
 		return
 	sequence.frame_durations_ms[_frame_index] = _old_delay_ms
-	ProjectData.data_changed.emit(false)
+	ProjectData.data_changed.emit(false, -1)

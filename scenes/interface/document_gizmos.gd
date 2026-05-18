@@ -26,7 +26,7 @@ func _ready() -> void:
 	EditorState.drag_updated.connect(_on_drag_updated)
 	EditorState.line_pen_hover_changed.connect(_on_line_pen_hover_changed)
 
-func _on_data_changed(_by_user: bool) -> void:
+func _on_data_changed(_by_user: bool, _affected_frame: int) -> void:
 	queue_redraw()
 
 

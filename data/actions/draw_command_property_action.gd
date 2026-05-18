@@ -53,7 +53,7 @@ func do_action() -> void:
 		var idx := _command_indices[i]
 		var cmd: DrawCommand = frame.commands[idx]
 		cmd.set(_property, _new_value_at(i))
-	ProjectData.data_changed.emit(false)
+	ProjectData.data_changed.emit(false, _frame_index)
 
 
 func undo_action() -> void:
@@ -65,4 +65,4 @@ func undo_action() -> void:
 		var idx := _command_indices[i]
 		var cmd: DrawCommand = frame.commands[idx]
 		cmd.set(_property, _old_values[i])
-	ProjectData.data_changed.emit(false)
+	ProjectData.data_changed.emit(false, _frame_index)

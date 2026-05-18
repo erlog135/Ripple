@@ -19,7 +19,7 @@ func _on_mouse_position_changed(screen_pos: Vector2) -> void:
 	var pos : Vector2 = EditorState.current_camera_pos + (screen_pos - canvas_center) / EditorState.current_zoom
 	cursor_position.text = "Cursor pos: %d, %d" % [pos.x, pos.y]
 
-func _on_data_changed(_by_user: bool) -> void:
+func _on_data_changed(_by_user: bool, _affected_frame: int) -> void:
 	var current_image: DrawCommandImage = ProjectData.get_current_image()
 	if current_image == null:
 		return

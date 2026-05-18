@@ -21,7 +21,7 @@ func do_action() -> void:
 	sequence.frames.insert(_insert_index, copy)
 	var dur := int(sequence.frame_durations_ms[_source_index])
 	sequence.frame_durations_ms.insert(_insert_index, dur)
-	ProjectData.data_changed.emit(false)
+	ProjectData.data_changed.emit(false, -1)
 
 
 func undo_action() -> void:
@@ -32,7 +32,7 @@ func undo_action() -> void:
 		return
 	sequence.frames.remove_at(_insert_index)
 	sequence.frame_durations_ms.remove_at(_insert_index)
-	ProjectData.data_changed.emit(false)
+	ProjectData.data_changed.emit(false, -1)
 
 
 func _copy_image(source: DrawCommandImage) -> DrawCommandImage:

@@ -143,7 +143,7 @@ func do_action() -> void:
 			var c: DrawCommand = frame.commands[_close_command_index]
 			c.path_open = false
 
-	ProjectData.data_changed.emit(false)
+	ProjectData.data_changed.emit(false, _frame_index)
 	EditorState.selection_changed.emit(false)
 
 
@@ -174,7 +174,7 @@ func undo_action() -> void:
 	for k in _prev_selected_point_indices:
 		EditorState.selected_point_indices[k] = (_prev_selected_point_indices[k] as Array).duplicate()
 
-	ProjectData.data_changed.emit(false)
+	ProjectData.data_changed.emit(false, _frame_index)
 	EditorState.selection_changed.emit(false)
 
 

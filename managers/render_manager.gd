@@ -11,11 +11,17 @@ var _rasterizer := Rasterizer.new()
 func _ready() -> void:
 	ProjectData.data_changed.connect(_on_data_changed)
 
-func _on_data_changed(_by_user: bool) -> void:
-	# Only the active frame could have changed, so only its cache entry is stale.
-	var img := ProjectData.get_current_image()
-	if img:
-		_frame_cache.erase(img.get_instance_id())
+func _on_data_changed(_by_user: bool, affected_frame: int) -> void:
+	# Use the explicitly reported frame index when available so that undo/redo
+	# operations on non-active frames correctly drop their stale cache entries.
+	# When affected_frame is -1 (structural changes), fall back to current frame.
+	var seq := ProjectData.current_sequence
+	if affected_frame >= 0 and seq != null and affected_frame < seq.frames.size():
+		_frame_cache.erase(seq.frames[affected_frame].get_instance_id())
+	else:
+		var img := ProjectData.get_current_image()
+		if img:
+			_frame_cache.erase(img.get_instance_id())
 	preview_updated.emit()
 
 ## Returns a cached ImageTexture for the given frame index, rendering it on first request.

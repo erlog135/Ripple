@@ -20,7 +20,7 @@ func do_action() -> void:
 	var effective_to := _effective_insert_index(frame.commands.size(), _to_index)
 	_move_command(frame.commands, _from_index, _to_index)
 	_remap_editor_selection(_from_index, effective_to)
-	ProjectData.data_changed.emit(false)
+	ProjectData.data_changed.emit(false, _frame_index)
 
 
 func undo_action() -> void:
@@ -30,7 +30,7 @@ func undo_action() -> void:
 	var effective_from := _effective_insert_index(frame.commands.size(), _from_index)
 	_move_command(frame.commands, _to_index, _from_index)
 	_remap_editor_selection(effective_from, _from_index)
-	ProjectData.data_changed.emit(false)
+	ProjectData.data_changed.emit(false, _frame_index)
 
 
 func _get_frame() -> DrawCommandImage:

@@ -16,7 +16,7 @@ func do_action() -> void:
 	_prev_current_frame = EditorState.current_frame
 	_apply_move(_from_index, _insert_index)
 	EditorState.set_current_frame(_remap_frame_index(_prev_current_frame, _from_index, _insert_index))
-	ProjectData.data_changed.emit(false)
+	ProjectData.data_changed.emit(false, -1)
 
 
 func undo_action() -> void:
@@ -24,7 +24,7 @@ func undo_action() -> void:
 	# Reverse: remove at _insert_index, insert at _from_index.
 	_apply_move(_insert_index, _from_index)
 	EditorState.set_current_frame(_prev_current_frame)
-	ProjectData.data_changed.emit(false)
+	ProjectData.data_changed.emit(false, -1)
 
 
 func _apply_move(from_idx: int, insert_at: int) -> void:

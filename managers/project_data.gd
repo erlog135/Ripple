@@ -1,12 +1,12 @@
 extends Node
 
-signal data_changed(by_user: bool)
+signal data_changed(by_user: bool, affected_frame: int)
 
 var current_sequence: DrawCommandSequence
 
 func set_current_sequence(sequence: DrawCommandSequence):
 	current_sequence = sequence
-	data_changed.emit(true)
+	data_changed.emit(true, -1)
 
 func get_current_image() -> DrawCommandImage:
 	if current_sequence == null:

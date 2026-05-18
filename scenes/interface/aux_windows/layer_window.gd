@@ -31,7 +31,7 @@ func _ready() -> void:
 	_rebuild_tree()
 
 
-func _on_data_changed(_by_user: bool) -> void:
+func _on_data_changed(_by_user: bool, _affected_frame: int) -> void:
 	_rebuild_tree()
 
 

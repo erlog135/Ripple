@@ -23,7 +23,7 @@ func _ready() -> void:
 	RenderManager.preview_updated.connect(_on_preview_updated)
 	_render_current_image()
 
-func _on_data_changed(_by_user: bool) -> void:
+func _on_data_changed(_by_user: bool, _affected_frame: int) -> void:
 	_render_current_image()
 
 func _on_current_frame_changed(_frame: int) -> void:

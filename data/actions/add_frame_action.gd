@@ -20,7 +20,7 @@ func do_action() -> void:
 	var image := _blank_image(sequence)
 	sequence.frames.insert(idx, image)
 	sequence.frame_durations_ms.insert(idx, DEFAULT_DURATION_MS)
-	ProjectData.data_changed.emit(false)
+	ProjectData.data_changed.emit(false, -1)
 
 
 func undo_action() -> void:
@@ -32,7 +32,7 @@ func undo_action() -> void:
 		return
 	sequence.frames.remove_at(idx)
 	sequence.frame_durations_ms.remove_at(idx)
-	ProjectData.data_changed.emit(false)
+	ProjectData.data_changed.emit(false, -1)
 
 
 func _blank_image(sequence: DrawCommandSequence) -> DrawCommandImage:

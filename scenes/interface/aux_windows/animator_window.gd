@@ -129,7 +129,7 @@ func _on_frames_panel_gui_input(event: InputEvent) -> void:
 			accept_event()
 
 
-func _on_project_data_changed(_by_user: bool) -> void:
+func _on_project_data_changed(_by_user: bool, _affected_frame: int) -> void:
 	_rebuild_timeline()
 
 
