@@ -337,7 +337,7 @@ func _rebuild_timeline() -> void:
 		item.resize_committed.connect(_on_frame_item_resize_committed)
 		item.reorder_requested.connect(_on_frame_item_reorder_requested)
 		frames_container.add_child(item)
-		item.setup(i, dur, null, EditorState.timeline_zoom, i == EditorState.current_frame)
+		item.setup(i, dur, RenderManager.get_frame_texture(i), EditorState.timeline_zoom, i == EditorState.current_frame)
 	_update_playhead_and_ui()
 
 

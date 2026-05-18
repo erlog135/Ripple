@@ -19,13 +19,14 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="TextureRect" type="TextureRect" parent="Panel" unique_id=950037640]
-mouse_filter = 1
 layout_mode = 0
 offset_left = 8.0
 offset_top = 8.0
 offset_right = 56.0
 offset_bottom = 56.0
 texture = ExtResource("1_iovx0")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="DragHandle" type="VSeparator" parent="Panel" unique_id=612211061]
 layout_mode = 1
@@ -42,18 +43,18 @@ grow_vertical = 2
 mouse_default_cursor_shape = 10
 
 [node name="InsertionIndicator" type="ColorRect" parent="Panel" unique_id=1545391215]
-mouse_filter = 1
 visible = false
 layout_mode = 0
 offset_right = 8.0
 offset_bottom = 64.0
+mouse_filter = 1
 
 [node name="SelectorRect" type="ReferenceRect" parent="Panel" unique_id=1276409836]
-mouse_filter = 1
 visible = false
 layout_mode = 0
 offset_right = 64.0
 offset_bottom = 64.0
+mouse_filter = 1
 border_color = Color(1, 1, 1, 1)
 border_width = 2.0
 editor_only = false
