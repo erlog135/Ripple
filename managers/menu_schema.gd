@@ -97,5 +97,37 @@ func _build_menu_data() -> Dictionary:
 				"type": "checkbox",
 				"label": "Snap to Grid",
 			},
+			{"type": "separator"},
+			{
+				"id": "view_zoom_in",
+				"type": "action",
+				"label": "Zoom In",
+				"shortcut": shortcut(KEY_EQUAL, true),
+			},
+			{
+				"id": "view_zoom_out",
+				"type": "action",
+				"label": "Zoom Out",
+				"shortcut": shortcut(KEY_MINUS, true),
+			},
+			{"type": "separator"},
+			{
+				"id": "view_zoom_actual",
+				"type": "action",
+				"label": "Actual Size",
+				"shortcut": shortcut(KEY_1, true),
+			},
+			{
+				"id": "view_zoom_document",
+				"type": "action",
+				"label": "Zoom to Fit",
+				"shortcut": shortcut(KEY_0, true),
+			},
+			{
+				"id": "view_zoom_selection",
+				"type": "action",
+				"label": "Zoom to Selection",
+				"shortcut": shortcut(KEY_0, true, true),
+			},
 		],
 	}

@@ -11,7 +11,13 @@ const PenToolScr = preload("res://scenes/interface/aux_windows/tools/line_pen_to
 
 
 func _ready() -> void:
+	EditorState.set_canvas_viewport_size(get_rect().size)
 	EditorState.tool_changed.connect(_on_tool_changed)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_RESIZED:
+		EditorState.set_canvas_viewport_size(get_rect().size)
 
 
 func _gui_input(event: InputEvent) -> void:

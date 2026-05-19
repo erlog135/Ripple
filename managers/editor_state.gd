@@ -8,6 +8,7 @@ signal options_changed
 signal mouse_position_changed(screen_pos: Vector2)
 signal zoom_changed(screen_pos: Vector2, zoom_factor: float)
 signal pan_changed(screen_offset: Vector2)
+signal view_changed
 signal drag_updated(offset: Vector2, dragging: bool)
 
 signal current_frame_changed(frame: int)
@@ -48,6 +49,8 @@ var is_playing: bool = false:
 var current_zoom: float = 1.0
 var current_pan: Vector2 = Vector2.ZERO
 var current_camera_pos: Vector2 = Vector2.ZERO
+## Size of the canvas input area (used for fit-to-document / fit-to-selection).
+var canvas_viewport_size: Vector2 = Vector2.ZERO
 var drag_offset: Vector2 = Vector2.ZERO
 var is_dragging_selection: bool = false
 
@@ -177,15 +180,89 @@ func set_render_mode(mode: RenderMode) -> void:
 	render_mode = mode
 	render_mode_changed.emit(render_mode)
 
+func set_canvas_viewport_size(size: Vector2) -> void:
+	if canvas_viewport_size == size:
+		return
+	canvas_viewport_size = size
+	update_canvas_area_rect(Rect2(Vector2.ZERO, size))
+
+
+func _update_view(new_pos: Vector2, new_zoom: float) -> void:
+	current_camera_pos = new_pos
+	current_zoom = clampf(new_zoom, MIN_ZOOM, MAX_ZOOM)
+	view_changed.emit()
+
+
 func zoom_in(screen_pos: Vector2) -> void:
 	var factor := 1.0 + ZOOM_STEP
 	current_zoom = clamp(current_zoom * factor, MIN_ZOOM, MAX_ZOOM)
 	zoom_changed.emit(screen_pos, factor)
 
+
 func zoom_out(screen_pos: Vector2) -> void:
 	var factor := 1.0 - ZOOM_STEP
 	current_zoom = clamp(current_zoom * factor, MIN_ZOOM, MAX_ZOOM)
 	zoom_changed.emit(screen_pos, factor)
+
+
+func zoom_in_centered() -> void:
+	_update_view(current_camera_pos, current_zoom * 1.25)
+
+
+func zoom_out_centered() -> void:
+	_update_view(current_camera_pos, current_zoom / 1.25)
+
+
+func zoom_actual_size() -> void:
+	var image := ProjectData.get_current_image()
+	var center := Vector2(image.bounds) / 2.0 if image != null else Vector2.ZERO
+	_update_view(center, 1.0)
+
+
+func zoom_to_document(viewport_size: Vector2) -> void:
+	var image := ProjectData.get_current_image()
+	if image == null or viewport_size == Vector2.ZERO:
+		return
+	var doc_size := Vector2(image.bounds)
+	if doc_size.x <= 0.0 or doc_size.y <= 0.0:
+		return
+	var padding := 0.9
+	var scale_x := viewport_size.x / doc_size.x
+	var scale_y := viewport_size.y / doc_size.y
+	var fit_scale := minf(scale_x, scale_y) * padding
+	_update_view(doc_size / 2.0, fit_scale)
+
+
+func zoom_to_selection(viewport_size: Vector2) -> void:
+	if selected_command_indices.is_empty() or viewport_size == Vector2.ZERO:
+		return
+	var commands := ProjectData.get_current_commands()
+	var selection_rect: Rect2
+	for i: int in range(selected_command_indices.size()):
+		var idx: int = selected_command_indices[i]
+		if idx < 0 or idx >= commands.size():
+			continue
+		var bounds: Rect2 = commands[idx].get_bounding_box()
+		if bounds.size == Vector2.ZERO:
+			continue
+		if selection_rect.size == Vector2.ZERO:
+			selection_rect = bounds
+		else:
+			selection_rect = selection_rect.merge(bounds)
+	if selection_rect.size == Vector2.ZERO:
+		return
+	selection_rect = selection_rect.grow(5.0)
+	var scale_x := viewport_size.x / selection_rect.size.x
+	var scale_y := viewport_size.y / selection_rect.size.y
+	var fit_scale := minf(scale_x, scale_y)
+	_update_view(selection_rect.get_center(), fit_scale)
+
+
+func fit_document_to_view() -> void:
+	if canvas_viewport_size == Vector2.ZERO:
+		call_deferred("fit_document_to_view")
+		return
+	zoom_to_document(canvas_viewport_size)
 
 func pan(screen_offset: Vector2) -> void:
 	current_pan += screen_offset

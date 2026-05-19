@@ -11,6 +11,7 @@ func _ready() -> void:
 	EditorState.mouse_position_changed.connect(_on_mouse_position_changed)
 	ProjectData.data_changed.connect(_on_data_changed)
 	EditorState.zoom_changed.connect(_on_zoom_changed)
+	EditorState.view_changed.connect(_on_view_changed)
 	EditorState.selection_changed.connect(_on_selection_changed)
 	EditorState.drag_updated.connect(_on_drag_updated)
 
@@ -26,8 +27,16 @@ func _on_data_changed(_by_user: bool, _affected_frame: int) -> void:
 	var current_frame_bounds := current_image.bounds
 	image_dimensions.text = "Image: %d x %d" % [current_frame_bounds.x, current_frame_bounds.y]
 
-func _on_zoom_changed(_screen_pos: Vector2, _factor: float):
-	zoom_level.text = "Zoom: %d%%" % int(EditorState.current_zoom*100.0)
+func _on_zoom_changed(_screen_pos: Vector2, _factor: float) -> void:
+	_update_zoom_label()
+
+
+func _on_view_changed() -> void:
+	_update_zoom_label()
+
+
+func _update_zoom_label() -> void:
+	zoom_level.text = "Zoom: %d%%" % int(EditorState.current_zoom * 100.0)
 
 func _on_selection_changed(_by_user: bool) -> void:
 	_update_selection_dimensions()

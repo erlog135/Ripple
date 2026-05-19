@@ -4,12 +4,12 @@ extends Camera2D
 func _ready() -> void:
 	EditorState.zoom_changed.connect(_on_zoom_changed)
 	EditorState.pan_changed.connect(_on_pan_changed)
-	Fileman.pdc_loaded.connect(_on_pdc_loaded)
+	EditorState.view_changed.connect(_on_view_changed)
 
 
-func _on_pdc_loaded(sequence: DrawCommandSequence) -> void:
-	position = Vector2(sequence.frames[0].bounds) / 2.0
-	EditorState.current_camera_pos = position
+func _on_view_changed() -> void:
+	position = EditorState.current_camera_pos
+	zoom = Vector2(EditorState.current_zoom, EditorState.current_zoom)
 
 
 func _on_zoom_changed(screen_pos: Vector2, zoom_factor: float) -> void:

@@ -27,6 +27,16 @@ func execute(action_id: String) -> void:
 		"view_grid_snap":
 			EditorState.grid_snap = not EditorState.grid_snap
 			menu_state_changed.emit()
+		"view_zoom_in":
+			EditorState.zoom_in_centered()
+		"view_zoom_out":
+			EditorState.zoom_out_centered()
+		"view_zoom_actual":
+			EditorState.zoom_actual_size()
+		"view_zoom_document":
+			EditorState.zoom_to_document(EditorState.canvas_viewport_size)
+		"view_zoom_selection":
+			EditorState.zoom_to_selection(EditorState.canvas_viewport_size)
 		_:
 			push_warning("MenuDispatcher: unknown action '%s'" % action_id)
 
