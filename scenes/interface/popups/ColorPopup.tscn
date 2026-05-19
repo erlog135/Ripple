@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://opfiwgeouvns"]
 
-[ext_resource type="Script" uid="uid://oasvn6ben807" path="res://scenes/interface/aux_windows/color_popup.gd" id="1_ld7i8"]
+[ext_resource type="Script" uid="uid://oasvn6ben807" path="res://scenes/interface/popups/color_popup.gd" id="1_ld7i8"]
 [ext_resource type="Texture2D" uid="uid://c7gvigdx18sgl" path="res://assets/icons/transparent.png" id="2_8sfd2"]
 
 [node name="ColorPopup" type="PopupPanel" unique_id=1818672886]

@@ -11,7 +11,6 @@ var stroke_popup: PopupPanel
 var _syncing := false
 
 func _ready() -> void:
-	call_deferred(&"_sync_current_from_editor_ui")
 	fill_popup = COLOR_POPUP.instantiate()
 	fill_rect.add_child(fill_popup)
 	fill_popup.color_selected.connect(_on_fill_color_selected)

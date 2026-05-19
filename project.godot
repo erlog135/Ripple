@@ -24,9 +24,9 @@ Fileman="*uid://g6ff4o7yrlds"
 UIManager="*uid://o2vslngr0bbm"
 ClipboardManager="*uid://40e3oifkfdw"
 HistoryManager="*uid://dexaqhg00kjjs"
+RenderManager="*res://managers/render_manager.gd"
 MenuSchema="*res://managers/menu_schema.gd"
 MenuDispatcher="*res://managers/menu_dispatcher.gd"
-RenderManager="*res://managers/render_manager.gd"
 
 [display]
 
