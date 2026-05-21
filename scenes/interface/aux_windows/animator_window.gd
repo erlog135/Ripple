@@ -6,6 +6,7 @@ extends Control
 @onready var play_button: Button = $PlaybackPanel/PlayButton
 @onready var first_frame_button: Button = $PlaybackPanel/FirstFrameButton
 
+@onready var delete_frame_button: Button = $PlaybackPanel/DeleteFrameButton
 @onready var new_frame_button: Button = $PlaybackPanel/NewFrameButton
 @onready var duplicate_frame_button: Button = $PlaybackPanel/DuplicateFrameButton
 @onready var current_frame_spin: SpinBox = $PlaybackPanel/CurrentFrame
@@ -37,6 +38,7 @@ func _ready() -> void:
 	last_frame_button.toggle_mode = false
 
 	play_button.toggled.connect(_on_play_toggled)
+	delete_frame_button.pressed.connect(_on_delete_frame_pressed)
 	new_frame_button.pressed.connect(_on_new_frame_pressed)
 	duplicate_frame_button.pressed.connect(_on_duplicate_frame_pressed)
 	first_frame_button.pressed.connect(_on_first_frame_pressed)
@@ -169,6 +171,18 @@ func _set_playing(playing: bool) -> void:
 				EditorState.set_current_frame(0)
 	if play_button.button_pressed != playing:
 		play_button.set_pressed_no_signal(playing)
+
+
+func _on_delete_frame_pressed() -> void:
+	var seq := ProjectData.current_sequence
+	if seq == null or seq.frames.size() <= 1:
+		return
+	var cf := EditorState.current_frame
+	if cf < 0 or cf >= seq.frames.size():
+		return
+	var target := maxi(0, cf - 1)
+	HistoryManager.commit(DeleteFrameAction.new(cf))
+	EditorState.set_current_frame(target)
 
 
 func _on_new_frame_pressed() -> void:
@@ -405,6 +419,7 @@ func _update_playhead_and_ui() -> void:
 		frame_duration.value = 33.0
 		_suppress_duration = false
 
+	delete_frame_button.disabled = n <= 1
 	move_frame_left_button.disabled = n < 2 or cf <= 0
 	move_frame_right_button.disabled = n < 2 or cf >= n - 1
 

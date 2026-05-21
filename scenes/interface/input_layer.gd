@@ -3,6 +3,7 @@ extends Control
 const SelectionTool = preload("res://scenes/interface/aux_windows/tools/selection_tool.gd")
 const MoveTool = preload("res://scenes/interface/aux_windows/tools/move_tool.gd")
 const PenToolScr = preload("res://scenes/interface/aux_windows/tools/line_pen_tool.gd")
+const DeletePointsActionScr = preload("res://data/actions/delete_points_action.gd")
 
 @onready var _gizmos = $"../DocumentLayer/SubViewport/DocumentGizmos"
 @onready var _selection_tool = SelectionTool.new()
@@ -63,6 +64,24 @@ func _gui_input(event: InputEvent) -> void:
 func _screen_to_world(screen_pos: Vector2) -> Vector2:
 	var canvas_center := get_rect().size / 2.0
 	return EditorState.current_camera_pos + (screen_pos - canvas_center) / EditorState.current_zoom
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_DELETE:
+			_delete_selected_points()
+
+
+func _delete_selected_points() -> void:
+	if EditorState.selected_point_indices.is_empty():
+		return
+	var action := DeletePointsActionScr.new(
+		EditorState.current_frame,
+		EditorState.selected_point_indices,
+		EditorState.selected_command_indices,
+		EditorState.selected_point_indices,
+	)
+	HistoryManager.commit(action)
+
 
 func _on_tool_changed(_tool: EditorState.Tool) -> void:
 	_selection_tool.cancel(_gizmos)

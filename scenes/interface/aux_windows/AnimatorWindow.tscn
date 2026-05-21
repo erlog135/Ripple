@@ -10,6 +10,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+focus_mode = 1
 script = ExtResource("1_sgg8o")
 
 [node name="PlaybackPanel" type="Panel" parent="." unique_id=1387252710]
@@ -175,6 +176,19 @@ offset_top = 32.0
 grow_horizontal = 0
 grow_vertical = 2
 text = "New"
+
+[node name="DeleteFrameButton" type="Button" parent="PlaybackPanel" unique_id=675091755]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -288.0
+offset_top = 32.0
+offset_right = -224.0
+grow_horizontal = 0
+grow_vertical = 2
+text = "Del"
 
 [node name="FramesPanel" type="Panel" parent="." unique_id=1783542036]
 layout_mode = 1
