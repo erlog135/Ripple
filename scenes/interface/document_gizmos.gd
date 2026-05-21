@@ -87,6 +87,12 @@ func _draw_skeletons() -> void:
 	var line_w := SKELLY_PATH_WIDTH_PX / EditorState.current_zoom
 	var pt_r := SKELLY_POINT_RADIUS_PX / EditorState.current_zoom
 	var show_only_selected := EditorState.active_tool != EditorState.Tool.SELECT
+	# For MOVE and LINE_PEN, show all points/segments within a selected command
+	# (non-selected ones render in the dimmed white/gray palette to provide context).
+	var show_full_cmd := (
+		EditorState.active_tool == EditorState.Tool.MOVE
+		or EditorState.active_tool == EditorState.Tool.LINE_PEN
+	)
 
 	for cmd_idx in range(frame.commands.size()):
 		var cmd: DrawCommand = frame.commands[cmd_idx]
@@ -95,44 +101,46 @@ func _draw_skeletons() -> void:
 		var sel_pts: Array = EditorState.selected_point_indices.get(cmd_idx, [])
 		if show_only_selected and sel_pts.is_empty():
 			continue
+		var effective_show_only := show_only_selected and not show_full_cmd
 		match cmd.draw_type:
 			DrawCommand.Type.PATH, DrawCommand.Type.PRECISE_PATH:
-				_draw_path_skeleton(cmd, cmd_idx, sel_pts, line_w, pt_r, show_only_selected)
+				_draw_path_skeleton(cmd, cmd_idx, sel_pts, line_w, pt_r, effective_show_only)
 			DrawCommand.Type.CIRCLE:
-				_draw_circle_skeleton(cmd, cmd_idx, sel_pts, line_w, pt_r, show_only_selected)
+				_draw_circle_skeleton(cmd, cmd_idx, sel_pts, line_w, pt_r, effective_show_only)
 
 
 func _draw_line_pen_preview() -> void:
 	if EditorState.active_tool != EditorState.Tool.LINE_PEN:
 		return
-	var frame: DrawCommandImage = ProjectData.get_current_image()
-	if frame == null:
-		return
-	var ctx: Dictionary = PenToolScr.line_pen_rubber_band_context(frame)
-	if ctx.is_empty():
-		return
-	var cmd_idx: int = ctx[&"cmd_idx"]
-	if cmd_idx < 0 or cmd_idx >= frame.commands.size():
-		return
-	var cmd: DrawCommand = frame.commands[cmd_idx]
-	var pts: Array = ctx[&"pts"]
 	var hover: Vector2 = EditorState.line_pen_hover_world
 	var line_w := SKELLY_PATH_WIDTH_PX / EditorState.current_zoom
-	if pts.size() == 1:
-		var pi: int = int(pts[0])
-		if pi < 0 or pi >= cmd.points.size():
-			return
-		var a := _point_with_drag_offset(cmd.points[pi], cmd_idx, pi)
-		draw_line(a, hover, LINE_PEN_PREVIEW_COLOR, line_w)
-	elif pts.size() == 2:
-		var ia := int(pts[0])
-		var ib := int(pts[1])
-		if ia < 0 or ia >= cmd.points.size() or ib < 0 or ib >= cmd.points.size():
-			return
-		var pa := _point_with_drag_offset(cmd.points[ia], cmd_idx, ia)
-		var pb := _point_with_drag_offset(cmd.points[ib], cmd_idx, ib)
-		draw_line(pa, hover, LINE_PEN_PREVIEW_COLOR, line_w)
-		draw_line(hover, pb, LINE_PEN_PREVIEW_COLOR, line_w)
+	var pt_r := SKELLY_POINT_RADIUS_PX / EditorState.current_zoom
+
+	var frame: DrawCommandImage = ProjectData.get_current_image()
+	if frame != null:
+		var ctx: Dictionary = PenToolScr.line_pen_rubber_band_context(frame)
+		if not ctx.is_empty():
+			var cmd_idx: int = ctx[&"cmd_idx"]
+			if cmd_idx >= 0 and cmd_idx < frame.commands.size():
+				var cmd: DrawCommand = frame.commands[cmd_idx]
+				var pts: Array = ctx[&"pts"]
+				if pts.size() == 1:
+					var pi: int = int(pts[0])
+					if pi >= 0 and pi < cmd.points.size():
+						var a := _point_with_drag_offset(cmd.points[pi], cmd_idx, pi)
+						draw_line(a, hover, LINE_PEN_PREVIEW_COLOR, line_w)
+				elif pts.size() == 2:
+					var ia := int(pts[0])
+					var ib := int(pts[1])
+					if ia >= 0 and ia < cmd.points.size() and ib >= 0 and ib < cmd.points.size():
+						var pa := _point_with_drag_offset(cmd.points[ia], cmd_idx, ia)
+						var pb := _point_with_drag_offset(cmd.points[ib], cmd_idx, ib)
+						draw_line(pa, hover, LINE_PEN_PREVIEW_COLOR, line_w)
+						draw_line(hover, pb, LINE_PEN_PREVIEW_COLOR, line_w)
+
+	# Preview dot shows where the next placed point will land.
+	# Visible even when starting a brand-new command (ctx is empty).
+	draw_circle(hover, pt_r, LINE_PEN_PREVIEW_COLOR)
 
 
 func _draw_path_skeleton(cmd: DrawCommand, cmd_idx: int, sel_pts: Array, line_w: float, pt_r: float, show_only_selected: bool) -> void:

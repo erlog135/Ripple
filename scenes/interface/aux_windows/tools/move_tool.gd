@@ -108,6 +108,8 @@ func _commit_drag(total_offset: Vector2) -> void:
 
 	var command_indices: Array[int] = []
 	var moved_points_arrays: Array = []
+	# Populated only for commands where at least one merge occurred.
+	var remapped_sel_pts: Dictionary = {}
 
 	for cmd_idx in EditorState.selected_command_indices:
 		if cmd_idx >= frame.commands.size():
@@ -122,10 +124,42 @@ func _commit_drag(total_offset: Vector2) -> void:
 			if pt_idx >= 0 and pt_idx < new_points.size():
 				new_points[pt_idx] += total_offset
 
+		# Merge any points that now share the same position.
+		var deduped := PackedVector2Array()
+		var pos_to_idx: Dictionary = {}
+		var old_to_new: Array = []
+		for i in range(new_points.size()):
+			var pos: Vector2 = new_points[i]
+			if pos_to_idx.has(pos):
+				old_to_new.append(-1)
+			else:
+				var new_idx: int = deduped.size()
+				pos_to_idx[pos] = new_idx
+				deduped.append(pos)
+				old_to_new.append(new_idx)
+
 		command_indices.append(cmd_idx)
-		moved_points_arrays.append(new_points)
+		moved_points_arrays.append(deduped)
+
+		if deduped.size() < new_points.size():
+			var new_sel: Array = []
+			for old_idx in selected_pts:
+				if old_idx < old_to_new.size():
+					var mapped: int = old_to_new[old_idx]
+					if mapped < 0:
+						# This point was absorbed into a lower-index point at the
+						# same position — select the survivor instead.
+						mapped = pos_to_idx[new_points[old_idx]]
+					if mapped not in new_sel:
+						new_sel.append(mapped)
+			remapped_sel_pts[cmd_idx] = new_sel
 
 	if command_indices.is_empty():
 		return
 
 	HistoryManager.commit(SetDrawCommandPointsAction.new(frame_idx, command_indices, moved_points_arrays))
+
+	if not remapped_sel_pts.is_empty():
+		for cmd_idx in remapped_sel_pts:
+			EditorState.selected_point_indices[cmd_idx] = remapped_sel_pts[cmd_idx]
+		EditorState.selection_changed.emit(false)
