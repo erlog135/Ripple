@@ -1,6 +1,8 @@
 extends Node
 
 signal pdc_loaded(pdc: DrawCommandSequence)
+signal file_loaded(size_bytes: int)
+signal file_saved(size_bytes: int)
 
 func _ready():
 	pdc_loaded.connect(func(pdc: DrawCommandSequence):
@@ -11,8 +13,14 @@ func _ready():
 func new_file():
 	print_debug("hi")
 
-func load_project(path):
-	pass
+func load_project(path: String) -> void:
+	pdc_to_gd(path)
+
+func save_file() -> void:
+	if ProjectData.current_path.is_empty():
+		save_as_file_dialog()
+	else:
+		gd_to_pdc(ProjectData.current_path, ProjectData.current_sequence)
 
 func open_file_dialog():
 	var file_dialog = FileDialog.new()
@@ -22,7 +30,20 @@ func open_file_dialog():
 	file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	file_dialog.access = FileDialog.ACCESS_FILESYSTEM
 	file_dialog.filters = ["*.pdc", "*.pdcs"]
+	file_dialog.use_native_dialog = true
 	
+	file_dialog.popup_centered()
+
+func save_as_file_dialog():
+	var file_dialog = FileDialog.new()
+	get_tree().root.add_child(file_dialog)
+	file_dialog.file_selected.connect(func(path: String): gd_to_pdc(path, ProjectData.current_sequence))
+
+	file_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
+	file_dialog.access = FileDialog.ACCESS_FILESYSTEM
+	file_dialog.filters = ["*.pdc", "*.pdcs"]
+	file_dialog.use_native_dialog = true
+
 	file_dialog.popup_centered()
 
 func pdc_to_gd(path: String) -> DrawCommandSequence:
@@ -47,6 +68,8 @@ func pdc_to_gd(path: String) -> DrawCommandSequence:
 		push_error("Unknown PDC magic word: " + magic)
 		return null
 
+	ProjectData.current_path = path
+	file_loaded.emit(file.get_length())
 	pdc_loaded.emit(sequence)
 	return sequence
 
@@ -144,6 +167,8 @@ func gd_to_pdc(path: String, sequence: DrawCommandSequence) -> bool:
 		file.store_32(_pdc_sequence_data_size(sequence))
 		_pdc_write_sequence(file, sequence)
 
+	ProjectData.current_path = path
+	file_saved.emit(file.get_position())
 	return true
 
 func _pdc_write_image(file: FileAccess, image: DrawCommandImage) -> void:
@@ -218,8 +243,8 @@ func _pdc_sequence_data_size(sequence: DrawCommandSequence) -> int:
 		size += 2 + _pdc_command_list_size(image.commands)  # duration + command list
 	return size
 
-func save_project(path):
-	pass
+func save_project(path: String) -> void:
+	gd_to_pdc(path, ProjectData.current_sequence)
 
 func export_frame(path):
 	pass

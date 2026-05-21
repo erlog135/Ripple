@@ -14,6 +14,8 @@ func _ready() -> void:
 	EditorState.view_changed.connect(_on_view_changed)
 	EditorState.selection_changed.connect(_on_selection_changed)
 	EditorState.drag_updated.connect(_on_drag_updated)
+	Fileman.file_loaded.connect(_on_file_size_changed)
+	Fileman.file_saved.connect(_on_file_size_changed)
 
 func _on_mouse_position_changed(screen_pos: Vector2) -> void:
 	var canvas_center := get_rect().size / 2.0
@@ -75,3 +77,6 @@ func _update_selection_dimensions() -> void:
 	var size := max_pos - min_pos
 	selection_dimensions.text = "Selection: %d x %d" % [ceili(size.x), ceili(size.y)]
 	selection_dimensions.show()
+
+func _on_file_size_changed(size_bytes: int) -> void:
+	file_size.text = "Size: %d B" % size_bytes

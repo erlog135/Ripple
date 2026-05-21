@@ -53,6 +53,18 @@ func _build_menu_data() -> Dictionary:
 				"label": "Open...",
 				"shortcut": shortcut(KEY_O, true),
 			},
+			{
+				"id": "file_save",
+				"type": "action",
+				"label": "Save",
+				"shortcut": shortcut(KEY_S, true),
+			},
+			{
+				"id": "file_save_as",
+				"type": "action",
+				"label": "Save As...",
+				"shortcut": shortcut(KEY_S, true, true),
+			},
 		],
 		"Edit": [
 			{

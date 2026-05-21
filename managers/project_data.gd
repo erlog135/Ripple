@@ -2,6 +2,7 @@ extends Node
 
 signal data_changed(by_user: bool, affected_frame: int)
 
+var current_path: String = ""
 var current_sequence: DrawCommandSequence
 
 func set_current_sequence(sequence: DrawCommandSequence):

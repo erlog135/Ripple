@@ -12,6 +12,10 @@ func execute(action_id: String) -> void:
 	match action_id:
 		"file_open":
 			Fileman.open_file_dialog()
+		"file_save":
+			Fileman.save_file()
+		"file_save_as":
+			Fileman.save_as_file_dialog()
 		"edit_undo":
 			HistoryManager.undo()
 		"edit_redo":
