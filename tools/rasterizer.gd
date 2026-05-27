@@ -28,12 +28,15 @@ func compute_sequence_preview_layout(frames: Array) -> Dictionary:
 	if not any or g_max.x < g_min.x or g_max.y < g_min.y:
 		return {"size": Vector2i.ZERO, "origin": Vector2.ZERO}
 
-	# Span encloses all frames on both axes (declared bounds + ink on every frame).
-	var pad2 := THUMBNAIL_PADDING * 2
-	var w := maxi(1, ceili(g_max.x - g_min.x) + pad2)
-	var h := maxi(1, ceili(g_max.y - g_min.y) + pad2)
-	var pad := float(THUMBNAIL_PADDING)
-	var origin := Vector2(g_min.x - pad, g_min.y - pad)
+	# Integer world origin so texture pixels line up with the editor pixel grid (vector / gizmos).
+	var origin := Vector2(
+		float(floori(g_min.x) - THUMBNAIL_PADDING),
+		float(floori(g_min.y) - THUMBNAIL_PADDING)
+	)
+	var end_x := ceili(g_max.x) + THUMBNAIL_PADDING
+	var end_y := ceili(g_max.y) + THUMBNAIL_PADDING
+	var w := maxi(1, end_x - int(origin.x))
+	var h := maxi(1, end_y - int(origin.y))
 	return {"size": Vector2i(w, h), "origin": origin}
 
 

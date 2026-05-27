@@ -23,6 +23,8 @@ func _ready() -> void:
 	EditorState.current_frame_changed.connect(_on_current_frame_changed)
 	EditorState.zoom_changed.connect(_on_zoom_changed)
 	EditorState.view_changed.connect(_on_view_changed)
+	EditorState.pan_changed.connect(_on_pan_changed)
+	EditorState.playback_state_changed.connect(_on_playback_state_changed)
 	EditorState.selection_changed.connect(_on_selection_changed)
 	EditorState.tool_changed.connect(_on_tool_changed)
 	EditorState.drag_updated.connect(_on_drag_updated)
@@ -41,6 +43,12 @@ func _on_zoom_changed(_screen_pos: Vector2, _factor: float) -> void:
 
 
 func _on_view_changed() -> void:
+	queue_redraw()
+
+func _on_pan_changed(_screen_offset: Vector2) -> void:
+	queue_redraw()
+
+func _on_playback_state_changed(_playing: bool) -> void:
 	queue_redraw()
 
 func _on_selection_changed(_by_user: bool) -> void:

@@ -65,7 +65,8 @@ func _render_vector() -> void:
 
 func _render_raster() -> void:
 	_raster_sprite.texture = RenderManager.get_frame_texture(EditorState.current_frame)
-	_raster_sprite.position = RenderManager.get_preview_raster_origin()
+	# Integer position keeps framebuffer pixels aligned with world integer grid at any zoom.
+	_raster_sprite.position = RenderManager.get_preview_raster_origin().round()
 
 func _draw_command(cmd: DrawCommand, cmd_idx: int) -> void:
 	if cmd.hidden:
