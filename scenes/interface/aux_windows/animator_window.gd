@@ -131,8 +131,23 @@ func _on_frames_panel_gui_input(event: InputEvent) -> void:
 			accept_event()
 
 
-func _on_project_data_changed(_by_user: bool, _affected_frame: int) -> void:
+func _on_project_data_changed(_by_user: bool, affected_frame: int) -> void:
+	if RenderManager.preview_layout_changed:
+		_rebuild_timeline()
+		return
+	if affected_frame >= 0 and _refresh_frame_thumbnail(affected_frame):
+		return
 	_rebuild_timeline()
+
+
+func _refresh_frame_thumbnail(frame_index: int) -> bool:
+	if frame_index < 0 or frame_index >= frames_container.get_child_count():
+		return false
+	var item := frames_container.get_child(frame_index)
+	if not item.has_method("update_thumbnail"):
+		return false
+	item.update_thumbnail(RenderManager.get_frame_texture(frame_index))
+	return true
 
 
 func _on_timeline_zoom_changed() -> void:

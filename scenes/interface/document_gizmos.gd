@@ -1,7 +1,7 @@
 extends Node2D
 
 const GRID_COLOR := Color(0.5, 0.5, 0.5, 0.75)
-const DOCUMENT_OUTLINE_COLOR := Color(0.75, 0.75, 0.75, 0.25)
+const DOCUMENT_OUTLINE_COLOR := Color(1.0, 1.0, 1.0, 0.5)
 const SKELLY_POINT_COLOR := GColor.WHITE
 const SKELLY_SELECTED_POINT_COLOR := GColor.VERY_LIGHT_BLUE
 const SKELLY_PATH_COLOR := Color(0.5, 0.5, 0.5, 1.0)

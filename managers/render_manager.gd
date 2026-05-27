@@ -11,14 +11,43 @@ var _preview_canvas_cached: Vector2i = Vector2i.ZERO
 ## World-space top-left of framebuffer pixel (0,0) when using sequence preview layout (see [method get_preview_raster_origin]).
 var _preview_origin_cached: Vector2 = Vector2.ZERO
 var _preview_canvas_valid := false
+## Set true when preview canvas size/origin changes; listeners must refresh all frame thumbnails.
+var preview_layout_changed := false
 
 func _ready() -> void:
 	ProjectData.data_changed.connect(_on_data_changed)
 
-func _on_data_changed(_by_user: bool, _affected_frame: int) -> void:
-	_preview_canvas_valid = false
-	_preview_origin_cached = Vector2.ZERO
-	_frame_cache.clear()
+func _on_data_changed(_by_user: bool, affected_frame: int) -> void:
+	preview_layout_changed = false
+	var seq := ProjectData.current_sequence
+	var layout_changed := false
+
+	if seq != null and not seq.frames.is_empty():
+		var new_layout := _rasterizer.compute_sequence_preview_layout(seq.frames)
+		if (
+			not _preview_canvas_valid
+			or new_layout["size"] != _preview_canvas_cached
+			or new_layout["origin"] != _preview_origin_cached
+		):
+			_preview_canvas_cached = new_layout["size"]
+			_preview_origin_cached = new_layout["origin"]
+			_preview_canvas_valid = true
+			layout_changed = true
+	else:
+		_preview_canvas_valid = false
+		_preview_origin_cached = Vector2.ZERO
+		_preview_canvas_cached = Vector2i.ZERO
+		layout_changed = true
+
+	preview_layout_changed = layout_changed
+
+	if layout_changed or affected_frame < 0 or seq == null:
+		_frame_cache.clear()
+	elif affected_frame < seq.frames.size():
+		_frame_cache.erase(seq.frames[affected_frame].get_instance_id())
+	else:
+		_frame_cache.clear()
+
 	preview_updated.emit()
 
 ## Returns a cached ImageTexture for the given frame index, rendering it on first request.
@@ -53,4 +82,5 @@ func invalidate_all() -> void:
 	_frame_cache.clear()
 	_preview_canvas_valid = false
 	_preview_origin_cached = Vector2.ZERO
+	preview_layout_changed = true
 	preview_updated.emit()

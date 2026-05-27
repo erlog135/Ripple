@@ -37,9 +37,13 @@ func setup(idx: int, duration_ms: int, thumbnail: Texture2D, zoom: float, select
 	_committed_width_px = maxf(MIN_WIDTH_PX, float(duration_ms) * _zoom)
 	custom_minimum_size.x = _committed_width_px
 	size.x = _committed_width_px
+	update_thumbnail(thumbnail)
+	selector_rect.visible = selected
+
+
+func update_thumbnail(thumbnail: Texture2D) -> void:
 	if thumbnail != null:
 		texture_rect.texture = thumbnail
-	selector_rect.visible = selected
 
 
 func apply_zoom_only(zoom: float, duration_ms: int) -> void:
