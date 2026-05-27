@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://c7q1kdxx3hywi" path="res://scenes/interface/document_layer.gd" id="2_j6oae"]
 [ext_resource type="Script" uid="uid://deivbjl4qc7hw" path="res://scenes/interface/document_gizmos.gd" id="3_6yk6n"]
 [ext_resource type="Script" uid="uid://jra2u4f43tgg" path="res://scenes/interface/document.gd" id="3_h8p71"]
+[ext_resource type="Script" uid="uid://c5w8qk2yvbd6n" path="res://scenes/interface/artboard_clip.gd" id="7_yh3rt"]
 [ext_resource type="Script" uid="uid://dkng0sunfbeqw" path="res://scenes/interface/hud_layer.gd" id="5_2ofuf"]
 
 [node name="CanvasArea" type="Control" unique_id=1795288712]
@@ -35,10 +36,13 @@ render_target_update_mode = 4
 [node name="DocumentCamera" type="Camera2D" parent="DocumentLayer/SubViewport" unique_id=885756828]
 script = ExtResource("1_13olm")
 
-[node name="Document" type="Node2D" parent="DocumentLayer/SubViewport" unique_id=1696822751]
+[node name="ArtboardClip" type="Node2D" parent="DocumentLayer/SubViewport" unique_id=1847291055]
+script = ExtResource("7_yh3rt")
+
+[node name="Document" type="Node2D" parent="DocumentLayer/SubViewport/ArtboardClip" unique_id=1696822751]
 script = ExtResource("3_h8p71")
 
-[node name="Line2D2" type="Line2D" parent="DocumentLayer/SubViewport/Document" unique_id=1003032040]
+[node name="Line2D2" type="Line2D" parent="DocumentLayer/SubViewport/ArtboardClip/Document" unique_id=1003032040]
 visible = false
 points = PackedVector2Array(0, 16, 0, -16, 8, 0, -8, 0)
 width = 2.0

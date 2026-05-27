@@ -6,6 +6,7 @@ signal menu_state_changed
 func _ready() -> void:
 	EditorState.render_mode_changed.connect(func(_mode): menu_state_changed.emit())
 	EditorState.options_changed.connect(func(): menu_state_changed.emit())
+	EditorState.clip_to_bounds_changed.connect(func(_enabled): menu_state_changed.emit())
 
 
 func execute(action_id: String) -> void:
@@ -31,6 +32,8 @@ func execute(action_id: String) -> void:
 		"view_grid_snap":
 			EditorState.grid_snap = not EditorState.grid_snap
 			menu_state_changed.emit()
+		"view_clip_to_bounds":
+			EditorState.clip_to_document_bounds = not EditorState.clip_to_document_bounds
 		"view_zoom_in":
 			EditorState.zoom_in_centered()
 		"view_zoom_out":
@@ -53,6 +56,8 @@ func get_state(action_id: String) -> bool:
 			return EditorState.render_mode == EditorState.RenderMode.RASTER
 		"view_grid_snap":
 			return EditorState.grid_snap
+		"view_clip_to_bounds":
+			return EditorState.clip_to_document_bounds
 	return false
 
 

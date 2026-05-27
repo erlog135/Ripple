@@ -1,22 +1,130 @@
 class_name Rasterizer
 
 const BYTES_PER_PIXEL := 4  # RGBA8
+## Extra pixels around content extents when using a computed preview canvas.
+const THUMBNAIL_PADDING: int = 4
 
-func render(image_data: DrawCommandImage) -> ImageTexture:
-	var w := image_data.bounds.x
-	var h := image_data.bounds.y
+
+func compute_sequence_preview_layout(frames: Array) -> Dictionary:
+	if frames.is_empty():
+		return {"size": Vector2i.ZERO, "origin": Vector2.ZERO}
+
+	var g_min := Vector2(INF, INF)
+	var g_max := Vector2(-INF, -INF)
+	var any := false
+
+	for frame in frames:
+		if frame == null or not (frame is DrawCommandImage):
+			continue
+		var f: DrawCommandImage = frame
+		any = true
+		var combined := _frame_combined_document_rect(f)
+		g_min.x = minf(g_min.x, combined.position.x)
+		g_min.y = minf(g_min.y, combined.position.y)
+		var c_end: Vector2 = combined.end
+		g_max.x = maxf(g_max.x, c_end.x)
+		g_max.y = maxf(g_max.y, c_end.y)
+
+	if not any or g_max.x < g_min.x or g_max.y < g_min.y:
+		return {"size": Vector2i.ZERO, "origin": Vector2.ZERO}
+
+	# Span encloses all frames on both axes (declared bounds + ink on every frame).
+	var pad2 := THUMBNAIL_PADDING * 2
+	var w := maxi(1, ceili(g_max.x - g_min.x) + pad2)
+	var h := maxi(1, ceili(g_max.y - g_min.y) + pad2)
+	var pad := float(THUMBNAIL_PADDING)
+	var origin := Vector2(g_min.x - pad, g_min.y - pad)
+	return {"size": Vector2i(w, h), "origin": origin}
+
+
+## Declared PDC bounds unioned with all visible ink (fills + thick strokes) for one frame.
+func _frame_combined_document_rect(f: DrawCommandImage) -> Rect2:
+	var decl := Rect2(Vector2.ZERO, Vector2(f.bounds))
+	var ink := _frame_ink_extents_rect(f)
+	if ink.size.x <= 0.0 or ink.size.y <= 0.0:
+		return decl
+	return decl.merge(ink)
+
+
+## Axis-aligned bounds of fill + stroke geometry, mirroring [method render] point resolution.
+func _frame_ink_extents_rect(f: DrawCommandImage) -> Rect2:
+	var has := false
+	var mn := Vector2(INF, INF)
+	var mx := Vector2(-INF, -INF)
+
+	for cmd: DrawCommand in f.commands:
+		if cmd.hidden:
+			continue
+
+		var points := cmd.points
+		if cmd.draw_type == DrawCommand.Type.CIRCLE and points.size() > 0:
+			points = _circle_points_16gon(points[0], cmd.circle_radius)
+
+		const FILL_MARGIN := 1.0
+
+		if cmd.fill_color.a > 0 and points.size() > 0:
+			has = true
+			for p: Vector2 in points:
+				mn.x = minf(mn.x, p.x - FILL_MARGIN)
+				mn.y = minf(mn.y, p.y - FILL_MARGIN)
+				mx.x = maxf(mx.x, p.x + FILL_MARGIN)
+				mx.y = maxf(mx.y, p.y + FILL_MARGIN)
+
+		if cmd.stroke_color.a > 0 and cmd.stroke_width > 0:
+			has = true
+			var stroke_pts := PackedVector2Array(points)
+			if cmd.draw_type == DrawCommand.Type.CIRCLE or not cmd.path_open:
+				if stroke_pts.size() > 0:
+					stroke_pts.append(stroke_pts[0])
+			var hw := cmd.stroke_width / 2.0
+			var sw := float(cmd.stroke_width)
+			for i: int in range(stroke_pts.size() - 1):
+				var p1: Vector2 = stroke_pts[i]
+				var p2: Vector2 = stroke_pts[i + 1]
+				if p1.distance_to(p2) <= 0.001:
+					continue
+				var quad := _get_thick_line_rect(p1, p2, sw)
+				for j in range(quad.size()):
+					var pv: Vector2 = quad[j]
+					mn.x = minf(mn.x, pv.x)
+					mn.y = minf(mn.y, pv.y)
+					mx.x = maxf(mx.x, pv.x)
+					mx.y = maxf(mx.y, pv.y)
+			for pt: Vector2 in stroke_pts:
+				var cap := _circle_points_16gon(pt, hw)
+				for j in range(cap.size()):
+					var cv: Vector2 = cap[j]
+					mn.x = minf(mn.x, cv.x)
+					mn.y = minf(mn.y, cv.y)
+					mx.x = maxf(mx.x, cv.x)
+					mx.y = maxf(mx.y, cv.y)
+
+	if not has:
+		return Rect2()
+	return Rect2(mn, mx - mn)
+
+
+func render(
+	image_data: DrawCommandImage,
+	canvas_size: Vector2i = Vector2i.ZERO,
+	raster_origin: Vector2 = Vector2.ZERO
+) -> ImageTexture:
+	var w := canvas_size.x if canvas_size.x > 0 else image_data.bounds.x
+	var h := canvas_size.y if canvas_size.y > 0 else image_data.bounds.y
 	if w <= 0 or h <= 0:
 		return null
 
 	var framebuffer := PackedByteArray()
 	framebuffer.resize(w * h * BYTES_PER_PIXEL)
-	framebuffer.fill(0xFF)  # Opaque white background
+	framebuffer.fill(0xAA)  # light gray background
 
 	# PebbleOS uses an 8x8 subpixel grid for precise coordinates and anti-aliasing
 	var w8 := w * 8
 	var h8 := h * 8
 	var subpixel_grid := PackedByteArray()
 	subpixel_grid.resize(w8 * h8)
+
+	var origin := raster_origin
 
 	for cmd in image_data.commands:
 		if cmd.hidden:
@@ -26,12 +134,15 @@ func render(image_data: DrawCommandImage) -> ImageTexture:
 		if cmd.draw_type == DrawCommand.Type.CIRCLE and points.size() > 0:
 			points = _circle_points_16gon(points[0], cmd.circle_radius)
 
+		if origin != Vector2.ZERO:
+			points = _packed_translate(points, -origin)
+
 		# --- Filling Phase ---
 		if cmd.fill_color.a > 0:
 			subpixel_grid.fill(0)
 			_rasterize_polygon(points, w8, h8, subpixel_grid)
 			
-			var bounds := _get_bounds(points, w, h, 1)
+			var bounds := _get_vertex_bounds_float(points, w, h, 1)
 			_apply_subpixels_and_blend(framebuffer, bounds, w, h, subpixel_grid, cmd.fill_color)
 
 		# --- Stroking Phase ---
@@ -58,7 +169,7 @@ func render(image_data: DrawCommandImage) -> ImageTexture:
 				var cap := _circle_points_16gon(pt, hw)
 				_rasterize_polygon(cap, w8, h8, subpixel_grid)
 			
-			var bounds := _get_bounds(points, w, h, int(ceil(hw)) + 1)
+			var bounds := _get_stroke_blend_bounds(stroke_points, cmd.stroke_width, w, h)
 			_apply_subpixels_and_blend(framebuffer, bounds, w, h, subpixel_grid, cmd.stroke_color)
 
 	var img := Image.create_from_data(w, h, false, Image.FORMAT_RGBA8, framebuffer)
@@ -210,6 +321,16 @@ func _apply_subpixels_and_blend(fb: PackedByteArray, bounds: Rect2i, w: int, h: 
 # Vector Math & Geometric Primitives
 # -------------------------------------------------------------------------
 
+func _packed_translate(pts: PackedVector2Array, delta: Vector2) -> PackedVector2Array:
+	if delta == Vector2.ZERO:
+		return pts
+	var out := PackedVector2Array()
+	out.resize(pts.size())
+	for i in range(pts.size()):
+		out[i] = pts[i] + delta
+	return out
+
+
 func _get_thick_line_rect(p1: Vector2, p2: Vector2, width: float) -> PackedVector2Array:
 	var dir := (p2 - p1).normalized()
 	var normal := Vector2(-dir.y, dir.x)
@@ -229,26 +350,69 @@ func _circle_points_16gon(center: Vector2, radius: float) -> PackedVector2Array:
 		pts.append(center + Vector2(cos(angle), sin(angle)) * radius)
 	return pts
 
-func _get_bounds(points: PackedVector2Array, w: int, h: int, expansion: int) -> Rect2i:
+## Pixels to visit when blending subpixel coverage into the framebuffer. Using [method int] on
+## vertices was too tight vs. the scanline/raster output, which shifted strokes/fills down-right
+## relative to vector editing; [method floor] / [method ceil] on float extents fixes that.
+func _get_vertex_bounds_float(points: PackedVector2Array, w: int, h: int, expansion: int) -> Rect2i:
 	if points.is_empty():
 		return Rect2i(0, 0, 0, 0)
-		
-	var min_x := int(points[0].x)
-	var max_x := min_x
-	var min_y := int(points[0].y)
-	var max_y := min_y
+	var min_xf := points[0].x
+	var max_xf := points[0].x
+	var min_yf := points[0].y
+	var max_yf := points[0].y
+	for p: Vector2 in points:
+		min_xf = minf(min_xf, p.x)
+		max_xf = maxf(max_xf, p.x)
+		min_yf = minf(min_yf, p.y)
+		max_yf = maxf(max_yf, p.y)
+	var ex := float(expansion)
+	const MARGIN := 1
+	var x0 := clampi(floori(min_xf - ex) - MARGIN, 0, w - 1)
+	var x1 := clampi(ceili(max_xf + ex) - 1 + MARGIN, 0, w - 1)
+	var y0 := clampi(floori(min_yf - ex) - MARGIN, 0, h - 1)
+	var y1 := clampi(ceili(max_yf + ex) - 1 + MARGIN, 0, h - 1)
+	if x0 > x1 or y0 > y1:
+		return Rect2i(0, 0, 0, 0)
+	return Rect2i(x0, y0, x1 - x0 + 1, y1 - y0 + 1)
 
-	for p in points:
-		var px := int(p.x)
-		var py := int(p.y)
-		if px < min_x: min_x = px
-		if px > max_x: max_x = px
-		if py < min_y: min_y = py
-		if py > max_y: max_y = py
 
-	min_x = clampi(min_x - expansion, 0, w - 1)
-	max_x = clampi(max_x + expansion, 0, w - 1)
-	min_y = clampi(min_y - expansion, 0, h - 1)
-	max_y = clampi(max_y + expansion, 0, h - 1)
+## Bounds that cover thick segment quads plus round caps/joints — path vertices alone underestimate.
+func _get_stroke_blend_bounds(stroke_points: PackedVector2Array, stroke_width: float, w: int, h: int) -> Rect2i:
+	var min_xf := INF
+	var max_xf := -INF
+	var min_yf := INF
+	var max_yf := -INF
 
-	return Rect2i(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1)
+	var hw := stroke_width / 2.0
+	for i: int in range(stroke_points.size() - 1):
+		var p1: Vector2 = stroke_points[i]
+		var p2: Vector2 = stroke_points[i + 1]
+		if p1.distance_to(p2) <= 0.001:
+			continue
+		var quad := _get_thick_line_rect(p1, p2, stroke_width)
+		for j in range(quad.size()):
+			var pv: Vector2 = quad[j]
+			min_xf = minf(min_xf, pv.x)
+			max_xf = maxf(max_xf, pv.x)
+			min_yf = minf(min_yf, pv.y)
+			max_yf = maxf(max_yf, pv.y)
+	for pt: Vector2 in stroke_points:
+		var cap := _circle_points_16gon(pt, hw)
+		for j in range(cap.size()):
+			var pv2: Vector2 = cap[j]
+			min_xf = minf(min_xf, pv2.x)
+			max_xf = maxf(max_xf, pv2.x)
+			min_yf = minf(min_yf, pv2.y)
+			max_yf = maxf(max_yf, pv2.y)
+
+	if min_xf == INF:
+		return Rect2i(0, 0, 0, 0)
+
+	const MARGIN := 1
+	var x0 := clampi(floori(min_xf) - MARGIN, 0, w - 1)
+	var x1 := clampi(ceili(max_xf) - 1 + MARGIN, 0, w - 1)
+	var y0 := clampi(floori(min_yf) - MARGIN, 0, h - 1)
+	var y1 := clampi(ceili(max_yf) - 1 + MARGIN, 0, h - 1)
+	if x0 > x1 or y0 > y1:
+		return Rect2i(0, 0, 0, 0)
+	return Rect2i(x0, y0, x1 - x0 + 1, y1 - y0 + 1)

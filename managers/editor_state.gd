@@ -16,6 +16,7 @@ signal timeline_zoom_changed
 signal line_pen_hover_changed()
 signal playback_state_changed(playing: bool)
 signal render_mode_changed(mode: RenderMode)
+signal clip_to_bounds_changed(enabled: bool)
 
 const ZOOM_STEP := 0.1
 const MIN_ZOOM  := 0.2
@@ -61,6 +62,14 @@ var selected_point_indices: Dictionary[int, Array] = {}
 var current_fill_color: Color = Color.BLACK
 var current_stroke_color: Color = Color.BLACK
 var current_stroke_width: int = 1
+
+## When true, vector/raster preview under this node is clipped to the declared document bounds (Pebble-style clipped preview).
+var clip_to_document_bounds: bool = false:
+	set(value):
+		if clip_to_document_bounds == value:
+			return
+		clip_to_document_bounds = value
+		clip_to_bounds_changed.emit(value)
 
 ## When true, point placement snaps to the pixel grid after draw-type rules (whole pixels, or half-pixels when [member grid_odd_snap] applies to odd strokes).
 var grid_snap: bool = true

@@ -109,6 +109,11 @@ func _build_menu_data() -> Dictionary:
 				"type": "checkbox",
 				"label": "Snap to Grid",
 			},
+			{
+				"id": "view_clip_to_bounds",
+				"type": "checkbox",
+				"label": "Clip to Document Bounds",
+			},
 			{"type": "separator"},
 			{
 				"id": "view_zoom_in",

@@ -65,6 +65,7 @@ func _render_vector() -> void:
 
 func _render_raster() -> void:
 	_raster_sprite.texture = RenderManager.get_frame_texture(EditorState.current_frame)
+	_raster_sprite.position = RenderManager.get_preview_raster_origin()
 
 func _draw_command(cmd: DrawCommand, cmd_idx: int) -> void:
 	if cmd.hidden:

@@ -1,6 +1,7 @@
 extends Node2D
 
 const GRID_COLOR := Color(0.5, 0.5, 0.5, 0.75)
+const DOCUMENT_OUTLINE_COLOR := Color(0.75, 0.75, 0.75, 0.25)
 const SKELLY_POINT_COLOR := GColor.WHITE
 const SKELLY_SELECTED_POINT_COLOR := GColor.VERY_LIGHT_BLUE
 const SKELLY_PATH_COLOR := Color(0.5, 0.5, 0.5, 1.0)
@@ -59,25 +60,40 @@ func _draw() -> void:
 		return
 	if EditorState.current_zoom >= 10.0:
 		_draw_pixel_grid()
+	_draw_document_bounds()
 	_draw_skeletons()
 	_draw_line_pen_preview()
 	_draw_drag_selection_box()
 	_draw_selection_box()
 
 func _draw_pixel_grid() -> void:
+	var vp_rect := get_viewport().get_visible_rect()
+	var inv := get_canvas_transform().affine_inverse()
+	var tl := inv * vp_rect.position
+	var br := inv * (vp_rect.position + vp_rect.size)
+
+	var x_start := floori(tl.x)
+	var x_end   := ceili(br.x)
+	var y_start := floori(tl.y)
+	var y_end   := ceili(br.y)
+	var line_w  := 1.0 / EditorState.current_zoom
+
+	for x in range(x_start, x_end + 1):
+		draw_line(Vector2(x, y_start), Vector2(x, y_end), GRID_COLOR, line_w)
+
+	for y in range(y_start, y_end + 1):
+		draw_line(Vector2(x_start, y), Vector2(x_end, y), GRID_COLOR, line_w)
+
+
+func _draw_document_bounds() -> void:
 	var frame: DrawCommandImage = ProjectData.get_current_image()
 	if frame == null:
 		return
-
 	var bounds: Vector2i = frame.bounds
 	if bounds.x <= 0 or bounds.y <= 0:
 		return
-
-	for x in range(0, bounds.x+1):
-		draw_line(Vector2(x, 0), Vector2(x, bounds.y), GRID_COLOR, 1.0 / EditorState.current_zoom)
-
-	for y in range(0, bounds.y+1):
-		draw_line(Vector2(0, y), Vector2(bounds.x, y), GRID_COLOR, 1.0 / EditorState.current_zoom)
+	var line_w := 1.0 / EditorState.current_zoom
+	draw_rect(Rect2(Vector2.ZERO, Vector2(bounds)), DOCUMENT_OUTLINE_COLOR, false, line_w)
 
 func _draw_skeletons() -> void:
 	var frame: DrawCommandImage = ProjectData.get_current_image()
