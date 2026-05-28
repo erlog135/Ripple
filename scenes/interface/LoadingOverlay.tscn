@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://cj01vv5tc5ava"]
+
+[ext_resource type="Script" uid="uid://cdmfcv1gfl0eh" path="res://scenes/interface/loading_overlay.gd" id="1_overlay"]
+
+[node name="LoadingOverlay" type="CanvasLayer" unique_id=2051257957]
+layer = 69
+script = ExtResource("1_overlay")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=744981107]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.1254902)
+
+[node name="ProgressBar" type="ProgressBar" parent="." unique_id=571216895]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -144.0
+offset_top = -24.0
+offset_right = 144.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2

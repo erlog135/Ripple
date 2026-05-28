@@ -54,6 +54,7 @@ func _ready() -> void:
 	current_frame_spin.value_changed.connect(_on_current_frame_spin_changed)
 
 	ProjectData.data_changed.connect(_on_project_data_changed)
+	RenderManager.bulk_raster_finished.connect(_rebuild_timeline)
 	EditorState.current_frame_changed.connect(_on_editor_current_frame_changed)
 	EditorState.timeline_zoom_changed.connect(_on_timeline_zoom_changed)
 
@@ -132,6 +133,9 @@ func _on_frames_panel_gui_input(event: InputEvent) -> void:
 
 
 func _on_project_data_changed(_by_user: bool, affected_frame: int) -> void:
+	if RenderManager.is_rasterizing:
+		# Bulk rasterization is running async; _rebuild_timeline fires on bulk_raster_finished.
+		return
 	if RenderManager.preview_layout_changed:
 		_rebuild_timeline()
 		return
