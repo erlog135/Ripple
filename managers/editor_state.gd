@@ -9,7 +9,7 @@ signal mouse_position_changed(screen_pos: Vector2)
 signal zoom_changed(screen_pos: Vector2, zoom_factor: float)
 signal pan_changed(screen_offset: Vector2)
 signal view_changed
-signal drag_updated(offset: Vector2, dragging: bool)
+signal transform_preview_changed
 
 signal current_frame_changed(frame: int)
 signal timeline_zoom_changed
@@ -24,12 +24,15 @@ const MAX_ZOOM  := 80.0
 
 enum Tool {
 	SELECT,
-	MOVE,
+	TRANSFORM,
 	LINE_PEN,
 	CIRCLE,
 	RECTANGLE,
 	PAN
 }
+
+## Sub-mode of the Transform tool, chosen contextually from cursor position + modifiers.
+enum TransformMode { NONE, MOVE, SCALE, ROTATE }
 
 enum RenderMode { VECTOR, RASTER }
 
@@ -52,8 +55,11 @@ var current_pan: Vector2 = Vector2.ZERO
 var current_camera_pos: Vector2 = Vector2.ZERO
 ## Size of the canvas input area (used for fit-to-document / fit-to-selection).
 var canvas_viewport_size: Vector2 = Vector2.ZERO
-var drag_offset: Vector2 = Vector2.ZERO
-var is_dragging_selection: bool = false
+
+## Live preview of the Transform tool. While [member transform_mode] is not NONE,
+## [member transform_matrix] is applied to selected points by the renderers/gizmos.
+var transform_mode: TransformMode = TransformMode.NONE
+var transform_matrix: Transform2D = Transform2D.IDENTITY
 
 var selected_command_indices: Array[int] = []
 var selected_point_indices: Dictionary[int, Array] = {}
@@ -283,10 +289,66 @@ func update_canvas_area_rect(rect: Rect2) -> void:
 func update_mouse_position(screen_pos: Vector2) -> void:
 	mouse_position_changed.emit(screen_pos)
 
-func update_drag(offset: Vector2, dragging: bool) -> void:
-	drag_offset = offset
-	is_dragging_selection = dragging
-	drag_updated.emit(drag_offset, is_dragging_selection)
+func begin_transform(mode: TransformMode) -> void:
+	transform_mode = mode
+	transform_matrix = Transform2D.IDENTITY
+	transform_preview_changed.emit()
+
+
+func update_transform_matrix(matrix: Transform2D) -> void:
+	transform_matrix = matrix
+	transform_preview_changed.emit()
+
+
+func end_transform() -> void:
+	transform_mode = TransformMode.NONE
+	transform_matrix = Transform2D.IDENTITY
+	transform_preview_changed.emit()
+
+
+## True while a Transform-tool preview is active (a selection is being moved/scaled/rotated).
+func is_transform_previewing() -> bool:
+	return transform_mode != TransformMode.NONE
+
+
+## Pixel-to-world scale for sizing gizmo handles consistently regardless of zoom.
+func get_gizmo_scale() -> float:
+	if current_zoom <= 0.0:
+		return 1.0
+	return 1.0 / current_zoom
+
+
+## Bounding box (world space) around all currently selected points. Returns a
+## zero-size Rect2 when fewer than one point is selected.
+func get_selection_bounds() -> Rect2:
+	var frame: DrawCommandImage = ProjectData.get_current_image()
+	if frame == null:
+		return Rect2()
+
+	var has_any := false
+	var min_pos := Vector2.ZERO
+	var max_pos := Vector2.ZERO
+	for cmd_idx in selected_point_indices:
+		if cmd_idx < 0 or cmd_idx >= frame.commands.size():
+			continue
+		var cmd: DrawCommand = frame.commands[cmd_idx]
+		if cmd.hidden:
+			continue
+		for pt_idx in selected_point_indices[cmd_idx]:
+			if pt_idx < 0 or pt_idx >= cmd.points.size():
+				continue
+			var p: Vector2 = cmd.points[pt_idx]
+			if not has_any:
+				min_pos = p
+				max_pos = p
+				has_any = true
+			else:
+				min_pos = min_pos.min(p)
+				max_pos = max_pos.max(p)
+
+	if not has_any:
+		return Rect2()
+	return Rect2(min_pos, max_pos - min_pos)
 
 func select_all() -> void:
 	selected_command_indices.clear()

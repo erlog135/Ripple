@@ -18,7 +18,7 @@ func _ready() -> void:
 
 	ProjectData.data_changed.connect(_on_data_changed)
 	EditorState.current_frame_changed.connect(_on_current_frame_changed)
-	EditorState.drag_updated.connect(_on_drag_updated)
+	EditorState.transform_preview_changed.connect(_on_transform_preview_changed)
 	EditorState.render_mode_changed.connect(_on_render_mode_changed)
 	RenderManager.preview_updated.connect(_on_preview_updated)
 	_render_current_image()
@@ -29,7 +29,7 @@ func _on_data_changed(_by_user: bool, _affected_frame: int) -> void:
 func _on_current_frame_changed(_frame: int) -> void:
 	_render_current_image()
 
-func _on_drag_updated(_offset: Vector2, _dragging: bool) -> void:
+func _on_transform_preview_changed() -> void:
 	_render_current_image()
 
 func _on_render_mode_changed(_mode: EditorState.RenderMode) -> void:
@@ -102,7 +102,7 @@ func _draw_command(cmd: DrawCommand, cmd_idx: int) -> void:
 		_vector_canvas.add_child(line)
 
 func _points_with_drag_offset(points: PackedVector2Array, cmd_idx: int) -> PackedVector2Array:
-	if not EditorState.is_dragging_selection or EditorState.drag_offset == Vector2.ZERO:
+	if not EditorState.is_transform_previewing():
 		return points
 
 	var selected_pts: Array = EditorState.selected_point_indices.get(cmd_idx, [])
@@ -112,7 +112,7 @@ func _points_with_drag_offset(points: PackedVector2Array, cmd_idx: int) -> Packe
 	var shifted: PackedVector2Array = points.duplicate()
 	for pt_idx in selected_pts:
 		if pt_idx >= 0 and pt_idx < shifted.size():
-			shifted[pt_idx] += EditorState.drag_offset
+			shifted[pt_idx] = EditorState.transform_matrix * shifted[pt_idx]
 	return shifted
 
 func _circle_points(center: Vector2, radius: float) -> PackedVector2Array:

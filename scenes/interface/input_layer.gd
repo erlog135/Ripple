@@ -1,13 +1,13 @@
 extends Control
 
 const SelectionTool = preload("res://scenes/interface/aux_windows/tools/selection_tool.gd")
-const MoveTool = preload("res://scenes/interface/aux_windows/tools/move_tool.gd")
+const TransformTool = preload("res://scenes/interface/aux_windows/tools/transform_tool.gd")
 const PenToolScr = preload("res://scenes/interface/aux_windows/tools/line_pen_tool.gd")
 const DeletePointsActionScr = preload("res://data/actions/delete_points_action.gd")
 
 @onready var _gizmos = $"../DocumentLayer/SubViewport/DocumentGizmos"
 @onready var _selection_tool = SelectionTool.new()
-@onready var _move_tool = MoveTool.new()
+@onready var _transform_tool = TransformTool.new()
 @onready var _line_pen_tool: RefCounted = PenToolScr.new()
 
 
@@ -26,14 +26,16 @@ func _gui_input(event: InputEvent) -> void:
 		EditorState.update_mouse_position(event.position)
 		if EditorState.active_tool == EditorState.Tool.LINE_PEN:
 			_line_pen_tool.handle_mouse_motion(_screen_to_world(event.position))
+		elif EditorState.active_tool == EditorState.Tool.TRANSFORM:
+			# Handles both contextual hover and active drag (the tool branches internally).
+			_transform_tool.handle_mouse_motion(_screen_to_world(event.position))
+			mouse_default_cursor_shape = _transform_tool.cursor_shape
 
 	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 		if EditorState.active_tool == EditorState.Tool.PAN:
 			EditorState.pan(-event.relative)
 		elif EditorState.active_tool == EditorState.Tool.SELECT:
 			_selection_tool.handle_mouse_motion(_screen_to_world(event.position), _gizmos)
-		elif EditorState.active_tool == EditorState.Tool.MOVE:
-			_move_tool.handle_mouse_motion(_screen_to_world(event.position))
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_WHEEL_UP:
 		EditorState.zoom_in(event.position)
@@ -47,12 +49,13 @@ func _gui_input(event: InputEvent) -> void:
 				_selection_tool.handle_left_press(world_pos, Input.is_key_pressed(KEY_SHIFT))
 			else:
 				_selection_tool.handle_left_release(world_pos, _gizmos)
-		elif EditorState.active_tool == EditorState.Tool.MOVE:
+		elif EditorState.active_tool == EditorState.Tool.TRANSFORM:
 			var world_pos := _screen_to_world(event.position)
 			if event.pressed:
-				_move_tool.handle_left_press(world_pos)
+				_transform_tool.handle_left_press(world_pos)
 			else:
-				_move_tool.handle_left_release(world_pos)
+				_transform_tool.handle_left_release(world_pos)
+			mouse_default_cursor_shape = _transform_tool.cursor_shape
 		elif EditorState.active_tool == EditorState.Tool.LINE_PEN:
 			var lp_world_pos := _screen_to_world(event.position)
 			if event.pressed:
@@ -85,4 +88,5 @@ func _delete_selected_points() -> void:
 
 func _on_tool_changed(_tool: EditorState.Tool) -> void:
 	_selection_tool.cancel(_gizmos)
-	_move_tool.cancel()
+	_transform_tool.cancel()
+	mouse_default_cursor_shape = _transform_tool.cursor_shape

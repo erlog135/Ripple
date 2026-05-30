@@ -7,8 +7,9 @@ const SKELLY_SELECTED_POINT_COLOR := GColor.VERY_LIGHT_BLUE
 const SKELLY_PATH_COLOR := Color(0.5, 0.5, 0.5, 1.0)
 const SKELLY_SELECTED_PATH_COLOR := GColor.VERY_LIGHT_BLUE
 
-const SKELLY_POINT_RADIUS_PX := 8.0
+const SKELLY_POINT_RADIUS_PX := 4.0
 const SKELLY_PATH_WIDTH_PX := 2.0
+const TRANSFORM_HANDLE_PX := 4.0
 const SELECTION_BOX_COLOR := Color(0.4, 0.7, 1.0, 0.85)
 const DRAG_SELECTION_BOX_COLOR := Color(0.4, 0.7, 1.0, 0.45)
 const LINE_PEN_PREVIEW_COLOR := Color(0.0, 0.5, 1.0, 0.8)
@@ -27,7 +28,7 @@ func _ready() -> void:
 	EditorState.playback_state_changed.connect(_on_playback_state_changed)
 	EditorState.selection_changed.connect(_on_selection_changed)
 	EditorState.tool_changed.connect(_on_tool_changed)
-	EditorState.drag_updated.connect(_on_drag_updated)
+	EditorState.transform_preview_changed.connect(_on_transform_preview_changed)
 	EditorState.line_pen_hover_changed.connect(_on_line_pen_hover_changed)
 
 func _on_data_changed(_by_user: bool, _affected_frame: int) -> void:
@@ -57,7 +58,7 @@ func _on_selection_changed(_by_user: bool) -> void:
 func _on_tool_changed(_tool: EditorState.Tool) -> void:
 	queue_redraw()
 
-func _on_drag_updated(_offset: Vector2, _dragging: bool) -> void:
+func _on_transform_preview_changed() -> void:
 	queue_redraw()
 
 func _on_line_pen_hover_changed() -> void:
@@ -111,10 +112,10 @@ func _draw_skeletons() -> void:
 	var line_w := SKELLY_PATH_WIDTH_PX / EditorState.current_zoom
 	var pt_r := SKELLY_POINT_RADIUS_PX / EditorState.current_zoom
 	var show_only_selected := EditorState.active_tool != EditorState.Tool.SELECT
-	# For MOVE and LINE_PEN, show all points/segments within a selected command
+	# For TRANSFORM and LINE_PEN, show all points/segments within a selected command
 	# (non-selected ones render in the dimmed white/gray palette to provide context).
 	var show_full_cmd := (
-		EditorState.active_tool == EditorState.Tool.MOVE
+		EditorState.active_tool == EditorState.Tool.TRANSFORM
 		or EditorState.active_tool == EditorState.Tool.LINE_PEN
 	)
 
@@ -216,8 +217,36 @@ func _draw_selection_box() -> void:
 		max_pos = max_pos.max(pos)
 
 	var line_w := SKELLY_PATH_WIDTH_PX / EditorState.current_zoom
-	var rect := Rect2(min_pos - Vector2(line_w, line_w), max_pos - min_pos + Vector2(line_w * 2.0, line_w * 2.0))
+	var rect := Rect2(min_pos, max_pos - min_pos)
 	draw_rect(rect, SELECTION_BOX_COLOR, false, line_w)
+
+	# Resize handles for the Transform tool (only when idle and the box has area).
+	if (
+		EditorState.active_tool == EditorState.Tool.TRANSFORM
+		and not EditorState.is_transform_previewing()
+		and (rect.size.x > 0.0001 or rect.size.y > 0.0001)
+	):
+		_draw_transform_handles(rect, line_w)
+
+func _draw_transform_handles(rect: Rect2, line_w: float) -> void:
+	var handle := TRANSFORM_HANDLE_PX / EditorState.current_zoom
+	var p := rect.position
+	var s := rect.size
+	var c := rect.get_center()
+	var positions := [
+		p,
+		Vector2(p.x + s.x, p.y),
+		p + s,
+		Vector2(p.x, p.y + s.y),
+		Vector2(c.x, p.y),
+		Vector2(c.x, p.y + s.y),
+		Vector2(p.x, c.y),
+		Vector2(p.x + s.x, c.y),
+	]
+	for hp in positions:
+		var hr := Rect2(hp - Vector2(handle, handle), Vector2(handle, handle) * 2.0)
+		draw_rect(hr, GColor.WHITE, true)
+		draw_rect(hr, SELECTION_BOX_COLOR, false, line_w)
 
 func _draw_drag_selection_box() -> void:
 	if not _drag_selection_active:
@@ -301,15 +330,15 @@ func _draw_circle_skeleton(cmd: DrawCommand, cmd_idx: int, sel_pts: Array, line_
 	draw_circle(center, pt_r, pt_color)
 
 func _point_with_drag_offset(point: Vector2, cmd_idx: int, pt_idx: int) -> Vector2:
-	if not EditorState.is_dragging_selection or EditorState.drag_offset == Vector2.ZERO:
+	if not EditorState.is_transform_previewing():
 		return point
 	var selected_pts: Array = EditorState.selected_point_indices.get(cmd_idx, [])
 	if pt_idx in selected_pts:
-		return point + EditorState.drag_offset
+		return EditorState.transform_matrix * point
 	return point
 
 func _points_with_drag_offset(points: PackedVector2Array, cmd_idx: int) -> PackedVector2Array:
-	if not EditorState.is_dragging_selection or EditorState.drag_offset == Vector2.ZERO:
+	if not EditorState.is_transform_previewing():
 		return points
 	var selected_pts: Array = EditorState.selected_point_indices.get(cmd_idx, [])
 	if selected_pts.is_empty():
@@ -317,5 +346,5 @@ func _points_with_drag_offset(points: PackedVector2Array, cmd_idx: int) -> Packe
 	var shifted: PackedVector2Array = points.duplicate()
 	for pt_idx in selected_pts:
 		if pt_idx >= 0 and pt_idx < shifted.size():
-			shifted[pt_idx] += EditorState.drag_offset
+			shifted[pt_idx] = EditorState.transform_matrix * shifted[pt_idx]
 	return shifted

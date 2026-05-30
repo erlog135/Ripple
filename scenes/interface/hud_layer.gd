@@ -13,7 +13,7 @@ func _ready() -> void:
 	EditorState.zoom_changed.connect(_on_zoom_changed)
 	EditorState.view_changed.connect(_on_view_changed)
 	EditorState.selection_changed.connect(_on_selection_changed)
-	EditorState.drag_updated.connect(_on_drag_updated)
+	EditorState.transform_preview_changed.connect(_on_transform_preview_changed)
 	Fileman.file_loaded.connect(_on_file_size_changed)
 	Fileman.file_saved.connect(_on_file_size_changed)
 
@@ -43,7 +43,7 @@ func _update_zoom_label() -> void:
 func _on_selection_changed(_by_user: bool) -> void:
 	_update_selection_dimensions()
 
-func _on_drag_updated(_offset: Vector2, _dragging: bool) -> void:
+func _on_transform_preview_changed() -> void:
 	_update_selection_dimensions()
 
 func _update_selection_dimensions() -> void:
@@ -60,8 +60,8 @@ func _update_selection_dimensions() -> void:
 		for pt_idx in EditorState.selected_point_indices[cmd_idx]:
 			if pt_idx < cmd.points.size():
 				var pt: Vector2 = cmd.points[pt_idx]
-				if EditorState.is_dragging_selection and EditorState.drag_offset != Vector2.ZERO:
-					pt += EditorState.drag_offset
+				if EditorState.is_transform_previewing():
+					pt = EditorState.transform_matrix * pt
 				selected_positions.append(pt)
 
 	if selected_positions.size() < 2:
