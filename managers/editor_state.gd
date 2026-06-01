@@ -4,6 +4,9 @@ signal canvas_area_rect_changed(rect: Rect2)
 signal tool_changed(tool: Tool)
 signal selection_changed(by_user: bool)
 signal options_changed
+## Emitted when the current fill/stroke/width is changed programmatically (e.g. on
+## New Image) so the Fill & Stroke panel can mirror the new values.
+signal fill_stroke_changed
 
 signal mouse_position_changed(screen_pos: Vector2)
 signal zoom_changed(screen_pos: Vector2, zoom_factor: float)
@@ -65,9 +68,9 @@ var selected_command_indices: Array[int] = []
 var selected_point_indices: Dictionary[int, Array] = {}
 
 ## Mirrors Fill & Stroke UI; used when creating new geometry (e.g. Line Pen).
-var current_fill_color: Color = Color.BLACK
-var current_stroke_color: Color = Color.BLACK
-var current_stroke_width: int = 1
+var current_fill_color: Color = GColor.WHITE
+var current_stroke_color: Color = GColor.BLACK
+var current_stroke_width: int = 2
 
 ## When true, vector/raster preview under this node is clipped to the declared document bounds (Pebble-style clipped preview).
 var clip_to_document_bounds: bool = false:
@@ -101,6 +104,7 @@ func set_current_fill_stroke(fill: Color, stroke: Color, width: int) -> void:
 	current_fill_color = fill
 	current_stroke_color = stroke
 	current_stroke_width = width
+	fill_stroke_changed.emit()
 
 
 ## Single entry point for snapping world-space points (Line Pen, future tools). [param stroke_width] is the stroke that governs odd-grid behavior (layer stroke when editing a layer, [member current_stroke_width] when creating one).

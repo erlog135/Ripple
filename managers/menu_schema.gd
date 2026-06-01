@@ -48,6 +48,12 @@ func _build_menu_data() -> Dictionary:
 	return {
 		"File": [
 			{
+				"id": "file_new",
+				"type": "action",
+				"label": "New...",
+				"shortcut": shortcut(KEY_N, true),
+			},
+			{
 				"id": "file_open",
 				"type": "action",
 				"label": "Open...",

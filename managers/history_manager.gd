@@ -16,6 +16,12 @@ func commit(action: _EditAction, merge_mode: UndoRedo.MergeMode = UndoRedo.MERGE
 	undo_redo.commit_action()
 
 
+## Wipes the entire undo/redo stack. Used by destructive operations such as
+## creating a brand-new project, where prior history no longer makes sense.
+func clear() -> void:
+	undo_redo.clear_history()
+
+
 func undo() -> void:
 	if undo_redo.has_undo():
 		undo_redo.undo()

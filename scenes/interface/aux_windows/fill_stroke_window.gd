@@ -1,32 +1,50 @@
 extends Control
 
-const COLOR_POPUP = preload("uid://opfiwgeouvns")
+const COLOR_POPUP_SCENE := "res://scenes/interface/popups/ColorPopup.tscn"
 @onready var fill_rect: ColorRect = $Panel/Options/FillColor/ColorRect
 @onready var stroke_rect: ColorRect = $Panel/Options/StrokeColor/ColorRect
 @onready var stroke_width_spin: SpinBox = $Panel/Options/StrokeWidth/SpinBox
 
-var fill_popup: PopupPanel
-var stroke_popup: PopupPanel
-
 var _syncing := false
 
 func _ready() -> void:
-	fill_popup = COLOR_POPUP.instantiate()
-	fill_rect.add_child(fill_popup)
-	fill_popup.color_selected.connect(_on_fill_color_selected)
 	fill_rect.gui_input.connect(func(event: InputEvent):
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			fill_popup.popup_centered())
+			_open_color_picker("color_picker_fill", fill_rect.color, _on_fill_color_selected))
 
-	stroke_popup = COLOR_POPUP.instantiate()
-	stroke_rect.add_child(stroke_popup)
-	stroke_popup.color_selected.connect(_on_stroke_color_selected)
 	stroke_rect.gui_input.connect(func(event: InputEvent):
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			stroke_popup.popup_centered())
+			_open_color_picker("color_picker_stroke", stroke_rect.color, _on_stroke_color_selected))
 
 	stroke_width_spin.value_changed.connect(_on_stroke_width_changed)
 	EditorState.selection_changed.connect(_on_selection_changed)
+	EditorState.fill_stroke_changed.connect(_sync_from_editor_state)
+	_sync_from_editor_state()
+
+
+## Mirrors the panel widgets to EditorState's current fill/stroke/width without
+## re-committing to history (e.g. after a New Image reset).
+func _sync_from_editor_state() -> void:
+	if _syncing:
+		return
+	_syncing = true
+	fill_rect.color = EditorState.current_fill_color
+	stroke_rect.color = EditorState.current_stroke_color
+	stroke_width_spin.value = EditorState.current_stroke_width
+	_syncing = false
+
+
+## Opens (or refocuses) the shared color picker for one swatch, syncing its
+## selection to [param current] without emitting a spurious history commit.
+func _open_color_picker(popup_id: String, current: Color, on_selected: Callable) -> void:
+	var popup = PopupManager.open(popup_id, COLOR_POPUP_SCENE)
+	if popup == null:
+		return
+	if not popup.color_selected.is_connected(on_selected):
+		popup.color_selected.connect(on_selected)
+	_syncing = true
+	popup.select_color(current)
+	_syncing = false
 
 
 func _sync_current_from_editor_ui() -> void:
@@ -90,8 +108,8 @@ func _on_selection_changed(_by_user: bool) -> void:
 			return
 
 	_syncing = true
-	fill_popup.select_color(shared_fill)
-	stroke_popup.select_color(shared_stroke)
+	fill_rect.color = shared_fill
+	stroke_rect.color = shared_stroke
 	stroke_width_spin.value = shared_width
 	EditorState.set_current_fill_stroke(shared_fill, shared_stroke, shared_width)
 	_syncing = false

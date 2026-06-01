@@ -5,6 +5,7 @@ signal color_selected(color: Color)
 @onready var grid_container: GridContainer = $VBoxContainer/GridContainer
 @onready var transparent_rect: TextureRect = $VBoxContainer/GridContainer/TransparentRect
 @onready var selector: Line2D = $Selector
+@onready var color_name: Label = $VBoxContainer/ColorName
 
 const COLOR_RECT_SIZE := Vector2(32, 32)
 const COLOR_RECT_PADDING := 4
@@ -35,9 +36,16 @@ const palette = [
 var selected_color: Color = GColor.BLACK
 
 func _ready() -> void:
+	borderless = false
 	_populate_grid()
+	# Swatch positions aren't valid until the grid lays out, so re-place the
+	# selector whenever that happens (covers the first popup_centered() too).
+	grid_container.sort_children.connect(_refresh_selector)
 	var first_swatch := grid_container.get_child(0) as ColorRect
 	_select_swatch(first_swatch, first_swatch.color)
+	# Free on dismiss so PopupManager drops its cache entry and the next request
+	# spins up a fresh, correctly-positioned instance.
+	popup_hide.connect(queue_free)
 
 func _populate_grid() -> void:
 	var parent := transparent_rect.get_parent()
@@ -79,16 +87,32 @@ func _register_transparent_rect() -> void:
 
 func _select_swatch(swatch: Control, color: Color) -> void:
 	selected_color = color
-	selector.position = swatch.position + grid_container.position
+	_position_selector(swatch)
 	color_selected.emit(selected_color)
 
 func select_color(color: Color) -> void:
+	selected_color = color
+	var swatch := _find_swatch(color)
+	if swatch != null:
+		_position_selector(swatch)
+	color_selected.emit(color)
+
+## Returns the swatch Control displaying [param color], or null if none matches.
+func _find_swatch(color: Color) -> Control:
 	if color == GColor.CLEAR:
-		_select_swatch(transparent_rect, GColor.CLEAR)
-		return
+		return transparent_rect
 	for child in grid_container.get_children():
 		if child is ColorRect and child.color == color:
-			_select_swatch(child as Control, color)
-			return
-	selected_color = color
-	color_selected.emit(color)
+			return child as Control
+	return null
+
+## Moves the selector outline onto [param swatch] using window-space coordinates,
+## which already fold in the grid/VBox offsets (unlike raw local positions).
+func _position_selector(swatch: Control) -> void:
+	selector.position = swatch.global_position - Vector2(4,4)
+
+## Re-places the selector onto the currently selected color after a relayout.
+func _refresh_selector() -> void:
+	var swatch := _find_swatch(selected_color)
+	if swatch != null:
+		_position_selector(swatch)

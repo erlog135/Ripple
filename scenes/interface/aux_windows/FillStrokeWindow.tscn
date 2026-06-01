@@ -51,7 +51,7 @@ vertical_alignment = 1
 [node name="ColorRect" type="ColorRect" parent="Panel/Options/FillColor" unique_id=168975516]
 layout_mode = 2
 size_flags_horizontal = 3
-color = Color(0, 0, 0, 1)
+color = Color(1, 1, 1, 1)
 
 [node name="StrokeColor" type="HBoxContainer" parent="Panel/Options" unique_id=1976280762]
 layout_mode = 2

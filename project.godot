@@ -28,6 +28,7 @@ RenderManager="*res://managers/render_manager.gd"
 LoadingOverlay="*res://scenes/interface/LoadingOverlay.tscn"
 MenuSchema="*res://managers/menu_schema.gd"
 MenuDispatcher="*res://managers/menu_dispatcher.gd"
+PopupManager="*res://managers/popup_manager.gd"
 
 [display]
 

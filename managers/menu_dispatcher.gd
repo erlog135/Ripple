@@ -11,6 +11,8 @@ func _ready() -> void:
 
 func execute(action_id: String) -> void:
 	match action_id:
+		"file_new":
+			PopupManager.open("new_file", "res://scenes/interface/popups/NewFilePopup.tscn")
 		"file_open":
 			Fileman.open_file_dialog()
 		"file_save":

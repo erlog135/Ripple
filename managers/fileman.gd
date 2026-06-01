@@ -19,8 +19,34 @@ func _ready():
 		EditorState.fit_document_to_view()
 	)
 
-func new_file():
-	print_debug("hi")
+## Wipes the slate clean and builds a fresh, blank single-frame sequence of the
+## given pixel [param size]. This is intentionally destructive (not undoable):
+## the history stack is cleared and the single source of truth is overwritten.
+func new_file(size: Vector2i) -> void:
+	HistoryManager.clear()
+
+	var sequence := DrawCommandSequence.new()
+	var image := DrawCommandImage.new()
+	image.bounds = size
+	sequence.frames.append(image)
+	sequence.frame_durations_ms.append(0)
+
+	ProjectData.current_path = ""
+	EditorState.set_current_frame(0)
+	EditorState.set_current_fill_stroke(GColor.WHITE, GColor.BLACK, _default_stroke_width_for(size))
+	ProjectData.set_current_sequence(sequence)
+	EditorState.fit_document_to_view()
+
+
+## Picks a sensible default stroke width from the new image's smaller dimension:
+## 80px and up -> 4, 50px and up -> 3, otherwise 2.
+func _default_stroke_width_for(size: Vector2i) -> int:
+	var dim := mini(size.x, size.y)
+	if dim >= 80:
+		return 4
+	if dim >= 50:
+		return 3
+	return 2
 
 func load_project(path: String) -> void:
 	pdc_to_gd(path)

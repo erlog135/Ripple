@@ -21,12 +21,6 @@ offset_top = 4.0
 offset_right = 117.0
 offset_bottom = 63.0
 
-[node name="Label" type="Label" parent="VBoxContainer" unique_id=1928568998]
-layout_mode = 2
-text = "SELECT COLOR"
-horizontal_alignment = 1
-vertical_alignment = 1
-
 [node name="GridContainer" type="GridContainer" parent="VBoxContainer" unique_id=2095960325]
 layout_mode = 2
 columns = 6
