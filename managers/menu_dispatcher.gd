@@ -17,6 +17,14 @@ func execute(action_id: String) -> void:
 			Fileman.save_file()
 		"file_save_as":
 			Fileman.save_as_file_dialog()
+		"file_export_frame_pdc":
+			Fileman.save_frame_as_pdc()
+		"file_export_frame_png":
+			Fileman.export_frame_as_png()
+		"file_export_frame_png_flat":
+			Fileman.export_frame_as_png(false)
+		"file_export_sequence_gif":
+			Fileman.export_sequence_as_gif()
 		"edit_undo":
 			HistoryManager.undo()
 		"edit_redo":

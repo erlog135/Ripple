@@ -65,6 +65,33 @@ func _build_menu_data() -> Dictionary:
 				"label": "Save As...",
 				"shortcut": shortcut(KEY_S, true, true),
 			},
+			{"type": "separator"},
+			{
+				"type": "submenu",
+				"label": "Export Current Frame",
+				"children": [
+					{
+						"id": "file_export_frame_pdc",
+						"type": "action",
+						"label": "PDC...",
+					},
+					{
+						"id": "file_export_frame_png",
+						"type": "action",
+						"label": "PNG (transparent)...",
+					},
+					{
+						"id": "file_export_frame_png_flat",
+						"type": "action",
+						"label": "PNG (background)...",
+					},
+				],
+			},
+			{
+				"id": "file_export_sequence_gif",
+				"type": "action",
+				"label": "Export Sequence as GIF...",
+			},
 		],
 		"Edit": [
 			{

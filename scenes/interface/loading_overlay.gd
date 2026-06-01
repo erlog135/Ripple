@@ -7,6 +7,9 @@ func _ready() -> void:
 	RenderManager.bulk_raster_started.connect(_on_bulk_raster_started)
 	RenderManager.bulk_raster_progress.connect(_on_bulk_raster_progress)
 	RenderManager.bulk_raster_finished.connect(_on_bulk_raster_finished)
+	Fileman.gif_export_started.connect(_on_gif_export_started)
+	Fileman.gif_export_progress.connect(_on_gif_export_progress)
+	Fileman.gif_export_finished.connect(_on_gif_export_finished)
 
 
 func _on_bulk_raster_started(total: int) -> void:
@@ -23,6 +26,20 @@ func _on_bulk_raster_progress(completed: int, _total: int) -> void:
 
 
 func _on_bulk_raster_finished() -> void:
+	hide()
+
+
+func _on_gif_export_started(total: int) -> void:
+	progress_bar.max_value = total
+	progress_bar.value = 0
+	show()
+
+
+func _on_gif_export_progress(completed: int, _total: int) -> void:
+	progress_bar.value = completed
+
+
+func _on_gif_export_finished() -> void:
 	hide()
 
 

@@ -31,6 +31,15 @@ func _populate_popup(popup: PopupMenu, items: Array) -> void:
 			"separator":
 				popup.add_separator()
 				popup.set_item_metadata(popup.item_count - 1, "")
+			"submenu":
+				var sub := PopupMenu.new()
+				sub.hide_on_state_item_selection = true
+				popup.add_child(sub)
+				popup.add_submenu_node_item(label, sub)
+				popup.set_item_metadata(popup.item_count - 1, "")
+				_populate_popup(sub, item_data.get("children", []))
+				sub.index_pressed.connect(_on_index_pressed.bind(sub))
+				sub.about_to_popup.connect(_refresh_popup_states.bind(sub))
 			"checkbox":
 				if sc:
 					popup.add_check_shortcut(sc, -1, true)
@@ -71,6 +80,10 @@ func _on_menu_state_changed() -> void:
 func _refresh_popup_states(popup: PopupMenu) -> void:
 	for idx in popup.item_count:
 		if popup.is_item_separator(idx):
+			continue
+		var sub := popup.get_item_submenu_node(idx)
+		if sub != null:
+			_refresh_popup_states(sub)
 			continue
 		var action_id: String = popup.get_item_metadata(idx)
 		if action_id.is_empty():

@@ -1,8 +1,17 @@
 extends Node
 
+const GIFExporter := preload("res://addons/gdgifexporter/exporter.gd")
+const MedianCutQuantization := preload("res://addons/gdgifexporter/quantization/median_cut.gd")
+
 signal pdc_loaded(pdc: DrawCommandSequence)
 signal file_loaded(size_bytes: int)
 signal file_saved(size_bytes: int)
+## Emitted before async GIF encoding begins. [param total] is the number of frames.
+signal gif_export_started(total: int)
+## Emitted after each frame is encoded.
+signal gif_export_progress(completed: int, total: int)
+## Emitted when all frames have been encoded and the file has been written.
+signal gif_export_finished
 
 func _ready():
 	pdc_loaded.connect(func(pdc: DrawCommandSequence):
@@ -246,5 +255,173 @@ func _pdc_sequence_data_size(sequence: DrawCommandSequence) -> int:
 func save_project(path: String) -> void:
 	gd_to_pdc(path, ProjectData.current_sequence)
 
-func export_frame(path):
-	pass
+## Saves the current frame as a standalone PDCI file without altering the project path.
+func save_frame_as_pdc() -> void:
+	var seq := ProjectData.current_sequence
+	if seq == null or seq.frames.is_empty():
+		push_error("Fileman: no project loaded, cannot save frame as PDC")
+		return
+	var frame_data: DrawCommandImage = seq.frames[EditorState.current_frame]
+
+	var dialog := FileDialog.new()
+	get_tree().root.add_child(dialog)
+	dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
+	dialog.access = FileDialog.ACCESS_FILESYSTEM
+	dialog.filters = ["*.pdc"]
+	dialog.use_native_dialog = true
+	_prefill_dialog(dialog, "pdc")
+	dialog.file_selected.connect(func(path: String) -> void:
+		var file := FileAccess.open(path, FileAccess.WRITE)
+		if file == null:
+			push_error("Fileman: failed to open '%s' for writing PDC" % path)
+			return
+		file.set_big_endian(false)
+		file.store_buffer("PDCI".to_ascii_buffer())
+		file.store_32(_pdc_image_data_size(frame_data))
+		_pdc_write_image(file, frame_data)
+		file.close()
+	)
+	dialog.popup_centered()
+
+
+## Pre-fills a save FileDialog with the project directory and a suggested filename.
+## Does nothing when no project has been saved/opened yet.
+func _prefill_dialog(dialog: FileDialog, ext: String) -> void:
+	var proj := ProjectData.current_path
+	if proj.is_empty():
+		return
+	dialog.current_dir = proj.get_base_dir()
+	dialog.current_file = proj.get_file().get_basename() + "." + ext
+
+
+## Rasterizer background pixels are filled with 0xAA across all channels; drawn pixels get A=0xFF.
+## When [param transparent_bg] is true, background pixels become fully transparent (RGBA all 0).
+## When false, they become fully opaque (A set to 255, RGB kept as the 0xAA gray).
+func _fix_raster_alpha(img: Image, transparent_bg: bool) -> Image:
+	var data := img.get_data()
+	for i in range(3, data.size(), 4):
+		if data[i] != 0xFF:
+			if transparent_bg:
+				data[i - 3] = 0
+				data[i - 2] = 0
+				data[i - 1] = 0
+				data[i] = 0
+			else:
+				data[i] = 0xFF
+	return Image.create_from_data(img.get_width(), img.get_height(), false, Image.FORMAT_RGBA8, data)
+
+
+## Exports the current frame as a PNG. Respects the Clip to Document Bounds setting.
+## [param transparent_bg] controls whether unpainted pixels are transparent or opaque gray.
+func export_frame_as_png(transparent_bg: bool = true) -> void:
+	var seq := ProjectData.current_sequence
+	if seq == null or seq.frames.is_empty():
+		push_error("Fileman: no project loaded, cannot export PNG")
+		return
+	var frame_idx := EditorState.current_frame
+	var tex := RenderManager.get_frame_texture(frame_idx)
+	if tex == null:
+		push_error("Fileman: no rasterized texture for frame %d" % frame_idx)
+		return
+
+	var img := tex.get_image()
+	img.convert(Image.FORMAT_RGBA8)
+	img = _fix_raster_alpha(img, transparent_bg)
+
+	if EditorState.clip_to_document_bounds:
+		var frame_data: DrawCommandImage = seq.frames[frame_idx]
+		var origin := RenderManager.get_preview_raster_origin()
+		var clip := Rect2i(
+			int(-origin.x), int(-origin.y),
+			frame_data.bounds.x, frame_data.bounds.y
+		)
+		img = img.get_region(clip)
+
+	var dialog := FileDialog.new()
+	get_tree().root.add_child(dialog)
+	dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
+	dialog.access = FileDialog.ACCESS_FILESYSTEM
+	dialog.filters = ["*.png"]
+	dialog.use_native_dialog = true
+	_prefill_dialog(dialog, "png")
+	dialog.file_selected.connect(func(path: String) -> void:
+		var err := img.save_png(path)
+		if err != OK:
+			push_error("Fileman: failed to save PNG to '%s' (error %d)" % [path, err])
+	)
+	dialog.popup_centered()
+
+
+## Exports the entire sequence as an animated GIF. Respects the Clip to Document Bounds setting.
+## Opens the save dialog first, then encodes asynchronously (one frame per engine tick)
+## so the UI stays responsive and the loading overlay can show progress.
+func export_sequence_as_gif() -> void:
+	var seq := ProjectData.current_sequence
+	if seq == null or seq.frames.is_empty():
+		push_error("Fileman: no project loaded, cannot export GIF")
+		return
+	if RenderManager.get_frame_texture(0) == null:
+		push_error("Fileman: rasterized textures not available for GIF export")
+		return
+
+	var dialog := FileDialog.new()
+	get_tree().root.add_child(dialog)
+	dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
+	dialog.access = FileDialog.ACCESS_FILESYSTEM
+	dialog.filters = ["*.gif"]
+	dialog.use_native_dialog = true
+	_prefill_dialog(dialog, "gif")
+	dialog.file_selected.connect(func(path: String) -> void:
+		_encode_gif_async(path)
+	)
+	dialog.popup_centered()
+
+
+func _encode_gif_async(save_path: String) -> void:
+	var seq := ProjectData.current_sequence
+	if seq == null or seq.frames.is_empty():
+		return
+
+	var clip := EditorState.clip_to_document_bounds
+	var origin := RenderManager.get_preview_raster_origin()
+
+	var first_img := RenderManager.get_frame_texture(0).get_image()
+	var out_size: Vector2i
+	var clip_rect := Rect2i()
+	if clip:
+		var frame_data: DrawCommandImage = seq.frames[0]
+		out_size = frame_data.bounds
+		clip_rect = Rect2i(int(-origin.x), int(-origin.y), out_size.x, out_size.y)
+	else:
+		out_size = first_img.get_size()
+
+	var total := seq.frames.size()
+	var exporter := GIFExporter.new(out_size.x, out_size.y)
+
+	gif_export_started.emit(total)
+
+	for i in total:
+		var tex := RenderManager.get_frame_texture(i)
+		if tex == null:
+			push_warning("Fileman: skipping frame %d — no rasterized texture" % i)
+		else:
+			var img := tex.get_image()
+			img.convert(Image.FORMAT_RGBA8)
+			img = _fix_raster_alpha(img, false)
+			if clip:
+				img = img.get_region(clip_rect)
+			var delay_ms: int = seq.frame_durations_ms[i] if i < seq.frame_durations_ms.size() else 33
+			var result := exporter.add_frame(img, float(delay_ms) / 1000.0, MedianCutQuantization)
+			if result != 0:
+				push_warning("Fileman: GIF add_frame error %d on frame %d" % [result, i])
+		gif_export_progress.emit(i + 1, total)
+		await get_tree().process_frame
+
+	var file := FileAccess.open(save_path, FileAccess.WRITE)
+	if file == null:
+		push_error("Fileman: failed to open '%s' for writing GIF" % save_path)
+		gif_export_finished.emit()
+		return
+	file.store_buffer(exporter.export_file_data())
+	file.close()
+	gif_export_finished.emit()
