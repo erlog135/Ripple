@@ -24,7 +24,6 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="TopMenuBar" parent="VBoxContainer" unique_id=2124299505 instance=ExtResource("1_ndpqs")]
-custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
 [node name="Toolbelt" type="Panel" parent="VBoxContainer" unique_id=87617283]

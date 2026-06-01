@@ -61,25 +61,3 @@ func get_state(action_id: String) -> bool:
 	return false
 
 
-func _unhandled_key_input(event: InputEvent) -> void:
-	if not event.is_pressed() or event.is_echo():
-		return
-	for category_items: Array in MenuSchema.menu_data.values():
-		for item: Dictionary in category_items:
-			if _try_execute_shortcut_item(item, event):
-				return
-
-
-func _try_execute_shortcut_item(item: Dictionary, event: InputEvent) -> bool:
-	if item.has("shortcut"):
-		var sc: Shortcut = item["shortcut"]
-		if sc.matches_event(event):
-			if item.has("id"):
-				execute(item["id"])
-				get_viewport().set_input_as_handled()
-				return true
-	if item.get("type", "") == "submenu" and item.has("children"):
-		for child: Dictionary in item["children"]:
-			if _try_execute_shortcut_item(child, event):
-				return true
-	return false

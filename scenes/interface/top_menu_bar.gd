@@ -1,42 +1,81 @@
-extends Control
+extends MenuBar
 
-const DROPDOWN_SCENE := preload("res://scenes/interface/menus/MenuDropdown.tscn")
-
-@onready var _buttons_row: HBoxContainer = $HBoxContainer
-
-var _dropdown: PopupPanel
-var _open_category: String = ""
+## Builds a native MenuBar from MenuSchema, dispatching actions through MenuDispatcher.
 
 
 func _ready() -> void:
-	_dropdown = DROPDOWN_SCENE.instantiate()
-	add_child(_dropdown)
-	_dropdown.closed.connect(_on_dropdown_closed)
-	_build_category_buttons()
+	prefer_global_menu = true
+	_build_menus()
+	MenuDispatcher.menu_state_changed.connect(_on_menu_state_changed)
 
 
-func _build_category_buttons() -> void:
-	for child: Node in _buttons_row.get_children():
-		child.queue_free()
-
+func _build_menus() -> void:
 	for category: String in MenuSchema.menu_data.keys():
-		var button := MenuCategoryButton.new()
-		button.category_name = category
-		button.text = category.to_upper()
-		button.menu_requested.connect(_on_category_requested.bind(category, button))
-		_buttons_row.add_child(button)
+		var popup := PopupMenu.new()
+		popup.title = category
+		popup.hide_on_state_item_selection = true
+		add_child(popup)
+		_populate_popup(popup, MenuSchema.menu_data[category])
+		popup.index_pressed.connect(_on_index_pressed.bind(popup))
+		popup.about_to_popup.connect(_refresh_popup_states.bind(popup))
 
 
-func _on_category_requested(category: String, button: Button) -> void:
-	if _dropdown.visible and _open_category == category:
-		_dropdown.hide()
-		return
+func _populate_popup(popup: PopupMenu, items: Array) -> void:
+	for item_data: Dictionary in items:
+		var item_type: String = item_data.get("type", "action")
+		var label: String = item_data.get("label", "")
+		var action_id: String = item_data.get("id", "")
+		var sc: Shortcut = item_data.get("shortcut", null)
 
-	var items: Array = MenuSchema.menu_data.get(category, [])
-	_dropdown.populate(items)
-	_dropdown.open_below(button)
-	_open_category = category
+		match item_type:
+			"separator":
+				popup.add_separator()
+				popup.set_item_metadata(popup.item_count - 1, "")
+			"checkbox":
+				if sc:
+					popup.add_check_shortcut(sc, -1, true)
+				else:
+					popup.add_check_item(label)
+				var idx := popup.item_count - 1
+				popup.set_item_text(idx, label)
+				popup.set_item_metadata(idx, action_id)
+			"radio":
+				if sc:
+					popup.add_radio_check_shortcut(sc, -1, true)
+				else:
+					popup.add_radio_check_item(label)
+				var idx := popup.item_count - 1
+				popup.set_item_text(idx, label)
+				popup.set_item_metadata(idx, action_id)
+			_:
+				if sc:
+					popup.add_shortcut(sc, -1, true)
+				else:
+					popup.add_item(label)
+				var idx := popup.item_count - 1
+				popup.set_item_text(idx, label)
+				popup.set_item_metadata(idx, action_id)
 
 
-func _on_dropdown_closed() -> void:
-	_open_category = ""
+func _on_index_pressed(index: int, popup: PopupMenu) -> void:
+	var action_id: String = popup.get_item_metadata(index)
+	if not action_id.is_empty():
+		MenuDispatcher.execute(action_id)
+
+
+func _on_menu_state_changed() -> void:
+	for i in get_menu_count():
+		_refresh_popup_states(get_menu_popup(i))
+
+
+func _refresh_popup_states(popup: PopupMenu) -> void:
+	for idx in popup.item_count:
+		if popup.is_item_separator(idx):
+			continue
+		var action_id: String = popup.get_item_metadata(idx)
+		if action_id.is_empty():
+			continue
+		var item_data := MenuSchema.get_item_by_id(action_id)
+		var item_type: String = item_data.get("type", "")
+		if item_type in ["checkbox", "radio"]:
+			popup.set_item_checked(idx, MenuDispatcher.get_state(action_id))
