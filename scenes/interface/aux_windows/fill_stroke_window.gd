@@ -19,6 +19,7 @@ func _ready() -> void:
 	stroke_width_spin.value_changed.connect(_on_stroke_width_changed)
 	EditorState.selection_changed.connect(_on_selection_changed)
 	EditorState.fill_stroke_changed.connect(_sync_from_editor_state)
+	EditorState.playback_state_changed.connect(_on_playback_state_changed)
 	_sync_from_editor_state()
 
 
@@ -91,7 +92,14 @@ func _on_stroke_width_changed(value: float) -> void:
 
 
 
+func _on_playback_state_changed(playing: bool) -> void:
+	if not playing:
+		_on_selection_changed(false)
+
+
 func _on_selection_changed(_by_user: bool) -> void:
+	if EditorState.is_playing:
+		return
 	var indices: Array[int] = EditorState.selected_command_indices
 	var frame: DrawCommandImage = ProjectData.get_current_image()
 	if indices.is_empty() or frame == null:

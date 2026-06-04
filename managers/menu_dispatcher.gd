@@ -35,10 +35,9 @@ func execute(action_id: String) -> void:
 			EditorState.select_all()
 		"edit_deselect":
 			EditorState.deselect_all()
-		"view_vector":
-			EditorState.set_render_mode(EditorState.RenderMode.VECTOR)
 		"view_raster":
-			EditorState.set_render_mode(EditorState.RenderMode.RASTER)
+			var next_mode := EditorState.RenderMode.VECTOR if EditorState.render_mode == EditorState.RenderMode.RASTER else EditorState.RenderMode.RASTER
+			EditorState.set_render_mode(next_mode)
 		"view_grid_snap":
 			EditorState.grid_snap = not EditorState.grid_snap
 			menu_state_changed.emit()
@@ -60,8 +59,6 @@ func execute(action_id: String) -> void:
 
 func get_state(action_id: String) -> bool:
 	match action_id:
-		"view_vector":
-			return EditorState.render_mode == EditorState.RenderMode.VECTOR
 		"view_raster":
 			return EditorState.render_mode == EditorState.RenderMode.RASTER
 		"view_grid_snap":

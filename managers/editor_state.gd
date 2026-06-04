@@ -126,8 +126,11 @@ func set_current_frame(frame: int) -> void:
 			frame = clampi(frame, 0, n - 1)
 		else:
 			frame = 0
+	var old_cmd_count := ProjectData.get_current_commands().size()
+	var was_all_selected := (old_cmd_count > 0
+		and selected_command_indices.size() == old_cmd_count)
 	current_frame = frame
-	_validate_selection_for_new_frame()
+	_validate_selection_for_new_frame(was_all_selected)
 	current_frame_changed.emit(current_frame)
 
 
@@ -140,9 +143,14 @@ func clear_selection() -> void:
 
 ## Called whenever current_frame changes. Attempts to keep the existing selection
 ## valid on the new frame. Out-of-bounds command indices are dropped entirely;
-## out-of-bounds point indices are pruned (the shape stays selected). Emits
-## selection_changed once at the end so gizmos/properties panels can redraw.
-func _validate_selection_for_new_frame() -> void:
+## out-of-bounds point indices are pruned (the shape stays selected). When
+## [param was_all_selected] is true, all commands on the new frame are selected
+## instead of performing the normal trim. Emits selection_changed once at the end.
+func _validate_selection_for_new_frame(was_all_selected: bool = false) -> void:
+	if was_all_selected:
+		select_all()
+		return
+
 	if selected_command_indices.is_empty():
 		return
 

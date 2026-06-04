@@ -127,13 +127,8 @@ func _build_menu_data() -> Dictionary:
 		],
 		"View": [
 			{
-				"id": "view_vector",
-				"type": "radio",
-				"label": "Vector Mode",
-			},
-			{
 				"id": "view_raster",
-				"type": "radio",
+				"type": "checkbox",
 				"label": "Raster Preview",
 			},
 			{"type": "separator"},
