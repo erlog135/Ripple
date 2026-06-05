@@ -55,7 +55,7 @@ func handle_left_press(world_pos: Vector2, gizmos) -> void:
 				and int(hit[1]) == j
 			)
 			var snaps_to_close: bool = snapped_work.is_equal_approx(cmd.points[j])
-			should_close = hit_correct and snaps_to_close
+			should_close = hit_correct or snaps_to_close
 
 		if should_close:
 			HistoryManager.commit(LinePenEditAction.close_path(frame_idx, cmd_idx, sel_cmds, sel_pts))

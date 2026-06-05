@@ -261,6 +261,7 @@ func _cache_snapshot() -> void:
 			"stroke_width": cmd.stroke_width,
 			"is_circle": cmd.draw_type == DrawCommand.Type.CIRCLE,
 			"circle_radius": cmd.circle_radius,
+			"path_open": cmd.path_open,
 		})
 
 
@@ -277,6 +278,7 @@ func _commit(matrix: Transform2D) -> void:
 	var new_points_arrays: Array = []
 	var new_radii: Array = []
 	var remapped_sel_pts: Dictionary = {}
+	var path_close_indices: Array[int] = []
 
 	for entry in _snapshot:
 		var cmd_idx: int = entry["cmd_idx"]
@@ -299,6 +301,12 @@ func _commit(matrix: Transform2D) -> void:
 			radius_new = maxi(1, roundi(float(entry["circle_radius"]) * radius_scale))
 
 		if is_move:
+			# Detect when the two endpoints of an open path land on the same position
+			# after a move — the shape should be closed as part of the same action.
+			if entry["path_open"] and not entry["is_circle"] and transformed.size() >= 2:
+				if transformed[0] == transformed[transformed.size() - 1]:
+					path_close_indices.append(cmd_idx)
+
 			var merged := _merge_coincident(transformed, sel_pts)
 			command_indices.append(cmd_idx)
 			new_points_arrays.append(merged["points"])
@@ -314,7 +322,7 @@ func _commit(matrix: Transform2D) -> void:
 		return
 
 	HistoryManager.commit(TransformSelectionAction.new(
-		frame_idx, command_indices, new_points_arrays, new_radii
+		frame_idx, command_indices, new_points_arrays, new_radii, path_close_indices
 	))
 
 	if not remapped_sel_pts.is_empty():

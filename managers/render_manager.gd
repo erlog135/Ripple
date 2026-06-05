@@ -54,9 +54,13 @@ func _on_data_changed(_by_user: bool, affected_frame: int) -> void:
 	preview_layout_changed = layout_changed
 
 	var needs_bulk := false
-	if layout_changed or affected_frame < 0 or seq == null:
+	if layout_changed or seq == null:
 		_frame_cache.clear()
 		needs_bulk = seq != null and not seq.frames.is_empty()
+	elif affected_frame < 0:
+		# Structural-only change (e.g. reorder) with no layout change.
+		# Cache is keyed by instance ID so all entries remain valid; nothing to re-rasterize.
+		pass
 	elif affected_frame < seq.frames.size():
 		_frame_cache.erase(seq.frames[affected_frame].get_instance_id())
 	else:
