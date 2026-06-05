@@ -174,5 +174,11 @@ func _build_menu_data() -> Dictionary:
 				"label": "Zoom to Selection",
 				"shortcut": shortcut(KEY_0, true, true),
 			},
+			{"type": "separator"},
+			{
+				"id": "view_validate_angles",
+				"type": "checkbox",
+				"label": "Validate Line Angles",
+			},
 		],
 	}

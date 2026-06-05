@@ -7,6 +7,11 @@ const SKELLY_SELECTED_POINT_COLOR := GColor.VERY_LIGHT_BLUE
 const SKELLY_PATH_COLOR := Color(0.5, 0.5, 0.5, 1.0)
 const SKELLY_SELECTED_PATH_COLOR := GColor.VERY_LIGHT_BLUE
 
+## Highlight color used when a segment's angle matches one of the permitted pixel-art angles.
+const ANGLE_VALID_COLOR := Color(0.15, 0.85, 0.35, 0.92)
+## Tolerance in radians (~0.5°) used when comparing a segment angle to a permitted angle.
+const ANGLE_TOLERANCE_RAD := 0.009
+
 const SKELLY_POINT_RADIUS_PX := 4.0
 const SKELLY_PATH_WIDTH_PX := 2.0
 const TRANSFORM_HANDLE_PX := 4.0
@@ -30,6 +35,7 @@ func _ready() -> void:
 	EditorState.tool_changed.connect(_on_tool_changed)
 	EditorState.transform_preview_changed.connect(_on_transform_preview_changed)
 	EditorState.line_pen_hover_changed.connect(_on_line_pen_hover_changed)
+	EditorState.validate_line_angles_changed.connect(_on_validate_line_angles_changed)
 
 func _on_data_changed(_by_user: bool, _affected_frame: int) -> void:
 	queue_redraw()
@@ -64,6 +70,9 @@ func _on_transform_preview_changed() -> void:
 func _on_line_pen_hover_changed() -> void:
 	queue_redraw()
 
+func _on_validate_line_angles_changed(_enabled: bool) -> void:
+	queue_redraw()
+
 func _draw() -> void:
 	if EditorState.is_playing:
 		return
@@ -71,6 +80,7 @@ func _draw() -> void:
 		_draw_pixel_grid()
 	_draw_document_bounds()
 	_draw_skeletons()
+	_draw_angle_validation()
 	_draw_line_pen_preview()
 	_draw_drag_selection_box()
 	_draw_selection_box()
@@ -154,6 +164,8 @@ func _draw_line_pen_preview() -> void:
 					if pi >= 0 and pi < cmd.points.size():
 						var a := _point_with_drag_offset(cmd.points[pi], cmd_idx, pi)
 						draw_line(a, hover, LINE_PEN_PREVIEW_COLOR, line_w)
+						if EditorState.validate_line_angles and _is_segment_angle_valid(a, hover):
+							draw_line(a, hover, ANGLE_VALID_COLOR, line_w)
 				elif pts.size() == 2:
 					var ia := int(pts[0])
 					var ib := int(pts[1])
@@ -162,6 +174,11 @@ func _draw_line_pen_preview() -> void:
 						var pb := _point_with_drag_offset(cmd.points[ib], cmd_idx, ib)
 						draw_line(pa, hover, LINE_PEN_PREVIEW_COLOR, line_w)
 						draw_line(hover, pb, LINE_PEN_PREVIEW_COLOR, line_w)
+						if EditorState.validate_line_angles:
+							if _is_segment_angle_valid(pa, hover):
+								draw_line(pa, hover, ANGLE_VALID_COLOR, line_w)
+							if _is_segment_angle_valid(hover, pb):
+								draw_line(hover, pb, ANGLE_VALID_COLOR, line_w)
 
 	# Preview dot shows where the next placed point will land.
 	# Visible even when starting a brand-new command (ctx is empty).
@@ -314,6 +331,92 @@ func set_drag_selection_rect(rect: Rect2, active: bool) -> void:
 	_drag_selection_rect = rect
 	_drag_selection_active = active
 	queue_redraw()
+
+## Overlays green segments on PATH/PRECISE_PATH commands, using the exact same
+## visibility rules as _draw_skeletons so the green only appears where a skeleton
+## line is already drawn.
+func _draw_angle_validation() -> void:
+	if not EditorState.validate_line_angles:
+		return
+	var frame: DrawCommandImage = ProjectData.get_current_image()
+	if frame == null:
+		return
+	var line_w := SKELLY_PATH_WIDTH_PX / EditorState.current_zoom
+	var show_only_selected := EditorState.active_tool != EditorState.Tool.SELECT
+	var show_full_cmd := (
+		EditorState.active_tool == EditorState.Tool.TRANSFORM
+		or EditorState.active_tool == EditorState.Tool.LINE_PEN
+	)
+	for cmd_idx in range(frame.commands.size()):
+		var cmd: DrawCommand = frame.commands[cmd_idx]
+		if cmd.hidden:
+			continue
+		var sel_pts: Array = EditorState.selected_point_indices.get(cmd_idx, [])
+		if show_only_selected and sel_pts.is_empty():
+			continue
+		var effective_show_only := show_only_selected and not show_full_cmd
+		match cmd.draw_type:
+			DrawCommand.Type.PATH, DrawCommand.Type.PRECISE_PATH:
+				_draw_path_angle_validation(cmd, cmd_idx, sel_pts, line_w, effective_show_only)
+
+
+func _draw_path_angle_validation(cmd: DrawCommand, cmd_idx: int, sel_pts: Array, line_w: float, show_only_selected: bool) -> void:
+	var points := _points_with_drag_offset(cmd.points, cmd_idx)
+	var n := points.size()
+	if n < 2:
+		return
+	for i in range(n - 1):
+		var seg_selected := (i in sel_pts) and ((i + 1) in sel_pts)
+		if show_only_selected and not seg_selected:
+			continue
+		if _is_segment_angle_valid(points[i], points[i + 1]):
+			draw_line(points[i], points[i + 1], ANGLE_VALID_COLOR, line_w)
+	if not cmd.path_open and n > 2:
+		var seg_selected := ((n - 1) in sel_pts) and (0 in sel_pts)
+		if not show_only_selected or seg_selected:
+			if _is_segment_angle_valid(points[n - 1], points[0]):
+				draw_line(points[n - 1], points[0], ANGLE_VALID_COLOR, line_w)
+
+
+## Returns true when the line from [param a] to [param b] matches one of the
+## pixel-art permitted angles (horizontal, 3:1, 2:1, 1:1, 1:2, 1:3, vertical,
+## and all their 180° mirrors). Degenerate zero-length segments are considered valid.
+##
+## Method: atan2 angle is normalised to [0, PI) then folded into [0, PI/2] by
+## reflecting around PI/2, so only the 7 canonical half-angles need checking.
+func _is_segment_angle_valid(a: Vector2, b: Vector2) -> bool:
+	var delta := b - a
+	if delta.length_squared() < 0.0001:
+		return true
+	var angle := atan2(delta.y, delta.x)
+	# Normalise directed angle to the undirected range [0, PI).
+	angle = fmod(angle, PI)
+	if angle < 0.0:
+		angle += PI
+	# Fold to [0, PI/2] — symmetric pairs (e.g. 135° ↔ 45°) share the same half-angle.
+	var half_angle := minf(angle, PI - angle)
+	# Canonical half-angles for the seven permitted directions:
+	#   0°  (horizontal)   atan(0)   = 0
+	#   3:1 (18.43°)       atan(1/3) ≈ 0.32175
+	#   2:1 (26.57°)       atan(1/2) ≈ 0.46365
+	#   1:1 (45°)          PI/4      ≈ 0.78540
+	#   1:2 (63.43°)       atan(2)   ≈ 1.10715
+	#   1:3 (71.57°)       atan(3)   ≈ 1.24905
+	#   90° (vertical)     PI/2      ≈ 1.57080
+	const PERMITTED: Array[float] = [
+		0.0,
+		0.32175055439664219,
+		0.46364760900080611,
+		0.78539816339744831,  # PI / 4
+		1.10714871779409040,
+		1.24904577239825420,
+		1.57079632679489662,  # PI / 2
+	]
+	for permitted: float in PERMITTED:
+		if absf(half_angle - permitted) < ANGLE_TOLERANCE_RAD:
+			return true
+	return false
+
 
 func _draw_circle_skeleton(cmd: DrawCommand, cmd_idx: int, sel_pts: Array, line_w: float, pt_r: float, show_only_selected: bool) -> void:
 	if cmd.points.is_empty():
