@@ -121,8 +121,11 @@ func _draw_skeletons() -> void:
 
 	var line_w := SKELLY_PATH_WIDTH_PX / EditorState.current_zoom
 	var pt_r := SKELLY_POINT_RADIUS_PX / EditorState.current_zoom
-	var show_only_selected := EditorState.active_tool != EditorState.Tool.SELECT
-	# For TRANSFORM and LINE_PEN, show all points/segments within a selected command
+	var show_only_selected := (
+		EditorState.active_tool != EditorState.Tool.SELECT
+		and EditorState.active_tool != EditorState.Tool.TRANSFORM
+	)
+	# For TRANSFORM and LINE_PEN, show all points/segments within a command
 	# (non-selected ones render in the dimmed white/gray palette to provide context).
 	var show_full_cmd := (
 		EditorState.active_tool == EditorState.Tool.TRANSFORM
@@ -326,6 +329,45 @@ func get_best_point_in_rect(rect: Rect2, world_pos: Vector2) -> Array:
 			best_dist = dist
 			best_hit = hit
 	return best_hit
+
+## Returns [cmd_idx, pt_idx_a, pt_idx_b] for the nearest PATH/PRECISE_PATH segment
+## within tolerance_px screen pixels of world_pos, or [] if none qualifies.
+## Segment connectivity mirrors _draw_path_skeleton: consecutive pairs plus the
+## closing edge (n-1, 0) when path_open is false and n > 2.
+func get_segment_at(world_pos: Vector2, tolerance_px: float) -> Array:
+	var frame: DrawCommandImage = ProjectData.get_current_image()
+	if frame == null:
+		return []
+	var tol := tolerance_px / EditorState.current_zoom
+	var best_dist := tol
+	var best: Array = []
+	for cmd_idx in range(frame.commands.size()):
+		var cmd: DrawCommand = frame.commands[cmd_idx]
+		if cmd.hidden:
+			continue
+		if cmd.draw_type != DrawCommand.Type.PATH and cmd.draw_type != DrawCommand.Type.PRECISE_PATH:
+			continue
+		var n := cmd.points.size()
+		if n < 2:
+			continue
+		for i in range(n - 1):
+			var a := _point_with_drag_offset(cmd.points[i], cmd_idx, i)
+			var b := _point_with_drag_offset(cmd.points[i + 1], cmd_idx, i + 1)
+			var closest := Geometry2D.get_closest_point_to_segment(world_pos, a, b)
+			var dist := world_pos.distance_to(closest)
+			if dist < best_dist:
+				best_dist = dist
+				best = [cmd_idx, i, i + 1]
+		if not cmd.path_open and n > 2:
+			var a := _point_with_drag_offset(cmd.points[n - 1], cmd_idx, n - 1)
+			var b := _point_with_drag_offset(cmd.points[0], cmd_idx, 0)
+			var closest := Geometry2D.get_closest_point_to_segment(world_pos, a, b)
+			var dist := world_pos.distance_to(closest)
+			if dist < best_dist:
+				best_dist = dist
+				best = [cmd_idx, n - 1, 0]
+	return best
+
 
 func set_drag_selection_rect(rect: Rect2, active: bool) -> void:
 	_drag_selection_rect = rect

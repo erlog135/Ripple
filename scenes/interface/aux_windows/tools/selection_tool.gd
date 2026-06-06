@@ -54,6 +54,14 @@ func _apply_rect_selection(rect: Rect2, additive: bool, single_hit_only: bool, w
 	if single_hit_only:
 		var best_hit: Array = gizmos.get_best_point_in_rect(rect, world_pos)
 		if best_hit.is_empty():
+			# No point hit — try selecting a segment instead.
+			var seg_hit: Array = gizmos.get_segment_at(world_pos, 4.0)
+			if not seg_hit.is_empty():
+				if not additive:
+					EditorState.deselect_all()
+				EditorState.select_point(seg_hit[0], seg_hit[1], true)
+				EditorState.select_point(seg_hit[0], seg_hit[2], true)
+				return
 			if not additive and not _is_inside_selection_bounds(world_pos):
 				EditorState.deselect_all()
 			return

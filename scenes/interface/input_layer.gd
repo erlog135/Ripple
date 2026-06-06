@@ -42,9 +42,15 @@ func _gui_input(event: InputEvent) -> void:
 		EditorState.zoom_out(event.position)
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.pressed and event.double_click and _toggle_tool_on_selected_point(_screen_to_world(event.position)):
-			accept_event()
-			return
+		if event.pressed and event.double_click:
+			var world_pos_dc := _screen_to_world(event.position)
+			if _toggle_tool_on_selected_point(world_pos_dc):
+				accept_event()
+				return
+			if EditorState.active_tool == EditorState.Tool.TRANSFORM:
+				EditorState.deselect_all()
+				accept_event()
+				return
 		if EditorState.active_tool == EditorState.Tool.SELECT:
 			var world_pos := _screen_to_world(event.position)
 			if event.pressed:
@@ -54,6 +60,8 @@ func _gui_input(event: InputEvent) -> void:
 		elif EditorState.active_tool == EditorState.Tool.TRANSFORM:
 			var world_pos := _screen_to_world(event.position)
 			if event.pressed:
+				if EditorState.selected_point_indices.is_empty():
+					_try_select_point_for_transform(world_pos)
 				_transform_tool.handle_left_press(world_pos)
 			else:
 				_transform_tool.handle_left_release(world_pos)
@@ -92,6 +100,21 @@ func _on_tool_changed(_tool: EditorState.Tool) -> void:
 	_selection_tool.cancel(_gizmos)
 	_transform_tool.cancel()
 	mouse_default_cursor_shape = _transform_tool.cursor_shape
+
+
+## Selects the nearest point or segment to world_pos (if any) so the Transform
+## tool can immediately begin a MOVE drag from a previously empty selection.
+func _try_select_point_for_transform(world_pos: Vector2) -> void:
+	var half := Vector2(0.5, 0.5)
+	var rect := Rect2(world_pos - half, Vector2.ONE)
+	var best_hit: Array = _gizmos.get_best_point_in_rect(rect, world_pos)
+	if not best_hit.is_empty():
+		EditorState.select_point(best_hit[0], best_hit[1], true)
+		return
+	var seg_hit: Array = _gizmos.get_segment_at(world_pos, 4.0)
+	if not seg_hit.is_empty():
+		EditorState.select_point(seg_hit[0], seg_hit[1], true)
+		EditorState.select_point(seg_hit[0], seg_hit[2], true)
 
 
 ## Toggles between Select and Transform when a double-click lands on a selected
