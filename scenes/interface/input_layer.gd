@@ -3,7 +3,6 @@ extends Control
 const SelectionTool = preload("res://scenes/interface/aux_windows/tools/selection_tool.gd")
 const TransformTool = preload("res://scenes/interface/aux_windows/tools/transform_tool.gd")
 const PenToolScr = preload("res://scenes/interface/aux_windows/tools/line_pen_tool.gd")
-const DeletePointsActionScr = preload("res://data/actions/delete_points_action.gd")
 
 @onready var _gizmos = $"../DocumentLayer/SubViewport/DocumentGizmos"
 @onready var _selection_tool = SelectionTool.new()
@@ -43,6 +42,9 @@ func _gui_input(event: InputEvent) -> void:
 		EditorState.zoom_out(event.position)
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed and event.double_click and _toggle_tool_on_selected_point(_screen_to_world(event.position)):
+			accept_event()
+			return
 		if EditorState.active_tool == EditorState.Tool.SELECT:
 			var world_pos := _screen_to_world(event.position)
 			if event.pressed:
@@ -77,7 +79,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _delete_selected_points() -> void:
 	if EditorState.selected_point_indices.is_empty():
 		return
-	var action := DeletePointsActionScr.new(
+	var action := DeletePointsAction.new(
 		EditorState.current_frame,
 		EditorState.selected_point_indices,
 		EditorState.selected_command_indices,
@@ -90,3 +92,35 @@ func _on_tool_changed(_tool: EditorState.Tool) -> void:
 	_selection_tool.cancel(_gizmos)
 	_transform_tool.cancel()
 	mouse_default_cursor_shape = _transform_tool.cursor_shape
+
+
+## Toggles between Select and Transform when a double-click lands on a selected
+## point or anywhere inside the selection bounding box. Returns true when toggled.
+## Returns false (no toggle) when the double-click hits an unselected point.
+func _toggle_tool_on_selected_point(world_pos: Vector2) -> bool:
+	var tool := EditorState.active_tool
+	if tool != EditorState.Tool.SELECT and tool != EditorState.Tool.TRANSFORM:
+		return false
+
+	var half := Vector2(0.5, 0.5)
+	var rect := Rect2(world_pos - half, Vector2.ONE)
+	var best_hit: Array = _gizmos.get_best_point_in_rect(rect, world_pos)
+
+	var should_toggle := false
+	if best_hit.is_empty():
+		if not EditorState.selected_point_indices.is_empty():
+			var g := EditorState.get_gizmo_scale()
+			should_toggle = EditorState.get_selection_bounds().grow(8.0 * g).has_point(world_pos)
+	else:
+		var cmd_idx: int = best_hit[0]
+		var pt_idx: int = best_hit[1]
+		var sel: Dictionary = EditorState.selected_point_indices
+		should_toggle = sel.has(cmd_idx) and pt_idx in sel[cmd_idx]
+
+	if not should_toggle:
+		return false
+	if tool == EditorState.Tool.SELECT:
+		EditorState.change_tool(EditorState.Tool.TRANSFORM)
+	else:
+		EditorState.change_tool(EditorState.Tool.SELECT)
+	return true

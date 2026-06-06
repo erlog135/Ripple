@@ -61,12 +61,15 @@ func _init(
 			for i in range(old_pts.size()):
 				if i not in indices_to_delete:
 					new_pts.append(old_pts[i])
+		var full_delete := new_pts.is_empty()
 		_entries.append({
 			"cmd_idx": cmd_idx,
 			"old_points": old_pts,
 			"new_points": new_pts,
 			"old_path_open": old_open,
 			"new_path_open": new_open,
+			"full_delete": full_delete,
+			"saved_cmd": cmd if full_delete else null,
 		})
 
 
@@ -76,9 +79,18 @@ func do_action() -> void:
 		return
 	var frame: DrawCommandImage = sequence.frames[_frame_index]
 	for entry in _entries:
-		var cmd: DrawCommand = frame.commands[entry["cmd_idx"]]
-		cmd.points = entry["new_points"]
-		cmd.path_open = entry["new_path_open"]
+		if not entry["full_delete"]:
+			var cmd: DrawCommand = frame.commands[entry["cmd_idx"]]
+			cmd.points = entry["new_points"]
+			cmd.path_open = entry["new_path_open"]
+	var to_remove: Array[int] = []
+	for entry in _entries:
+		if entry["full_delete"]:
+			to_remove.append(entry["cmd_idx"])
+	to_remove.sort()
+	to_remove.reverse()
+	for idx in to_remove:
+		frame.commands.remove_at(idx)
 	EditorState.selected_command_indices.clear()
 	EditorState.selected_point_indices.clear()
 	ProjectData.data_changed.emit(false, _frame_index)
@@ -90,10 +102,15 @@ func undo_action() -> void:
 	if sequence == null:
 		return
 	var frame: DrawCommandImage = sequence.frames[_frame_index]
+	var to_insert := _entries.filter(func(e): return e["full_delete"])
+	to_insert.sort_custom(func(a, b): return a["cmd_idx"] < b["cmd_idx"])
+	for entry in to_insert:
+		frame.commands.insert(entry["cmd_idx"], entry["saved_cmd"])
 	for entry in _entries:
-		var cmd: DrawCommand = frame.commands[entry["cmd_idx"]]
-		cmd.points = entry["old_points"]
-		cmd.path_open = entry["old_path_open"]
+		if not entry["full_delete"]:
+			var cmd: DrawCommand = frame.commands[entry["cmd_idx"]]
+			cmd.points = entry["old_points"]
+			cmd.path_open = entry["old_path_open"]
 	EditorState.selected_command_indices = _prev_selected_command_indices.duplicate()
 	EditorState.selected_point_indices = {}
 	for k in _prev_selected_point_indices:

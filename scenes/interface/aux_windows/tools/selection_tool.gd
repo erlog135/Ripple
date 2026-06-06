@@ -51,14 +51,31 @@ func _normalized_rect(a: Vector2, b: Vector2) -> Rect2:
 	return Rect2(top_left, bottom_right - top_left)
 
 func _apply_rect_selection(rect: Rect2, additive: bool, single_hit_only: bool, world_pos: Vector2, gizmos) -> void:
-	if not additive:
-		EditorState.deselect_all()
 	if single_hit_only:
 		var best_hit: Array = gizmos.get_best_point_in_rect(rect, world_pos)
-		if not best_hit.is_empty():
-			EditorState.select_point(best_hit[0], best_hit[1], true)
+		if best_hit.is_empty():
+			if not additive and not _is_inside_selection_bounds(world_pos):
+				EditorState.deselect_all()
+			return
+		var cmd_idx: int = best_hit[0]
+		var pt_idx: int = best_hit[1]
+		var sel: Dictionary = EditorState.selected_point_indices
+		if not additive and sel.has(cmd_idx) and pt_idx in sel[cmd_idx]:
+			return
+		if not additive:
+			EditorState.deselect_all()
+		EditorState.select_point(cmd_idx, pt_idx, true)
 		return
 
+	if not additive:
+		EditorState.deselect_all()
 	var hits: Array = gizmos.get_points_in_rect(rect)
 	for hit in hits:
 		EditorState.select_point(hit[0], hit[1], true)
+
+
+func _is_inside_selection_bounds(world_pos: Vector2) -> bool:
+	if EditorState.selected_point_indices.is_empty():
+		return false
+	var g := EditorState.get_gizmo_scale()
+	return EditorState.get_selection_bounds().grow(8.0 * g).has_point(world_pos)
