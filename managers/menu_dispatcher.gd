@@ -71,5 +71,3 @@ func get_state(action_id: String) -> bool:
 		"view_validate_angles":
 			return EditorState.validate_line_angles
 	return false
-
-

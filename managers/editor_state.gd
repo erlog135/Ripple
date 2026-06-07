@@ -396,6 +396,7 @@ func deselect_all() -> void:
 	selected_point_indices.clear()
 	selection_changed.emit(true)
 
+
 func update_line_pen_hover_world(world_pos: Vector2) -> void:
 	if line_pen_hover_world == world_pos:
 		return
