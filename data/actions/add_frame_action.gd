@@ -1,7 +1,8 @@
 class_name AddFrameAction
 extends EditAction
 
-const DEFAULT_DURATION_MS := 33
+#TODO: make this configurable as a global constant somewhere
+const DEFAULT_DURATION_MS := 35
 
 var _insert_index: int
 

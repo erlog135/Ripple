@@ -362,7 +362,7 @@ func _rebuild_timeline() -> void:
 	var n := seq.frames.size()
 	for i in n:
 		var item: Control = FRAME_ITEM_SCENE.instantiate()
-		var dur := 33
+		var dur := 35
 		if i < seq.frame_durations_ms.size():
 			dur = int(seq.frame_durations_ms[i])
 		item.frame_selected.connect(_on_frame_item_selected)
@@ -435,7 +435,7 @@ func _update_playhead_and_ui() -> void:
 		_suppress_duration = false
 	else:
 		_suppress_duration = true
-		frame_duration.value = 33.0
+		frame_duration.value = 35.0
 		_suppress_duration = false
 
 	delete_frame_button.disabled = n <= 1

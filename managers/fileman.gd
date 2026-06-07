@@ -29,7 +29,7 @@ func new_file(size: Vector2i) -> void:
 	var image := DrawCommandImage.new()
 	image.bounds = size
 	sequence.frames.append(image)
-	sequence.frame_durations_ms.append(0)
+	sequence.frame_durations_ms.append(35)
 
 	ProjectData.current_path = ""
 	EditorState.set_current_frame(0)
