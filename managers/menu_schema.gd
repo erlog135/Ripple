@@ -150,6 +150,13 @@ func _build_menu_data() -> Dictionary:
 				"label": "Deselect",
 			},
 		],
+		"Image": [
+			{
+				"id": "image_resize",
+				"type": "action",
+				"label": "Resize Document Bounds...",
+			},
+		],
 		"View": [
 			{
 				"id": "view_raster",

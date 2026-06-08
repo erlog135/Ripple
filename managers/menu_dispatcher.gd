@@ -44,6 +44,8 @@ func execute(action_id: String) -> void:
 			EditorState.select_all()
 		"edit_deselect":
 			EditorState.deselect_all()
+		"image_resize":
+			PopupManager.open("resize_document", "res://scenes/interface/popups/ResizeDocumentPopup.tscn")
 		"view_raster":
 			var next_mode := EditorState.RenderMode.VECTOR if EditorState.render_mode == EditorState.RenderMode.RASTER else EditorState.RenderMode.RASTER
 			EditorState.set_render_mode(next_mode)

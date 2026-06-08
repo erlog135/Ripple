@@ -1,0 +1,138 @@
+[gd_scene format=3 uid="uid://ckmx3vrydt1cp"]
+
+[ext_resource type="Script" uid="uid://rrowdogji8qv" path="res://scenes/interface/popups/resize_document_popup.gd" id="1_06kmt"]
+
+[node name="ResizeDocumentPopup" type="Popup" unique_id=1556072273]
+oversampling_override = 1.0
+title = "Resize Document Bounds"
+size = Vector2i(200, 300)
+visible = true
+script = ExtResource("1_06kmt")
+
+[node name="Panel" type="Panel" parent="." unique_id=1333221347]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=1772415690]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = 40.0
+grow_horizontal = 2
+
+[node name="Width" type="HBoxContainer" parent="Panel/VBoxContainer" unique_id=2041697783]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/Width" unique_id=1785423307]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Width"
+
+[node name="ImageWidth" type="SpinBox" parent="Panel/VBoxContainer/Width" unique_id=2105246725]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Height" type="HBoxContainer" parent="Panel/VBoxContainer" unique_id=1702630052]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/Height" unique_id=1017968537]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Height"
+
+[node name="ImageHeight" type="SpinBox" parent="Panel/VBoxContainer/Height" unique_id=1811582797]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="KeepAspectToggle" type="CheckButton" parent="Panel/VBoxContainer" unique_id=1204361846]
+layout_mode = 2
+text = "Keep aspect"
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer" unique_id=1673299610]
+layout_mode = 2
+text = "Existing content anchor"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ButtonGrid" type="GridContainer" parent="Panel/VBoxContainer" unique_id=1576836547]
+layout_mode = 2
+columns = 3
+
+[node name="TopLeft" type="Button" parent="Panel/VBoxContainer/ButtonGrid" unique_id=1192347086]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "↖"
+
+[node name="TopMiddle" type="Button" parent="Panel/VBoxContainer/ButtonGrid" unique_id=600455878]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "↑"
+
+[node name="TopRight" type="Button" parent="Panel/VBoxContainer/ButtonGrid" unique_id=282651232]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "↗"
+
+[node name="Left" type="Button" parent="Panel/VBoxContainer/ButtonGrid" unique_id=308482984]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "←"
+
+[node name="Middle" type="Button" parent="Panel/VBoxContainer/ButtonGrid" unique_id=1880640941]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "◆"
+
+[node name="Right" type="Button" parent="Panel/VBoxContainer/ButtonGrid" unique_id=1920063420]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "→"
+
+[node name="BottomLeft" type="Button" parent="Panel/VBoxContainer/ButtonGrid" unique_id=2004465883]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "↙"
+
+[node name="BottomMiddle" type="Button" parent="Panel/VBoxContainer/ButtonGrid" unique_id=2059339031]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "↓"
+
+[node name="BottomRight" type="Button" parent="Panel/VBoxContainer/ButtonGrid" unique_id=195931086]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "↘"
+
+[node name="ResizeButton" type="Button" parent="Panel" unique_id=1206238020]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -36.0
+offset_right = 96.0
+offset_bottom = -5.0
+grow_vertical = 0
+text = "Resize"
+
+[node name="CancelButton" type="Button" parent="Panel" unique_id=2134953936]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -96.0
+offset_top = -36.0
+offset_right = -7.0
+offset_bottom = -5.0
+grow_horizontal = 0
+grow_vertical = 0
+text = "Cancel
+"

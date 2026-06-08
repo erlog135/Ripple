@@ -1,0 +1,65 @@
+[gd_scene format=3 uid="uid://bg1ar0lfuwc5p"]
+
+[node name="DocumentPropertiesWindow" type="Control" unique_id=1121416412]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="." unique_id=138392955]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=1444851331]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer" unique_id=1625324345]
+layout_mode = 2
+
+[node name="BackgroundColor" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer" unique_id=2056852005]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/MarginContainer/VBoxContainer/BackgroundColor" unique_id=1830810114]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Background"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ColorRect" type="ColorRect" parent="Panel/MarginContainer/VBoxContainer/BackgroundColor" unique_id=1898960185]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ClipBoundsToggle" type="CheckButton" parent="Panel/MarginContainer/VBoxContainer" unique_id=257828607]
+layout_mode = 2
+text = "Clip to Bounds"
+
+[node name="ResizeButton" type="Button" parent="Panel/MarginContainer/VBoxContainer" unique_id=302689405]
+layout_mode = 2
+text = "Resize bounds..."
+
+[node name="Title" type="Label" parent="." unique_id=1110082761]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 32.0
+grow_horizontal = 2
+text = "DOCUMENT"
+horizontal_alignment = 1
+vertical_alignment = 1
