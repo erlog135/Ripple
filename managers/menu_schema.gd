@@ -114,6 +114,31 @@ func _build_menu_data() -> Dictionary:
 			},
 			{"type": "separator"},
 			{
+				"id": "edit_cut",
+				"type": "action",
+				"label": "Cut",
+				"shortcut": shortcut(KEY_X, true),
+			},
+			{
+				"id": "edit_copy",
+				"type": "action",
+				"label": "Copy",
+				"shortcut": shortcut(KEY_C, true),
+			},
+			{
+				"id": "edit_paste",
+				"type": "action",
+				"label": "Paste",
+				"shortcut": shortcut(KEY_V, true),
+			},
+			{
+				"id": "edit_duplicate",
+				"type": "action",
+				"label": "Duplicate",
+				"shortcut": shortcut(KEY_D, true),
+			},
+			{"type": "separator"},
+			{
 				"id": "edit_select_all",
 				"type": "action",
 				"label": "Select All",

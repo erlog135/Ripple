@@ -32,6 +32,14 @@ func execute(action_id: String) -> void:
 			HistoryManager.undo()
 		"edit_redo":
 			HistoryManager.redo()
+		"edit_cut":
+			ClipboardManager.cut_selection()
+		"edit_copy":
+			ClipboardManager.copy_selection()
+		"edit_paste":
+			ClipboardManager.paste()
+		"edit_duplicate":
+			ClipboardManager.duplicate_selection()
 		"edit_select_all":
 			EditorState.select_all()
 		"edit_deselect":
