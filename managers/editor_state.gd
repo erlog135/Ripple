@@ -7,6 +7,7 @@ signal options_changed
 ## Emitted when the current fill/stroke/width is changed programmatically (e.g. on
 ## New Image) so the Fill & Stroke panel can mirror the new values.
 signal fill_stroke_changed
+signal bg_color_changed
 
 signal mouse_position_changed(screen_pos: Vector2)
 signal zoom_changed(screen_pos: Vector2, zoom_factor: float)
@@ -72,6 +73,7 @@ var selected_point_indices: Dictionary[int, Array] = {}
 var current_fill_color: Color = GColor.WHITE
 var current_stroke_color: Color = GColor.BLACK
 var current_stroke_width: int = 2
+var current_bg_color: Color = GColor.LIGHT_GRAY
 
 ## When true, vector/raster preview under this node is clipped to the declared document bounds (Pebble-style clipped preview).
 var clip_to_document_bounds: bool = false:
@@ -116,6 +118,9 @@ func set_current_fill_stroke(fill: Color, stroke: Color, width: int) -> void:
 	current_stroke_width = width
 	fill_stroke_changed.emit()
 
+func set_current_bg_color(color: Color):
+	current_bg_color = color
+	bg_color_changed.emit()
 
 ## Single entry point for snapping world-space points (Line Pen, future tools). [param stroke_width] is the stroke that governs odd-grid behavior (layer stroke when editing a layer, [member current_stroke_width] when creating one).
 func snap_world_position(world_pos: Vector2, draw_type: DrawCommand.Type, stroke_width: int) -> Vector2:

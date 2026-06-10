@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://bg1ar0lfuwc5p"]
 
+[ext_resource type="Script" uid="uid://cmlan13ju7m8h" path="res://scenes/interface/aux_windows/document_properties_window.gd" id="1_6vwm8"]
+
 [node name="DocumentPropertiesWindow" type="Control" unique_id=1121416412]
 layout_mode = 3
 anchors_preset = 15
@@ -7,6 +9,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_6vwm8")
 
 [node name="Panel" type="Panel" parent="." unique_id=138392955]
 layout_mode = 1
@@ -49,6 +52,10 @@ size_flags_horizontal = 3
 [node name="ClipBoundsToggle" type="CheckButton" parent="Panel/MarginContainer/VBoxContainer" unique_id=257828607]
 layout_mode = 2
 text = "Clip to Bounds"
+
+[node name="RasterPreviewToggle" type="CheckButton" parent="Panel/MarginContainer/VBoxContainer" unique_id=1984382342]
+layout_mode = 2
+text = "Raster Preview"
 
 [node name="ResizeButton" type="Button" parent="Panel/MarginContainer/VBoxContainer" unique_id=302689405]
 layout_mode = 2
