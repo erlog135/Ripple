@@ -109,8 +109,9 @@ func _frame_ink_extents_rect(f: DrawCommandImage) -> Rect2:
 
 func render(
 	image_data: DrawCommandImage,
+	bg_color: Color = GColor.LIGHT_GRAY,
 	canvas_size: Vector2i = Vector2i.ZERO,
-	raster_origin: Vector2 = Vector2.ZERO
+	raster_origin: Vector2 = Vector2.ZERO,
 ) -> ImageTexture:
 	var w := canvas_size.x if canvas_size.x > 0 else image_data.bounds.x
 	var h := canvas_size.y if canvas_size.y > 0 else image_data.bounds.y
@@ -119,7 +120,17 @@ func render(
 
 	var framebuffer := PackedByteArray()
 	framebuffer.resize(w * h * BYTES_PER_PIXEL)
-	framebuffer.fill(0xAA)  # light gray background
+	
+	var bg_r := int(round(bg_color.r * 255)) & 0xFF
+	var bg_g := int(round(bg_color.g * 255)) & 0xFF
+	var bg_b := int(round(bg_color.b * 255)) & 0xFF
+	var bg_a := int(round(bg_color.a * 255)) & 0xFF
+	
+	for i in range(0, framebuffer.size(), 4):
+		framebuffer[i] = bg_r
+		framebuffer[i + 1] = bg_g
+		framebuffer[i + 2] = bg_b
+		framebuffer[i + 3] = bg_a
 
 	# PebbleOS uses an 8x8 subpixel grid for precise coordinates and anti-aliasing
 	var w8 := w * 8

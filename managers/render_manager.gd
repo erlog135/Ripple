@@ -28,6 +28,11 @@ var _raster_version := 0
 
 func _ready() -> void:
 	ProjectData.data_changed.connect(_on_data_changed)
+	EditorState.bg_color_changed.connect(func(): 
+		_frame_cache.clear()
+		_raster_version += 1
+		_rasterize_all_async(_raster_version)
+		)
 
 func _on_data_changed(_by_user: bool, affected_frame: int) -> void:
 	preview_layout_changed = false
@@ -118,7 +123,7 @@ func get_frame_texture(frame_index: int) -> ImageTexture:
 		_preview_origin_cached = layout["origin"]
 		_preview_canvas_valid = true
 
-	var tex := _rasterizer.render(image_data, _preview_canvas_cached, _preview_origin_cached)
+	var tex := _rasterizer.render(image_data, EditorState.current_bg_color, _preview_canvas_cached, _preview_origin_cached)
 	_frame_cache[id] = tex
 	return tex
 

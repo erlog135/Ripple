@@ -119,6 +119,8 @@ func set_current_fill_stroke(fill: Color, stroke: Color, width: int) -> void:
 	fill_stroke_changed.emit()
 
 func set_current_bg_color(color: Color):
+	if color == current_bg_color:
+		return
 	current_bg_color = color
 	bg_color_changed.emit()
 

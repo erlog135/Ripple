@@ -23,6 +23,8 @@ func _ready() -> void:
 	bg_color_rect.gui_input.connect(func(event: InputEvent):
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			_open_color_picker("color_picker_bg", bg_color_rect.color, _on_bg_color_selected))
+	
+	resize_button.pressed.connect(func(): PopupManager.open("resize_document", "res://scenes/interface/popups/ResizeDocumentPopup.tscn"))
 
 func _open_color_picker(popup_id: String, current: Color, on_selected: Callable) -> void:
 	var popup = PopupManager.open(popup_id, COLOR_POPUP_SCENE)
@@ -35,4 +37,9 @@ func _open_color_picker(popup_id: String, current: Color, on_selected: Callable)
 	_syncing = false
 
 func _on_bg_color_selected(color: Color):
-	pass
+	
+	if color == GColor.CLEAR:
+		color = GColor.LIGHT_GRAY
+	
+	bg_color_rect.color = color
+	EditorState.set_current_bg_color(color)

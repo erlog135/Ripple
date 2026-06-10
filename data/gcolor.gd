@@ -145,3 +145,13 @@ static func nearest(color: Color) -> Color:
 	var g := roundf(color.g * 3.0) / 3.0
 	var b := roundf(color.b * 3.0) / 3.0
 	return Color(r, g, b, 1.0)
+
+static func to_rgba8(color: Color) -> int:
+	var r := color.r8 / 85
+	var g := color.g8 / 85
+	var b := color.b8 / 85
+	
+	return ((((0x00 | (r << 6)) | (g << 4)) | (b << 2)) | 0b11)
+	
+	
+	

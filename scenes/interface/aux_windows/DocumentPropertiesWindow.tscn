@@ -48,6 +48,7 @@ vertical_alignment = 1
 [node name="ColorRect" type="ColorRect" parent="Panel/MarginContainer/VBoxContainer/BackgroundColor" unique_id=1898960185]
 layout_mode = 2
 size_flags_horizontal = 3
+color = Color(0.6666667, 0.6666667, 0.6666667, 1)
 
 [node name="ClipBoundsToggle" type="CheckButton" parent="Panel/MarginContainer/VBoxContainer" unique_id=257828607]
 layout_mode = 2
