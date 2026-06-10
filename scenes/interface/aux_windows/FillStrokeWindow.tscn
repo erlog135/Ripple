@@ -30,55 +30,62 @@ offset_top = 32.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Options" type="VBoxContainer" parent="Panel" unique_id=319997352]
+[node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=2018676905]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
-[node name="FillColor" type="HBoxContainer" parent="Panel/Options" unique_id=1408875895]
+[node name="Options" type="VBoxContainer" parent="Panel/MarginContainer" unique_id=319997352]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Panel/Options/FillColor" unique_id=1490989401]
+[node name="FillColor" type="HBoxContainer" parent="Panel/MarginContainer/Options" unique_id=1408875895]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/MarginContainer/Options/FillColor" unique_id=1490989401]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Fill Color"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ColorRect" type="ColorRect" parent="Panel/Options/FillColor" unique_id=168975516]
+[node name="ColorRect" type="ColorRect" parent="Panel/MarginContainer/Options/FillColor" unique_id=168975516]
 layout_mode = 2
 size_flags_horizontal = 3
 color = Color(0.6666667, 0.6666667, 0.6666667, 1)
 
-[node name="StrokeColor" type="HBoxContainer" parent="Panel/Options" unique_id=1976280762]
+[node name="StrokeColor" type="HBoxContainer" parent="Panel/MarginContainer/Options" unique_id=1976280762]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Panel/Options/StrokeColor" unique_id=1579337994]
+[node name="Label" type="Label" parent="Panel/MarginContainer/Options/StrokeColor" unique_id=1579337994]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Stroke Color"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ColorRect" type="ColorRect" parent="Panel/Options/StrokeColor" unique_id=366528599]
+[node name="ColorRect" type="ColorRect" parent="Panel/MarginContainer/Options/StrokeColor" unique_id=366528599]
 layout_mode = 2
 size_flags_horizontal = 3
 color = Color(0, 0, 0, 1)
 
-[node name="StrokeWidth" type="HBoxContainer" parent="Panel/Options" unique_id=1421563024]
+[node name="StrokeWidth" type="HBoxContainer" parent="Panel/MarginContainer/Options" unique_id=1421563024]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Panel/Options/StrokeWidth" unique_id=636313195]
+[node name="Label" type="Label" parent="Panel/MarginContainer/Options/StrokeWidth" unique_id=636313195]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Stroke Width"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="SpinBox" type="SpinBox" parent="Panel/Options/StrokeWidth" unique_id=551570525]
+[node name="SpinBox" type="SpinBox" parent="Panel/MarginContainer/Options/StrokeWidth" unique_id=551570525]
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 255.0

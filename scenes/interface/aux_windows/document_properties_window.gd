@@ -38,8 +38,5 @@ func _open_color_picker(popup_id: String, current: Color, on_selected: Callable)
 
 func _on_bg_color_selected(color: Color):
 	
-	if color == GColor.CLEAR:
-		color = GColor.LIGHT_GRAY
-	
 	bg_color_rect.color = color
 	EditorState.set_current_bg_color(color)

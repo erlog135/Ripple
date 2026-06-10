@@ -49,6 +49,10 @@ folder_colors={
 "res://test/": "teal"
 }
 
+[gui]
+
+theme/custom="uid://xul3pyrmfmu8"
+
 [input]
 
 tool_transform={
@@ -136,3 +140,4 @@ view_icon_large={
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.2, 0.2, 0.2, 1)

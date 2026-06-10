@@ -46,7 +46,7 @@ func _find_item_in_list(items: Array, action_id: String) -> Dictionary:
 
 func _build_menu_data() -> Dictionary:
 	return {
-		"File": [
+		"FILE": [
 			{
 				"id": "file_new",
 				"type": "action",
@@ -99,7 +99,7 @@ func _build_menu_data() -> Dictionary:
 				"label": "Export Sequence as GIF...",
 			},
 		],
-		"Edit": [
+		"EDIT": [
 			{
 				"id": "edit_undo",
 				"type": "action",
@@ -150,14 +150,7 @@ func _build_menu_data() -> Dictionary:
 				"label": "Deselect",
 			},
 		],
-		"Image": [
-			{
-				"id": "image_resize",
-				"type": "action",
-				"label": "Resize Document Bounds...",
-			},
-		],
-		"View": [
+		"VIEW": [
 			{
 				"id": "view_raster",
 				"type": "checkbox",
@@ -211,6 +204,13 @@ func _build_menu_data() -> Dictionary:
 				"id": "view_validate_angles",
 				"type": "checkbox",
 				"label": "Validate Line Angles",
+			},
+		],
+		"IMAGE": [
+			{
+				"id": "image_resize",
+				"type": "action",
+				"label": "Resize Bounds...",
 			},
 		],
 	}
