@@ -59,16 +59,19 @@ split_offsets = PackedInt32Array(0, 0)
 
 [node name="ToolsWindow" parent="VBoxContainer/BusyArea/Panels/LeftPanel" unique_id=1568918098 instance=ExtResource("2_diyc1")]
 clip_contents = true
+custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_vertical = 3
 
 [node name="FillStrokeWindow" parent="VBoxContainer/BusyArea/Panels/LeftPanel" unique_id=766531804 instance=ExtResource("3_wmxca")]
 clip_contents = true
+custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_vertical = 3
 
 [node name="DocumentPropertiesWindow" parent="VBoxContainer/BusyArea/Panels/LeftPanel" unique_id=1121416412 instance=ExtResource("4_6tdr8")]
 clip_contents = true
+custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_vertical = 3
 
