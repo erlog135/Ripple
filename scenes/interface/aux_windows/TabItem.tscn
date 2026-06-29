@@ -4,38 +4,52 @@
 
 [node name="TabItem" type="Control" unique_id=234965310]
 clip_contents = true
-custom_minimum_size = Vector2(80, 80)
+custom_minimum_size = Vector2(80, 100)
 layout_mode = 3
 anchors_preset = 0
 offset_right = 80.0
-offset_bottom = 80.0
+offset_bottom = 100.0
 script = ExtResource("1_ofo3d")
 
 [node name="TextureRect" type="TextureRect" parent="." unique_id=1356638499]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 0
+offset_right = 80.0
+offset_bottom = 80.0
+expand_mode = 1
+stretch_mode = 5
 
 [node name="SelectorRect" type="ReferenceRect" parent="." unique_id=947733937]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 0
+offset_right = 80.0
+offset_bottom = 80.0
 mouse_filter = 1
 border_color = Color(1, 1, 1, 1)
 border_width = 2.0
 editor_only = false
 
+[node name="NameLabel" type="Label" parent="." unique_id=712834521]
+layout_mode = 0
+offset_top = 56.0
+offset_right = 80.0
+offset_bottom = 79.0
+theme_override_font_sizes/font_size = 10
+text = "80×80"
+horizontal_alignment = 1
+vertical_alignment = 2
+
 [node name="UnsavedIndicator" type="Label" parent="." unique_id=856037016]
 layout_mode = 0
 offset_left = 56.0
 offset_right = 80.0
-offset_bottom = 24.0
+offset_bottom = 20.0
 text = " *"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="." unique_id=391827645]
+layout_mode = 0
+offset_right = 24.0
+offset_bottom = 31.0
+focus_mode = 0
+text = "×"
+flat = true

@@ -9,18 +9,6 @@
 [ext_resource type="Script" path="res://scenes/interface/artboard_clip.gd" id="7_yh3rt"]
 [ext_resource type="Script" uid="uid://bymoxxarhboaj" path="res://scenes/interface/workspace_shortcuts.gd" id="8_df36l"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_df36l"]
-content_margin_left = 0.0
-content_margin_top = 0.0
-content_margin_right = 0.0
-content_margin_bottom = 0.0
-bg_color = Color(0.23921569, 0.23921569, 0.23921569, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-corner_detail = 5
-
 [node name="CanvasArea" type="Control" unique_id=1795288712]
 clip_contents = true
 layout_mode = 3
@@ -30,15 +18,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-
-[node name="BackgroundPanel" type="Panel" parent="." unique_id=940800378]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_df36l")
 
 [node name="DocumentLayer" type="SubViewportContainer" parent="." unique_id=97255973]
 layout_mode = 1
@@ -51,7 +30,6 @@ stretch = true
 script = ExtResource("2_j6oae")
 
 [node name="SubViewport" type="SubViewport" parent="DocumentLayer" unique_id=1953662212]
-transparent_bg = true
 handle_input_locally = false
 size = Vector2i(1280, 720)
 render_target_update_mode = 4

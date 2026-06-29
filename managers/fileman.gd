@@ -14,27 +14,22 @@ signal gif_export_progress(completed: int, total: int)
 signal gif_export_finished
 
 func _ready():
-	pdc_loaded.connect(func(pdc: DrawCommandSequence):
-		ProjectData.set_current_sequence(pdc)
-		EditorState.fit_document_to_view()
-	)
+	pass  # pdc_loaded signal is kept for external listeners but no longer drives
+		  # tab creation; that is handled inline in pdc_to_gd().
 
 ## Wipes the slate clean and builds a fresh, blank single-frame sequence of the
 ## given pixel [param size]. This is intentionally destructive (not undoable):
-## the history stack is cleared and the single source of truth is overwritten.
+## Adds a new blank single-frame document as a new tab. Does not close any
+## existing tabs — use this for File → New exactly like File → Open adds a tab.
 func new_file(size: Vector2i) -> void:
-	HistoryManager.clear()
-
 	var sequence := DrawCommandSequence.new()
 	var image := DrawCommandImage.new()
 	image.bounds = size
 	sequence.frames.append(image)
 	sequence.frame_durations_ms.append(35)
 
-	ProjectData.current_path = ""
-	EditorState.set_current_frame(0)
 	EditorState.set_current_fill_stroke(GColor.WHITE, GColor.BLACK, _default_stroke_width_for(size))
-	ProjectData.set_current_sequence(sequence)
+	ProjectData.add_sequence(sequence, "")
 	EditorState.fit_document_to_view()
 
 
@@ -103,9 +98,12 @@ func pdc_to_gd(path: String) -> DrawCommandSequence:
 		push_error("Unknown PDC magic word: " + magic)
 		return null
 
-	ProjectData.current_path = path
-	file_loaded.emit(file.get_length())
-	pdc_loaded.emit(sequence)
+	var size_bytes := file.get_length()
+	# Add as a new tab and switch to it, then notify listeners.
+	ProjectData.add_sequence(sequence, path)
+	file_loaded.emit(size_bytes)
+	pdc_loaded.emit(sequence)  # kept for any external listeners
+	EditorState.fit_document_to_view()
 	return sequence
 
 func _pdc_parse_image(file: FileAccess) -> DrawCommandImage:
@@ -280,6 +278,44 @@ func _pdc_sequence_data_size(sequence: DrawCommandSequence) -> int:
 
 func save_project(path: String) -> void:
 	gd_to_pdc(path, ProjectData.current_sequence)
+
+
+## Exports every open tab as a separate PDC file into a user-chosen directory.
+## Files are named by their document bounds: e.g. "25x25.pdc", "80x80.pdc".
+## Does not change any tab's saved path (current_path stays unchanged for all tabs).
+func export_all_tabs_as_pdc() -> void:
+	if ProjectData.open_sequences.is_empty():
+		push_error("Fileman: no open tabs to export")
+		return
+	var dialog := FileDialog.new()
+	get_tree().root.add_child(dialog)
+	dialog.file_mode = FileDialog.FILE_MODE_OPEN_DIR
+	dialog.access = FileDialog.ACCESS_FILESYSTEM
+	dialog.use_native_dialog = true
+	dialog.dir_selected.connect(func(dir: String) -> void:
+		for i in ProjectData.open_sequences.size():
+			var seq: DrawCommandSequence = ProjectData.open_sequences[i]
+			if seq == null or seq.frames.is_empty():
+				continue
+			var bounds: Vector2i = seq.frames[0].bounds
+			var fname := "%dx%d.pdc" % [bounds.x, bounds.y]
+			var fpath := dir.path_join(fname)
+			var file := FileAccess.open(fpath, FileAccess.WRITE)
+			if file == null:
+				push_error("Fileman: failed to open '%s' for writing" % fpath)
+				continue
+			file.set_big_endian(false)
+			if seq.frames.size() == 1:
+				file.store_buffer("PDCI".to_ascii_buffer())
+				file.store_32(_pdc_image_data_size(seq.frames[0]))
+				_pdc_write_image(file, seq.frames[0])
+			else:
+				file.store_buffer("PDCS".to_ascii_buffer())
+				file.store_32(_pdc_sequence_data_size(seq))
+				_pdc_write_sequence(file, seq)
+			file.close()
+	)
+	dialog.popup_centered()
 
 ## Saves the current frame as a standalone PDCI file without altering the project path.
 func save_frame_as_pdc() -> void:

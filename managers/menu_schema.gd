@@ -98,6 +98,12 @@ func _build_menu_data() -> Dictionary:
 				"type": "action",
 				"label": "Export Sequence as GIF...",
 			},
+			{"type": "separator"},
+			{
+				"id": "file_export_all_tabs_pdc",
+				"type": "action",
+				"label": "Export All Tabs as PDC...",
+			},
 		],
 		"EDIT": [
 			{

@@ -28,11 +28,11 @@ var _raster_version := 0
 
 func _ready() -> void:
 	ProjectData.data_changed.connect(_on_data_changed)
-	EditorState.bg_color_changed.connect(func(): 
+	EditorState.bg_color_changed.connect(func():
 		_frame_cache.clear()
 		_raster_version += 1
-		_rasterize_all_async(_raster_version)
-		)
+		_rasterize_all_sequences_async(_raster_version)
+	)
 
 func _on_data_changed(_by_user: bool, affected_frame: int) -> void:
 	preview_layout_changed = false
@@ -105,6 +105,62 @@ func _rasterize_all_async(version: int) -> void:
 		preview_updated.emit()
 		bulk_raster_finished.emit()
 
+
+## Re-rasterizes every frame in every open tab, one frame per engine tick.
+## Used when a global rendering parameter (e.g. background colour) changes so
+## that all cached thumbnails are rebuilt, not just the active sequence's frames.
+## Each sequence gets its own layout computation so bounds are correct per-tab.
+func _rasterize_all_sequences_async(version: int) -> void:
+	is_rasterizing = true
+	var seqs := ProjectData.open_sequences
+
+	# Count total frames across all tabs for accurate progress reporting.
+	var total := 0
+	for seq: DrawCommandSequence in seqs:
+		if seq != null:
+			total += seq.frames.size()
+
+	if total == 0:
+		is_rasterizing = false
+		preview_updated.emit()
+		return
+
+	bulk_raster_started.emit(total)
+	var done := 0
+
+	for seq: DrawCommandSequence in seqs:
+		if _raster_version != version:
+			return
+		if seq == null or seq.frames.is_empty():
+			continue
+		# Compute the raster canvas layout for this specific sequence.
+		var layout := _rasterizer.compute_sequence_preview_layout(seq.frames)
+		var canvas_size: Vector2i = layout["size"]
+		var canvas_origin: Vector2 = layout["origin"]
+
+		for frame_data: DrawCommandImage in seq.frames:
+			if _raster_version != version:
+				return
+			var id := frame_data.get_instance_id()
+			var tex := _rasterizer.render(frame_data, EditorState.current_bg_color, canvas_size, canvas_origin)
+			_frame_cache[id] = tex
+			done += 1
+			bulk_raster_progress.emit(done, total)
+			await get_tree().process_frame
+
+	if _raster_version == version:
+		# Restore the active sequence's cached layout so get_frame_texture()
+		# keeps working correctly after the pass completes.
+		var active_seq := ProjectData.current_sequence
+		if active_seq != null and not active_seq.frames.is_empty():
+			var active_layout := _rasterizer.compute_sequence_preview_layout(active_seq.frames)
+			_preview_canvas_cached = active_layout["size"]
+			_preview_origin_cached = active_layout["origin"]
+			_preview_canvas_valid = true
+		is_rasterizing = false
+		preview_updated.emit()
+		bulk_raster_finished.emit()
+
 ## Returns a cached ImageTexture for the given frame index, rendering it on first request.
 func get_frame_texture(frame_index: int) -> ImageTexture:
 	var seq := ProjectData.current_sequence
@@ -131,6 +187,16 @@ func get_frame_texture(frame_index: int) -> ImageTexture:
 ## World position of the top-left of raster preview textures ([member _preview_origin_cached]) so OOB (negative) coords stay aligned with the vector layer.
 func get_preview_raster_origin() -> Vector2:
 	return _preview_origin_cached
+
+## Returns a cached ImageTexture for the given DrawCommandImage without
+## rasterizing it on demand. Used by the tab bar to show thumbnails for
+## off-screen tabs: returns null when the image has never been rasterized.
+func get_image_texture(image: DrawCommandImage) -> ImageTexture:
+	if image == null:
+		return null
+	var id := image.get_instance_id()
+	return _frame_cache.get(id, null)
+
 
 ## Drops every cached texture and notifies listeners to redraw.
 func invalidate_all() -> void:

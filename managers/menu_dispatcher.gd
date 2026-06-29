@@ -28,6 +28,8 @@ func execute(action_id: String) -> void:
 			Fileman.export_frame_as_png(false)
 		"file_export_sequence_gif":
 			Fileman.export_sequence_as_gif()
+		"file_export_all_tabs_pdc":
+			Fileman.export_all_tabs_as_pdc()
 		"edit_undo":
 			HistoryManager.undo()
 		"edit_redo":
