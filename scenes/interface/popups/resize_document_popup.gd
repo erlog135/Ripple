@@ -1,4 +1,4 @@
-extends Popup
+extends Window
 
 ## Controller for the "Resize Document Bounds" dialog. Collects the target size and
 ## the 9-point content anchor, then commits a ResizeDocumentAction through the undo
@@ -49,7 +49,7 @@ func _ready() -> void:
 	image_height.value_changed.connect(_on_height_changed)
 	resize_button.pressed.connect(_on_resize_pressed)
 	cancel_button.pressed.connect(_on_cancel_pressed)
-	popup_hide.connect(queue_free)
+	close_requested.connect(queue_free)
 
 
 func _configure_spinbox(box: SpinBox) -> void:

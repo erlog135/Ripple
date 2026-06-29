@@ -3,6 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://vrudldeag2yr" path="res://scenes/interface/TopMenuBar.tscn" id="1_ndpqs"]
 [ext_resource type="PackedScene" uid="uid://dsun2824rmyw3" path="res://scenes/interface/CanvasArea.tscn" id="2_3kl07"]
 [ext_resource type="PackedScene" uid="uid://dkotjhm13dn23" path="res://scenes/interface/aux_windows/ToolsWindow.tscn" id="2_diyc1"]
+[ext_resource type="PackedScene" uid="uid://c2t87wm7nys5k" path="res://scenes/interface/aux_windows/DocumentTabs.tscn" id="2_mwer8"]
 [ext_resource type="PackedScene" uid="uid://da7bxcr1u5aj" path="res://scenes/interface/aux_windows/FillStrokeWindow.tscn" id="3_wmxca"]
 [ext_resource type="PackedScene" uid="uid://bg1ar0lfuwc5p" path="res://scenes/interface/aux_windows/DocumentPropertiesWindow.tscn" id="4_6tdr8"]
 [ext_resource type="PackedScene" uid="uid://dwex3u1hmrm4m" path="res://scenes/interface/aux_windows/LayerWindow.tscn" id="4_u6trk"]
@@ -24,14 +25,20 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TopMenuBar" parent="VBoxContainer" unique_id=2124299505 instance=ExtResource("1_ndpqs")]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=1430901113]
 layout_mode = 2
 
-[node name="Toolbelt" type="Panel" parent="VBoxContainer" unique_id=87617283]
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer" unique_id=483431324]
+layout_mode = 2
+
+[node name="TopMenuBar" parent="VBoxContainer/HBoxContainer/VBoxContainer" unique_id=2124299505 instance=ExtResource("1_ndpqs")]
+layout_mode = 2
+
+[node name="Toolbelt" type="Panel" parent="VBoxContainer/HBoxContainer/VBoxContainer" unique_id=87617283]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBoxContainer/Toolbelt" unique_id=899139387]
+[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer/VBoxContainer/Toolbelt" unique_id=899139387]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -41,6 +48,10 @@ grow_vertical = 2
 text = "Toolbelt"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="DocumentTabs" parent="VBoxContainer/HBoxContainer" unique_id=339842044 instance=ExtResource("2_mwer8")]
+layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="BusyArea" type="HBoxContainer" parent="VBoxContainer" unique_id=926309464]
 layout_mode = 2

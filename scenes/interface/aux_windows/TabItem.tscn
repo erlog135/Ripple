@@ -1,0 +1,41 @@
+[gd_scene format=3 uid="uid://fn2u0vl812p"]
+
+[ext_resource type="Script" uid="uid://thranx86hmb4" path="res://scenes/interface/aux_windows/tab_item.gd" id="1_ofo3d"]
+
+[node name="TabItem" type="Control" unique_id=234965310]
+clip_contents = true
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 80.0
+offset_bottom = 80.0
+script = ExtResource("1_ofo3d")
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=1356638499]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SelectorRect" type="ReferenceRect" parent="." unique_id=947733937]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+border_color = Color(1, 1, 1, 1)
+border_width = 2.0
+editor_only = false
+
+[node name="UnsavedIndicator" type="Label" parent="." unique_id=856037016]
+layout_mode = 0
+offset_left = 56.0
+offset_right = 80.0
+offset_bottom = 24.0
+text = " *"
+horizontal_alignment = 1
+vertical_alignment = 1

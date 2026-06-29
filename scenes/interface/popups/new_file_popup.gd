@@ -1,4 +1,4 @@
-extends Popup
+extends Window
 
 ## Controller for the "New Image" dialog. Gathers the requested dimensions and
 ## hands them to Fileman; it never touches project data directly (MVC: the view
@@ -15,7 +15,7 @@ func _ready() -> void:
 	exclusive = true
 	create_button.pressed.connect(_on_create_pressed)
 	cancel_button.pressed.connect(_on_cancel_pressed)
-	popup_hide.connect(queue_free)
+	close_requested.connect(queue_free)
 
 
 func _on_create_pressed() -> void:

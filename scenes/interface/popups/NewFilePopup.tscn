@@ -2,11 +2,10 @@
 
 [ext_resource type="Script" uid="uid://b7g8jnsj2riki" path="res://scenes/interface/popups/new_file_popup.gd" id="1_upyrt"]
 
-[node name="NewFilePopup" type="Popup" unique_id=2060813250]
+[node name="NewFilePopup" type="Window" unique_id=1393543770]
 oversampling_override = 1.0
 title = "New File"
 size = Vector2i(200, 200)
-visible = true
 script = ExtResource("1_upyrt")
 
 [node name="Panel" type="Panel" parent="." unique_id=2022239745]
