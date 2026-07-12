@@ -6,8 +6,9 @@
 [ext_resource type="Script" uid="uid://deivbjl4qc7hw" path="res://scenes/interface/document_gizmos.gd" id="3_6yk6n"]
 [ext_resource type="Script" uid="uid://jra2u4f43tgg" path="res://scenes/interface/document.gd" id="3_h8p71"]
 [ext_resource type="Script" uid="uid://dkng0sunfbeqw" path="res://scenes/interface/hud_layer.gd" id="5_2ofuf"]
-[ext_resource type="Script" path="res://scenes/interface/artboard_clip.gd" id="7_yh3rt"]
+[ext_resource type="Script" uid="uid://c5w8qk2yvbd6n" path="res://scenes/interface/artboard_clip.gd" id="7_yh3rt"]
 [ext_resource type="Script" uid="uid://bymoxxarhboaj" path="res://scenes/interface/workspace_shortcuts.gd" id="8_df36l"]
+[ext_resource type="Texture2D" uid="uid://d22y2880h7xns" path="res://assets/frames/canvas_overlay.png" id="9_88xrp"]
 
 [node name="CanvasArea" type="Control" unique_id=1795288712]
 clip_contents = true
@@ -30,6 +31,7 @@ stretch = true
 script = ExtResource("2_j6oae")
 
 [node name="SubViewport" type="SubViewport" parent="DocumentLayer" unique_id=1953662212]
+transparent_bg = true
 handle_input_locally = false
 size = Vector2i(1280, 720)
 render_target_update_mode = 4
@@ -42,6 +44,15 @@ script = ExtResource("7_yh3rt")
 
 [node name="Document" type="Node2D" parent="DocumentLayer/SubViewport/ArtboardClip" unique_id=1696822751]
 script = ExtResource("3_h8p71")
+
+[node name="ColorRect" type="ColorRect" parent="DocumentLayer/SubViewport/ArtboardClip/Document" unique_id=2079616006]
+custom_minimum_size = Vector2(42069, 42069)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.23921569, 0.23921569, 0.23921569, 1)
 
 [node name="Line2D2" type="Line2D" parent="DocumentLayer/SubViewport/ArtboardClip/Document" unique_id=1003032040]
 visible = false
@@ -70,6 +81,9 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -23.0
+offset_right = -8.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_constants/separation = 20
@@ -77,26 +91,36 @@ alignment = 2
 
 [node name="ImageDimensions" type="Label" parent="HUDLayer/InfoLabels" unique_id=1117593119]
 layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
 text = "Image: 80x80"
 horizontal_alignment = 1
 
 [node name="FileSize" type="Label" parent="HUDLayer/InfoLabels" unique_id=2120023147]
 layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
 text = "File size: ???"
 horizontal_alignment = 1
 
 [node name="CursorPosition" type="Label" parent="HUDLayer/InfoLabels" unique_id=973851150]
 layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
 text = "Cursor pos: 40,40"
 horizontal_alignment = 1
 
 [node name="SelectionDimensions" type="Label" parent="HUDLayer/InfoLabels" unique_id=226022848]
 layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
 text = "Selection:  80x80"
 horizontal_alignment = 1
 
 [node name="ZoomLevel" type="Label" parent="HUDLayer/InfoLabels" unique_id=1740279319]
 layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
 text = "Zoom: 100%"
 horizontal_alignment = 1
 
@@ -112,3 +136,18 @@ script = ExtResource("1_8k6yv")
 
 [node name="WorkspaceShortcuts" type="Node" parent="." unique_id=2132314204]
 script = ExtResource("8_df36l")
+
+[node name="NinePatchRect" type="NinePatchRect" parent="." unique_id=1516509987]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("9_88xrp")
+patch_margin_left = 8
+patch_margin_top = 8
+patch_margin_right = 7
+patch_margin_bottom = 7
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1

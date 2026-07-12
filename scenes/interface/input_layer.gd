@@ -36,6 +36,9 @@ func _gui_input(event: InputEvent) -> void:
 		elif EditorState.active_tool == EditorState.Tool.SELECT:
 			_selection_tool.handle_mouse_motion(_screen_to_world(event.position), _gizmos)
 
+	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_MIDDLE):
+		EditorState.pan(-event.relative)
+
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_WHEEL_UP:
 		EditorState.zoom_in(event.position)
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_WHEEL_DOWN:

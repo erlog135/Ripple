@@ -12,6 +12,7 @@ offset_bottom = 100.0
 script = ExtResource("1_ofo3d")
 
 [node name="TextureRect" type="TextureRect" parent="." unique_id=1356638499]
+texture_filter = 3
 layout_mode = 0
 offset_right = 80.0
 offset_bottom = 80.0
