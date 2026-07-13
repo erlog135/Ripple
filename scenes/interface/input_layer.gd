@@ -3,11 +3,15 @@ extends Control
 const SelectionTool = preload("res://scenes/interface/aux_windows/tools/selection_tool.gd")
 const TransformTool = preload("res://scenes/interface/aux_windows/tools/transform_tool.gd")
 const PenToolScr = preload("res://scenes/interface/aux_windows/tools/line_pen_tool.gd")
+const CircleToolScr = preload("res://scenes/interface/aux_windows/tools/circle_tool.gd")
+const RectangleToolScr = preload("res://scenes/interface/aux_windows/tools/rectangle_tool.gd")
 
 @onready var _gizmos = $"../DocumentLayer/SubViewport/DocumentGizmos"
 @onready var _selection_tool = SelectionTool.new()
 @onready var _transform_tool = TransformTool.new()
 @onready var _line_pen_tool: RefCounted = PenToolScr.new()
+@onready var _circle_tool = CircleToolScr.new()
+@onready var _rectangle_tool = RectangleToolScr.new()
 
 
 func _ready() -> void:
@@ -29,6 +33,10 @@ func _gui_input(event: InputEvent) -> void:
 			# Handles both contextual hover and active drag (the tool branches internally).
 			_transform_tool.handle_mouse_motion(_screen_to_world(event.position))
 			mouse_default_cursor_shape = _transform_tool.cursor_shape
+		elif EditorState.active_tool == EditorState.Tool.CIRCLE:
+			_circle_tool.handle_mouse_motion(_screen_to_world(event.position))
+		elif EditorState.active_tool == EditorState.Tool.RECTANGLE:
+			_rectangle_tool.handle_mouse_motion(_screen_to_world(event.position))
 
 	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 		if EditorState.active_tool == EditorState.Tool.PAN:
@@ -73,6 +81,18 @@ func _gui_input(event: InputEvent) -> void:
 			var lp_world_pos := _screen_to_world(event.position)
 			if event.pressed:
 				_line_pen_tool.handle_left_press(lp_world_pos, _gizmos)
+		elif EditorState.active_tool == EditorState.Tool.CIRCLE:
+			var world_pos := _screen_to_world(event.position)
+			if event.pressed:
+				_circle_tool.handle_left_press(world_pos)
+			else:
+				_circle_tool.handle_left_release(world_pos)
+		elif EditorState.active_tool == EditorState.Tool.RECTANGLE:
+			var world_pos := _screen_to_world(event.position)
+			if event.pressed:
+				_rectangle_tool.handle_left_press(world_pos)
+			else:
+				_rectangle_tool.handle_left_release(world_pos)
 		elif event.pressed:
 			_selection_tool.cancel(_gizmos)
 
@@ -102,6 +122,8 @@ func _delete_selected_points() -> void:
 func _on_tool_changed(_tool: EditorState.Tool) -> void:
 	_selection_tool.cancel(_gizmos)
 	_transform_tool.cancel()
+	_circle_tool.cancel()
+	_rectangle_tool.cancel()
 	mouse_default_cursor_shape = _transform_tool.cursor_shape
 
 

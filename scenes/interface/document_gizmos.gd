@@ -36,6 +36,7 @@ func _ready() -> void:
 	EditorState.transform_preview_changed.connect(_on_transform_preview_changed)
 	EditorState.line_pen_hover_changed.connect(_on_line_pen_hover_changed)
 	EditorState.validate_line_angles_changed.connect(_on_validate_line_angles_changed)
+	EditorState.shape_preview_changed.connect(_on_shape_preview_changed)
 
 func _on_data_changed(_by_user: bool, _affected_frame: int) -> void:
 	queue_redraw()
@@ -73,6 +74,9 @@ func _on_line_pen_hover_changed() -> void:
 func _on_validate_line_angles_changed(_enabled: bool) -> void:
 	queue_redraw()
 
+func _on_shape_preview_changed() -> void:
+	queue_redraw()
+
 func _draw() -> void:
 	if EditorState.is_playing:
 		return
@@ -82,6 +86,7 @@ func _draw() -> void:
 	_draw_skeletons()
 	_draw_angle_validation()
 	_draw_line_pen_preview()
+	_draw_shape_preview()
 	_draw_drag_selection_box()
 	_draw_selection_box()
 
@@ -493,3 +498,41 @@ func _points_with_drag_offset(points: PackedVector2Array, cmd_idx: int) -> Packe
 		if pt_idx >= 0 and pt_idx < shifted.size():
 			shifted[pt_idx] = EditorState.transform_matrix * shifted[pt_idx]
 	return shifted
+
+
+func _draw_shape_preview() -> void:
+	if not EditorState.shape_preview_active:
+		return
+
+	var fill_color := EditorState.current_fill_color
+	var stroke_color := EditorState.current_stroke_color
+	var stroke_width := float(EditorState.current_stroke_width)
+
+	if EditorState.shape_preview_type == EditorState.Tool.CIRCLE:
+		var center := EditorState.shape_preview_circle_center
+		var radius := EditorState.shape_preview_circle_radius
+		if radius < 0.0001:
+			return
+
+		# Draw Fill
+		if fill_color.a > 0.0:
+			draw_circle(center, radius, fill_color)
+
+		# Draw Stroke
+		if stroke_color.a > 0.0 and stroke_width > 0.0:
+			draw_arc(center, radius, 0.0, TAU, 64, stroke_color, stroke_width)
+
+	elif EditorState.shape_preview_type == EditorState.Tool.RECTANGLE:
+		var points := EditorState.shape_preview_rect_points
+		if points.size() < 4:
+			return
+
+		# Draw Fill
+		if fill_color.a > 0.0:
+			draw_colored_polygon(points, fill_color)
+
+		# Draw Stroke
+		if stroke_color.a > 0.0 and stroke_width > 0.0:
+			var closed_points := points.duplicate()
+			closed_points.append(points[0])
+			draw_polyline(closed_points, stroke_color, stroke_width)

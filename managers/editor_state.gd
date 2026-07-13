@@ -22,6 +22,8 @@ signal playback_state_changed(playing: bool)
 signal render_mode_changed(mode: RenderMode)
 signal clip_to_bounds_changed(enabled: bool)
 signal validate_line_angles_changed(enabled: bool)
+signal shape_preview_changed
+
 
 const ZOOM_STEP := 0.1
 const MIN_ZOOM  := 0.2
@@ -98,6 +100,23 @@ var grid_snap: bool = true
 var grid_odd_snap: bool = true
 
 var line_pen_hover_world := Vector2.ZERO
+
+## Shape drawing preview data
+var shape_preview_active: bool = false
+var shape_preview_type: Tool = Tool.SELECT
+var shape_preview_rect_points: PackedVector2Array = PackedVector2Array()
+var shape_preview_circle_center: Vector2 = Vector2.ZERO
+var shape_preview_circle_radius: float = 0.0
+
+
+func update_shape_preview(active: bool, type: Tool, rect_pts: PackedVector2Array, circle_center: Vector2, circle_radius: float) -> void:
+	shape_preview_active = active
+	shape_preview_type = type
+	shape_preview_rect_points = rect_pts
+	shape_preview_circle_center = circle_center
+	shape_preview_circle_radius = circle_radius
+	shape_preview_changed.emit()
+
 
 
 func set_current_fill_color(color: Color) -> void:
