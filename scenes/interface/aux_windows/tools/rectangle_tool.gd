@@ -39,9 +39,9 @@ func handle_mouse_motion(world_pos: Vector2) -> void:
 	)
 
 	var alt := Input.is_key_pressed(KEY_ALT)
-	var ctrl := Input.is_key_pressed(KEY_CTRL)
+	var shift := Input.is_key_pressed(KEY_SHIFT)
 
-	var points := _calculate_rect_points(_drag_start, snapped_pos, alt, ctrl)
+	var points := _calculate_rect_points(_drag_start, snapped_pos, alt, shift)
 
 	# Update editor state
 	EditorState.update_shape_preview(

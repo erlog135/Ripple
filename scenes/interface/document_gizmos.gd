@@ -80,13 +80,13 @@ func _on_shape_preview_changed() -> void:
 func _draw() -> void:
 	if EditorState.is_playing:
 		return
+	_draw_shape_preview()
 	if EditorState.current_zoom >= 10.0:
 		_draw_pixel_grid()
 	_draw_document_bounds()
 	_draw_skeletons()
 	_draw_angle_validation()
 	_draw_line_pen_preview()
-	_draw_shape_preview()
 	_draw_drag_selection_box()
 	_draw_selection_box()
 
@@ -97,10 +97,10 @@ func _draw_pixel_grid() -> void:
 	var br := inv * (vp_rect.position + vp_rect.size)
 
 	var x_start := floori(tl.x)
-	var x_end   := ceili(br.x)
+	var x_end := ceili(br.x)
 	var y_start := floori(tl.y)
-	var y_end   := ceili(br.y)
-	var line_w  := 1.0 / EditorState.current_zoom
+	var y_end := ceili(br.y)
+	var line_w := 1.0 / EditorState.current_zoom
 
 	for x in range(x_start, x_end + 1):
 		draw_line(Vector2(x, y_start), Vector2(x, y_end), GRID_COLOR, line_w)
@@ -454,10 +454,10 @@ func _is_segment_angle_valid(a: Vector2, b: Vector2) -> bool:
 		0.0,
 		0.32175055439664219,
 		0.46364760900080611,
-		0.78539816339744831,  # PI / 4
+		0.78539816339744831, # PI / 4
 		1.10714871779409040,
 		1.24904577239825420,
-		1.57079632679489662,  # PI / 2
+		1.57079632679489662, # PI / 2
 	]
 	for permitted: float in PERMITTED:
 		if absf(half_angle - permitted) < ANGLE_TOLERANCE_RAD:
