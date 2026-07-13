@@ -5,6 +5,7 @@
 [node name="NewFilePopup" type="Window" unique_id=1393543770]
 oversampling_override = 1.0
 title = "New File"
+position = Vector2i(0, 36)
 size = Vector2i(200, 200)
 script = ExtResource("1_upyrt")
 
@@ -33,6 +34,7 @@ min_value = 1.0
 max_value = 65535.0
 value = 50.0
 rounded = true
+update_on_text_changed = true
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="Panel/VBoxContainer" unique_id=823739464]
 layout_mode = 2
@@ -48,6 +50,7 @@ min_value = 1.0
 max_value = 65535.0
 value = 50.0
 rounded = true
+update_on_text_changed = true
 
 [node name="CreateButton" type="Button" parent="Panel" unique_id=890888244]
 layout_mode = 1
