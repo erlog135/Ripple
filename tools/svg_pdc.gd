@@ -572,7 +572,7 @@ static func serialize_commands_to_svg(commands: Array[DrawCommand]) -> String:
 			continue
 		var stroke_attrs = color_to_svg_attrs(cmd.stroke_color, "stroke")
 		if not cmd.stroke_color.a == 0:
-			stroke_attrs += ' stroke-width="%d"' % cmd.stroke_width
+			stroke_attrs += ' stroke-width="%d" stroke-linecap="round" stroke-linejoin="round"' % cmd.stroke_width
 		var fill_attrs = color_to_svg_attrs(cmd.fill_color, "fill")
 		
 		if cmd.draw_type == DrawCommand.Type.CIRCLE:
@@ -630,6 +630,10 @@ static func sequence_to_animated_svg(sequence: DrawCommandSequence) -> String:
 	svg += '      animation-duration: %fs;\n' % total_s
 	svg += '      animation-iteration-count: infinite;\n'
 	svg += '      animation-fill-mode: forwards;\n'
+	svg += '      animation-timing-function: step-end;\n'
+	svg += '    }\n'
+	svg += '    #frame_0 {\n'
+	svg += '      visibility: visible;\n'
 	svg += '    }\n'
 	
 	var current_ms = 0
@@ -645,14 +649,21 @@ static func sequence_to_animated_svg(sequence: DrawCommandSequence) -> String:
 		svg += '      animation-name: frame-show-%d;\n' % i
 		svg += '    }\n'
 		svg += '    @keyframes frame-show-%d {\n' % i
-		if start_pct > 0.0:
-			svg += '      0%% { visibility: hidden; }\n'
-			svg += '      %.4f%% { visibility: hidden; }\n' % start_pct
-		svg += '      %.4f%% { visibility: visible; }\n' % start_pct
-		svg += '      %.4f%% { visibility: visible; }\n' % end_pct
-		if end_pct < 100.0:
-			svg += '      %.4f%% { visibility: hidden; }\n' % end_pct
+		if start_pct == 0.0:
+			svg += '      0%% { visibility: visible; }\n'
+			svg += '      %.4f%% { visibility: visible; }\n' % end_pct
+			svg += '      %.4f%% { visibility: hidden; }\n' % minf(end_pct + 0.001, 100.0)
 			svg += '      100%% { visibility: hidden; }\n'
+		else:
+			svg += '      0%% { visibility: hidden; }\n'
+			svg += '      %.4f%% { visibility: hidden; }\n' % maxf(start_pct - 0.001, 0.0)
+			svg += '      %.4f%% { visibility: visible; }\n' % start_pct
+			if end_pct < 100.0:
+				svg += '      %.4f%% { visibility: visible; }\n' % end_pct
+				svg += '      %.4f%% { visibility: hidden; }\n' % minf(end_pct + 0.001, 100.0)
+				svg += '      100%% { visibility: hidden; }\n'
+			else:
+				svg += '      100%% { visibility: visible; }\n'
 		svg += '    }\n'
 		
 	svg += '  </style>\n'
