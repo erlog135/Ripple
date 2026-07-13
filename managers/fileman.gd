@@ -2,6 +2,7 @@ extends Node
 
 const GIFExporter := preload("res://addons/gdgifexporter/exporter.gd")
 const MedianCutQuantization := preload("res://addons/gdgifexporter/quantization/median_cut.gd")
+const SvgPdcHelper := preload("res://tools/svg_pdc.gd")
 
 signal pdc_loaded(pdc: DrawCommandSequence)
 signal file_loaded(size_bytes: int)
@@ -487,3 +488,147 @@ func _encode_gif_async(save_path: String) -> void:
 	file.store_buffer(exporter.export_file_data())
 	file.close()
 	gif_export_finished.emit()
+
+
+func import_svg_dialog() -> void:
+	var file_dialog = FileDialog.new()
+	get_tree().root.add_child(file_dialog)
+	file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+	file_dialog.access = FileDialog.ACCESS_FILESYSTEM
+	file_dialog.filters = ["*.svg"]
+	file_dialog.use_native_dialog = true
+	file_dialog.file_selected.connect(func(path: String):
+		var file = FileAccess.open(path, FileAccess.READ)
+		if not file:
+			push_error("Failed to open SVG file: " + path)
+			return
+		var content = file.get_as_text()
+		file.close()
+		
+		var sequence = SvgPdcHelper.svg_to_sequence(content)
+		if sequence == null or sequence.frames.is_empty():
+			push_error("Failed to parse SVG: " + path)
+			return
+		
+		ProjectData.add_sequence(sequence, "")
+		EditorState.fit_document_to_view()
+	)
+	file_dialog.popup_centered()
+
+
+func import_svg_sequence_dialog() -> void:
+	var file_dialog = FileDialog.new()
+	get_tree().root.add_child(file_dialog)
+	file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILES
+	file_dialog.access = FileDialog.ACCESS_FILESYSTEM
+	file_dialog.filters = ["*.svg"]
+	file_dialog.use_native_dialog = true
+	file_dialog.files_selected.connect(func(paths: PackedStringArray):
+		if paths.is_empty():
+			return
+		
+		var path_list := Array(paths)
+		path_list.sort()
+		
+		var contents: Array[String] = []
+		for p in path_list:
+			var file = FileAccess.open(p, FileAccess.READ)
+			if file:
+				contents.append(file.get_as_text())
+				file.close()
+			else:
+				push_error("Failed to open file in sequence: " + p)
+				
+		var sequence = SvgPdcHelper.svg_files_to_sequence(contents)
+		if sequence == null or sequence.frames.is_empty():
+			push_error("Failed to parse SVG sequence")
+			return
+			
+		ProjectData.add_sequence(sequence, "")
+		EditorState.fit_document_to_view()
+	)
+	file_dialog.popup_centered()
+
+
+func export_frame_as_svg_dialog() -> void:
+	var seq := ProjectData.current_sequence
+	if seq == null or seq.frames.is_empty():
+		push_error("Fileman: no project loaded, cannot export SVG")
+		return
+	
+	var dialog := FileDialog.new()
+	get_tree().root.add_child(dialog)
+	dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
+	dialog.access = FileDialog.ACCESS_FILESYSTEM
+	dialog.filters = ["*.svg"]
+	dialog.use_native_dialog = true
+	_prefill_dialog(dialog, "svg")
+	dialog.file_selected.connect(func(path: String) -> void:
+		var frame_idx := EditorState.current_frame
+		var svg_str = SvgPdcHelper.frame_to_svg(seq, frame_idx)
+		var file := FileAccess.open(path, FileAccess.WRITE)
+		if file == null:
+			push_error("Fileman: failed to open '%s' for writing SVG" % path)
+			return
+		file.store_string(svg_str)
+		file.close()
+	)
+	dialog.popup_centered()
+
+
+func export_sequence_as_animated_svg_dialog() -> void:
+	var seq := ProjectData.current_sequence
+	if seq == null or seq.frames.is_empty():
+		push_error("Fileman: no project loaded, cannot export SVG sequence")
+		return
+	
+	var dialog := FileDialog.new()
+	get_tree().root.add_child(dialog)
+	dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
+	dialog.access = FileDialog.ACCESS_FILESYSTEM
+	dialog.filters = ["*.svg"]
+	dialog.use_native_dialog = true
+	_prefill_dialog(dialog, "svg")
+	dialog.file_selected.connect(func(path: String) -> void:
+		var svg_str = SvgPdcHelper.sequence_to_animated_svg(seq)
+		var file := FileAccess.open(path, FileAccess.WRITE)
+		if file == null:
+			push_error("Fileman: failed to open '%s' for writing animated SVG" % path)
+			return
+		file.store_string(svg_str)
+		file.close()
+	)
+	dialog.popup_centered()
+
+
+func export_sequence_as_multiple_svgs_dialog() -> void:
+	var seq := ProjectData.current_sequence
+	if seq == null or seq.frames.is_empty():
+		push_error("Fileman: no project loaded, cannot export SVGs")
+		return
+		
+	var dialog := FileDialog.new()
+	get_tree().root.add_child(dialog)
+	dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
+	dialog.access = FileDialog.ACCESS_FILESYSTEM
+	dialog.filters = ["*.svg"]
+	dialog.use_native_dialog = true
+	_prefill_dialog(dialog, "svg")
+	dialog.file_selected.connect(func(path: String) -> void:
+		var base_dir = path.get_base_dir()
+		var base_name = path.get_file().get_basename()
+		var ext = path.get_extension()
+		if ext.is_empty():
+			ext = "svg"
+			
+		for i in range(seq.frames.size()):
+			var frame_svg = SvgPdcHelper.frame_to_svg(seq, i)
+			var frame_path = base_dir.path_join("%s_%03d.%s" % [base_name, i, ext])
+			var file := FileAccess.open(frame_path, FileAccess.WRITE)
+			if file == null:
+				push_error("Fileman: failed to open '%s' for writing frame SVG" % frame_path)
+				continue
+			file.store_string(frame_svg)
+			file.close()
+	)
+	dialog.popup_centered()

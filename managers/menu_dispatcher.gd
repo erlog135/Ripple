@@ -16,18 +16,28 @@ func execute(action_id: String) -> void:
 			PopupManager.open("new_file", "res://scenes/interface/popups/NewFilePopup.tscn")
 		"file_open":
 			Fileman.open_file_dialog()
+		"file_import_svg":
+			Fileman.import_svg_dialog()
+		"file_import_svg_sequence":
+			Fileman.import_svg_sequence_dialog()
 		"file_save":
 			Fileman.save_file()
 		"file_save_as":
 			Fileman.save_as_file_dialog()
 		"file_export_frame_pdc":
 			Fileman.save_frame_as_pdc()
+		"file_export_frame_svg":
+			Fileman.export_frame_as_svg_dialog()
 		"file_export_frame_png":
 			Fileman.export_frame_as_png()
 		"file_export_frame_png_flat":
 			Fileman.export_frame_as_png(false)
 		"file_export_sequence_gif":
 			Fileman.export_sequence_as_gif()
+		"file_export_sequence_animated_svg":
+			Fileman.export_sequence_as_animated_svg_dialog()
+		"file_export_sequence_multiple_svgs":
+			Fileman.export_sequence_as_multiple_svgs_dialog()
 		"file_export_all_tabs_pdc":
 			Fileman.export_all_tabs_as_pdc()
 		"edit_undo":

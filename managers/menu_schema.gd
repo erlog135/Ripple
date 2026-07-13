@@ -60,6 +60,16 @@ func _build_menu_data() -> Dictionary:
 				"shortcut": shortcut(KEY_O, true),
 			},
 			{
+				"id": "file_import_svg",
+				"type": "action",
+				"label": "Import SVG...",
+			},
+			{
+				"id": "file_import_svg_sequence",
+				"type": "action",
+				"label": "Import Multiple SVGs as Animation...",
+			},
+			{
 				"id": "file_save",
 				"type": "action",
 				"label": "Save",
@@ -82,6 +92,11 @@ func _build_menu_data() -> Dictionary:
 						"label": "PDC...",
 					},
 					{
+						"id": "file_export_frame_svg",
+						"type": "action",
+						"label": "SVG...",
+					},
+					{
 						"id": "file_export_frame_png",
 						"type": "action",
 						"label": "PNG (transparent)...",
@@ -94,9 +109,25 @@ func _build_menu_data() -> Dictionary:
 				],
 			},
 			{
-				"id": "file_export_sequence_gif",
-				"type": "action",
-				"label": "Export Sequence as GIF...",
+				"type": "submenu",
+				"label": "Export Sequence",
+				"children": [
+					{
+						"id": "file_export_sequence_gif",
+						"type": "action",
+						"label": "GIF...",
+					},
+					{
+						"id": "file_export_sequence_animated_svg",
+						"type": "action",
+						"label": "Animated SVG...",
+					},
+					{
+						"id": "file_export_sequence_multiple_svgs",
+						"type": "action",
+						"label": "Multiple SVGs...",
+					},
+				]
 			},
 			{"type": "separator"},
 			{

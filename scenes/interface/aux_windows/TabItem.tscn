@@ -4,11 +4,11 @@
 
 [node name="TabItem" type="Control" unique_id=234965310]
 clip_contents = true
-custom_minimum_size = Vector2(80, 100)
+custom_minimum_size = Vector2(80, 80)
 layout_mode = 3
 anchors_preset = 0
 offset_right = 80.0
-offset_bottom = 100.0
+offset_bottom = 80.0
 script = ExtResource("1_ofo3d")
 
 [node name="TextureRect" type="TextureRect" parent="." unique_id=1356638499]
