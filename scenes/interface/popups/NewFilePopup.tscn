@@ -35,6 +35,7 @@ max_value = 65535.0
 value = 50.0
 rounded = true
 update_on_text_changed = true
+select_all_on_focus = true
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="Panel/VBoxContainer" unique_id=823739464]
 layout_mode = 2
@@ -51,6 +52,7 @@ max_value = 65535.0
 value = 50.0
 rounded = true
 update_on_text_changed = true
+select_all_on_focus = true
 
 [node name="CreateButton" type="Button" parent="Panel" unique_id=890888244]
 layout_mode = 1

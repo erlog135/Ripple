@@ -1,7 +1,15 @@
 [gd_scene format=3 uid="uid://bsuhmppbhkr2x"]
 
 [ext_resource type="Script" uid="uid://cp24gndjd5xu5" path="res://scenes/interface/aux_windows/animator_window.gd" id="1_sgg8o"]
+[ext_resource type="Texture2D" uid="uid://baxkhmr3ggbe5" path="res://assets/icons/button_dupe_frame.svg" id="2_jdu6l"]
+[ext_resource type="Texture2D" uid="uid://d2jr4e6nftmhv" path="res://assets/icons/button_play.svg" id="2_kerko"]
 [ext_resource type="Texture2D" uid="uid://mfawmwdwkv4i" path="res://assets/icons/playhead_grabpoint.png" id="2_sgg8o"]
+[ext_resource type="Texture2D" uid="uid://7kixvjc10wv8" path="res://assets/icons/button_last_frame.svg" id="3_5pajp"]
+[ext_resource type="Texture2D" uid="uid://boiqdl7abd7hu" path="res://assets/icons/button_first_frame.svg" id="4_54jo5"]
+[ext_resource type="Texture2D" uid="uid://cxjvplctqluyg" path="res://assets/icons/button_new_frame.svg" id="6_005g1"]
+[ext_resource type="Texture2D" uid="uid://c4hode735ftlk" path="res://assets/icons/button_frame_right.svg" id="6_mauw5"]
+[ext_resource type="Texture2D" uid="uid://dic8of38u0elt" path="res://assets/icons/button_frame_left.svg" id="7_sfgt0"]
+[ext_resource type="Texture2D" uid="uid://di4ot3d5sdufh" path="res://assets/icons/button_frame_delete.svg" id="9_hrwgu"]
 
 [node name="AnimatorWindow" type="Control" unique_id=277590820]
 layout_mode = 3
@@ -14,6 +22,7 @@ focus_mode = 1
 script = ExtResource("1_sgg8o")
 
 [node name="PlaybackPanel" type="Panel" parent="." unique_id=1387252710]
+texture_filter = 3
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -24,7 +33,10 @@ grow_horizontal = 2
 layout_mode = 1
 anchors_preset = 9
 anchor_bottom = 1.0
-offset_right = 86.5
+offset_left = 328.0
+offset_top = 8.0
+offset_right = 440.0
+offset_bottom = -8.0
 grow_vertical = 2
 min_value = 0.1
 max_value = 10.0
@@ -37,59 +49,61 @@ suffix = "×"
 layout_mode = 1
 anchors_preset = 9
 anchor_bottom = 1.0
-offset_left = 128.0
-offset_right = 152.0
+offset_left = 448.0
+offset_right = 576.0
+offset_bottom = -32.0
 grow_vertical = 2
 text = "Loop"
 
 [node name="PlayButton" type="Button" parent="PlaybackPanel" unique_id=208381902]
 layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -64.0
-offset_right = 64.0
-grow_horizontal = 2
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 64.0
+offset_right = 128.0
 grow_vertical = 2
 toggle_mode = true
-text = "Play"
+icon = ExtResource("2_kerko")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
 
 [node name="LastFrameButton" type="Button" parent="PlaybackPanel" unique_id=221658795]
 layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = 64.0
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 128.0
+offset_top = 8.0
 offset_right = 192.0
-grow_horizontal = 2
+offset_bottom = -8.0
 grow_vertical = 2
-text = "Last Frame"
+icon = ExtResource("3_5pajp")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
 
 [node name="FirstFrameButton" type="Button" parent="PlaybackPanel" unique_id=606162592]
 layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -192.0
-offset_right = -64.0
-grow_horizontal = 2
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_top = 8.0
+offset_right = 64.0
+offset_bottom = -8.0
 grow_vertical = 2
 toggle_mode = true
-text = "First Frame"
+icon = ExtResource("4_54jo5")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
 
 [node name="CurrentFrame" type="SpinBox" parent="PlaybackPanel" unique_id=1577850282]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.5
-anchor_top = 0.51600003
-anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -64.0
-offset_top = -0.024002075
-offset_right = 64.0
+offset_left = 200.0
+offset_top = 8.0
+offset_right = 312.0
+offset_bottom = -8.0
 grow_horizontal = 2
 grow_vertical = 0
 min_value = 1.0
@@ -101,13 +115,11 @@ suffix = "/ 1"
 
 [node name="OnionSkinToggle" type="CheckButton" parent="PlaybackPanel" unique_id=1486912039]
 layout_mode = 1
-anchors_preset = 11
-anchor_left = 1.0
-anchor_right = 1.0
+anchors_preset = 9
 anchor_bottom = 1.0
-offset_left = -132.0
-offset_bottom = -32.0
-grow_horizontal = 0
+offset_left = 448.0
+offset_top = 32.0
+offset_right = 576.0
 grow_vertical = 2
 text = "Onion Skin"
 
@@ -117,9 +129,10 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -248.0
-offset_right = -161.5
-offset_bottom = -32.0
+offset_left = -440.0
+offset_top = 8.0
+offset_right = -328.0
+offset_bottom = -8.0
 grow_horizontal = 0
 grow_vertical = 2
 min_value = 1.0
@@ -135,12 +148,15 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -136.0
-offset_top = 32.0
-offset_right = -72.0
+offset_left = -128.0
+offset_right = -64.0
 grow_horizontal = 0
 grow_vertical = 2
 text = "Dupe"
+icon = ExtResource("2_jdu6l")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
 
 [node name="MoveFrameRightButton" type="Button" parent="PlaybackPanel" unique_id=1650776147]
 layout_mode = 1
@@ -148,12 +164,15 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -176.0
-offset_top = 32.0
-offset_right = -144.0
+offset_left = -192.0
+offset_right = -128.0
 grow_horizontal = 0
 grow_vertical = 2
-text = ">"
+text = "After"
+icon = ExtResource("6_mauw5")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
 
 [node name="MoveFrameLeftButton" type="Button" parent="PlaybackPanel" unique_id=1369569173]
 layout_mode = 1
@@ -161,12 +180,15 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -216.0
-offset_top = 32.0
-offset_right = -184.0
+offset_left = -256.0
+offset_right = -192.0
 grow_horizontal = 0
 grow_vertical = 2
-text = "<"
+text = "Before"
+icon = ExtResource("7_sfgt0")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
 
 [node name="NewFrameButton" type="Button" parent="PlaybackPanel" unique_id=667664672]
 layout_mode = 1
@@ -175,10 +197,13 @@ anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -64.0
-offset_top = 32.0
 grow_horizontal = 0
 grow_vertical = 2
 text = "New"
+icon = ExtResource("6_005g1")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
 
 [node name="DeleteFrameButton" type="Button" parent="PlaybackPanel" unique_id=675091755]
 layout_mode = 1
@@ -186,12 +211,15 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -288.0
-offset_top = 32.0
-offset_right = -224.0
+offset_left = -320.0
+offset_right = -256.0
 grow_horizontal = 0
 grow_vertical = 2
-text = "Del"
+text = "Erase"
+icon = ExtResource("9_hrwgu")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
 
 [node name="FramesPanel" type="Panel" parent="." unique_id=1783542036]
 clip_contents = true

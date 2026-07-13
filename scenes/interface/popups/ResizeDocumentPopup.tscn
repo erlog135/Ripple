@@ -38,6 +38,7 @@ text = "Width"
 layout_mode = 2
 size_flags_horizontal = 3
 update_on_text_changed = true
+select_all_on_focus = true
 
 [node name="Height" type="HBoxContainer" parent="Panel/VBoxContainer" unique_id=1702630052]
 layout_mode = 2
@@ -51,6 +52,7 @@ text = "Height"
 layout_mode = 2
 size_flags_horizontal = 3
 update_on_text_changed = true
+select_all_on_focus = true
 
 [node name="KeepAspectToggle" type="CheckButton" parent="Panel/VBoxContainer" unique_id=1204361846]
 layout_mode = 2
