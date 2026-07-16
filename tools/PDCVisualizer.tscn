@@ -1,7 +1,0 @@
-[gd_scene format=3 uid="uid://bkhcu7s0fnpnq"]
-
-[ext_resource type="Script" uid="uid://bou202od033ku" path="res://tools/pdc_visualizer.gd" id="1_1i0eq"]
-
-[node name="PdcVisualizer" type="Node2D" unique_id=1278395009]
-script = ExtResource("1_1i0eq")
-pdc_file_path = "res://test/pdc/Fin_50px.pdc"
