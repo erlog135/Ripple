@@ -45,6 +45,8 @@ func _ready() -> void:
 	last_frame_button.pressed.connect(_on_last_frame_pressed)
 	move_frame_left_button.pressed.connect(_on_move_frame_left_pressed)
 	move_frame_right_button.pressed.connect(_on_move_frame_right_pressed)
+	onion_skin_toggle.button_pressed = EditorState.onion_skin_enabled
+	onion_skin_toggle.toggled.connect(_on_onion_skin_toggled)
 
 	playback_speed_spin.value = EditorState.playback_speed
 	playback_speed_spin.value_changed.connect(_on_playback_speed_spin_changed)
@@ -263,6 +265,10 @@ func _on_current_frame_spin_changed(value: float) -> void:
 	if _suppress_current_frame_spin:
 		return
 	EditorState.set_current_frame(int(value) - 1)
+
+
+func _on_onion_skin_toggled(pressed: bool) -> void:
+	EditorState.onion_skin_enabled = pressed
 
 
 func _on_frame_duration_changed(value: float) -> void:

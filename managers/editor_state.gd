@@ -23,6 +23,7 @@ signal render_mode_changed(mode: RenderMode)
 signal clip_to_bounds_changed(enabled: bool)
 signal validate_line_angles_changed(enabled: bool)
 signal shape_preview_changed
+signal onion_skin_changed(enabled: bool)
 
 
 const ZOOM_STEP := 0.1
@@ -46,6 +47,12 @@ enum RenderMode { VECTOR, RASTER }
 var active_tool: Tool = Tool.SELECT
 var render_mode: RenderMode = RenderMode.VECTOR
 var current_frame: int = 0
+var onion_skin_enabled: bool = false:
+	set(value):
+		if onion_skin_enabled == value:
+			return
+		onion_skin_enabled = value
+		onion_skin_changed.emit(value)
 ## Timeline strip horizontal scale (pixels per ms).
 var timeline_zoom: float = 1.0
 ## Multiplier for animator playback (not the canvas zoom).
