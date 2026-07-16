@@ -64,6 +64,11 @@ func set_index(new_index: int) -> void:
 	_index = new_index
 
 
+## Updates the unsaved indicator visibility dynamically.
+func set_unsaved(unsaved: bool) -> void:
+	unsaved_indicator.visible = unsaved
+
+
 func _on_close_button_pressed() -> void:
 	tab_closed.emit(_index)
 

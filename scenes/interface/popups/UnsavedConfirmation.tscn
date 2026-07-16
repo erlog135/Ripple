@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://cxnjx4r20kky7"]
+
+[node name="UnsavedConfirmation" type="ConfirmationDialog" unique_id=788257578]
+oversampling_override = 1.0
+size = Vector2i(441, 100)
+visible = true
+dialog_text = "Exit without saving? Your unsaved work will be lost!"
+dialog_autowrap = true

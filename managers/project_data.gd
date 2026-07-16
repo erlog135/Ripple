@@ -7,15 +7,35 @@ signal tab_list_changed
 ## clean up per-tab state before the array shrinks. Index refers to the
 ## open_sequences position being removed.
 signal tab_removed(index: int)
+## Emitted when a tab's dirty state changes.
+signal dirty_state_changed
 
-var open_sequences: Array[DrawCommandSequence] = []
-var sequence_paths: Array[String] = []
-var active_sequence_index: int = 0
-
+var open_documents: Array[ProjectDocument] = []
+var active_document_index: int = 0
 
 # ---------------------------------------------------------------------------
 # Backward-compatibility computed properties
 # ---------------------------------------------------------------------------
+
+var open_sequences: Array[DrawCommandSequence]:
+	get:
+		var arr: Array[DrawCommandSequence] = []
+		for doc in open_documents:
+			arr.append(doc.sequence)
+		return arr
+
+var sequence_paths: Array[String]:
+	get:
+		var arr: Array[String] = []
+		for doc in open_documents:
+			arr.append(doc.file_path)
+		return arr
+
+var active_sequence_index: int:
+	get:
+		return active_document_index
+	set(value):
+		active_document_index = value
 
 ## The currently active DrawCommandSequence. Read-only; use set_active_sequence
 ## or add_sequence to change which sequence is active.
@@ -26,23 +46,61 @@ var current_sequence: DrawCommandSequence:
 ## Writing to this updates the active tab's entry in sequence_paths.
 var current_path: String:
 	get:
-		if sequence_paths.is_empty() or active_sequence_index >= sequence_paths.size():
+		var doc = get_current_document()
+		if not doc:
 			return ""
-		return sequence_paths[active_sequence_index]
+		return doc.file_path
 	set(value):
-		if active_sequence_index >= 0 and active_sequence_index < sequence_paths.size():
-			sequence_paths[active_sequence_index] = value
+		var doc = get_current_document()
+		if doc:
+			doc.file_path = value
+
+
+func _ready() -> void:
+	get_tree().set_auto_accept_quit(false)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		_on_window_close_requested()
+
+
+func _on_window_close_requested() -> void:
+	var has_unsaved := false
+	for doc in open_documents:
+		if doc.is_dirty:
+			has_unsaved = true
+			break
+	
+	if has_unsaved:
+		var popup = PopupManager.open("unsaved_confirmation", "res://scenes/interface/popups/UnsavedConfirmation.tscn")
+		if popup:
+			if not popup.confirmed.is_connected(_on_exit_confirmed):
+				popup.confirmed.connect(_on_exit_confirmed)
+	else:
+		get_tree().quit()
+
+
+func _on_exit_confirmed() -> void:
+	get_tree().quit()
 
 
 # ---------------------------------------------------------------------------
 # Accessors (used by tools, actions, and rendering — require no changes there)
 # ---------------------------------------------------------------------------
 
-func get_current_sequence() -> DrawCommandSequence:
-	if open_sequences.is_empty():
+func get_current_document() -> ProjectDocument:
+	if open_documents.is_empty():
 		return null
-	var idx := clampi(active_sequence_index, 0, open_sequences.size() - 1)
-	return open_sequences[idx]
+	var idx := clampi(active_document_index, 0, open_documents.size() - 1)
+	return open_documents[idx]
+
+
+func get_current_sequence() -> DrawCommandSequence:
+	var doc = get_current_document()
+	if not doc:
+		return null
+	return doc.sequence
 
 
 func get_current_image() -> DrawCommandImage:
@@ -68,13 +126,13 @@ func get_current_commands() -> Array:
 # ---------------------------------------------------------------------------
 
 ## Switches the active document tab. Resets the frame index and clears the
-## selection so they are always valid for the new document.
+## selection so they are valid for the new document.
 func set_active_sequence(index: int) -> void:
-	if index < 0 or index >= open_sequences.size():
+	if index < 0 or index >= open_documents.size():
 		return
-	if index == active_sequence_index:
+	if index == active_document_index:
 		return
-	active_sequence_index = index
+	active_document_index = index
 	EditorState.set_current_frame(0)
 	EditorState.clear_selection()
 	data_changed.emit(true, -1)
@@ -82,9 +140,14 @@ func set_active_sequence(index: int) -> void:
 
 ## Adds a new sequence as a new tab and switches to it.
 func add_sequence(seq: DrawCommandSequence, path: String = "") -> void:
-	open_sequences.append(seq)
-	sequence_paths.append(path)
-	active_sequence_index = open_sequences.size() - 1
+	var doc = ProjectDocument.new()
+	doc.sequence = seq
+	doc.file_path = path
+	doc.is_dirty = false
+	doc.undo_redo = UndoRedo.new()
+	doc.saved_history_version = 0
+	open_documents.append(doc)
+	active_document_index = open_documents.size() - 1
 	EditorState.set_current_frame(0)
 	EditorState.clear_selection()
 	tab_list_changed.emit()
@@ -93,16 +156,15 @@ func add_sequence(seq: DrawCommandSequence, path: String = "") -> void:
 
 ## Closes the tab at [param index]. The last tab cannot be closed.
 ## Emits tab_removed before tab_list_changed so listeners can free per-tab
-## resources (e.g. HistoryManager's UndoRedo instance) before the index shifts.
+## resources before the index shifts.
 func close_sequence(index: int) -> void:
-	if open_sequences.size() <= 1:
+	if open_documents.size() <= 1:
 		return
-	if index < 0 or index >= open_sequences.size():
+	if index < 0 or index >= open_documents.size():
 		return
-	open_sequences.remove_at(index)
-	sequence_paths.remove_at(index)
-	if active_sequence_index >= open_sequences.size():
-		active_sequence_index = open_sequences.size() - 1
+	open_documents.remove_at(index)
+	if active_document_index >= open_documents.size():
+		active_document_index = open_documents.size() - 1
 	EditorState.set_current_frame(0)
 	EditorState.clear_selection()
 	tab_removed.emit(index)
@@ -111,12 +173,17 @@ func close_sequence(index: int) -> void:
 
 
 ## Replaces the entire workspace with a new set of sequences. Used by File → New.
-## This is intentionally destructive: it does not emit tab_removed for old tabs
-## because the caller (Fileman.new_file) is responsible for clearing history first.
 func replace_sequences(seqs: Array[DrawCommandSequence], paths: Array[String]) -> void:
-	open_sequences = seqs
-	sequence_paths = paths
-	active_sequence_index = 0
+	open_documents.clear()
+	for i in seqs.size():
+		var doc = ProjectDocument.new()
+		doc.sequence = seqs[i]
+		doc.file_path = paths[i] if i < paths.size() else ""
+		doc.is_dirty = false
+		doc.undo_redo = UndoRedo.new()
+		doc.saved_history_version = 0
+		open_documents.append(doc)
+	active_document_index = 0
 	EditorState.set_current_frame(0)
 	EditorState.clear_selection()
 	tab_list_changed.emit()
@@ -124,13 +191,18 @@ func replace_sequences(seqs: Array[DrawCommandSequence], paths: Array[String]) -
 
 
 ## Legacy: replaces the active tab's sequence in-place without structural tab changes.
-## Kept for backward compatibility with any residual callers; prefer add_sequence
-## or replace_sequences for new code.
 func set_current_sequence(sequence: DrawCommandSequence) -> void:
-	if open_sequences.is_empty():
-		open_sequences.append(sequence)
-		sequence_paths.append("")
+	if open_documents.is_empty():
+		var doc = ProjectDocument.new()
+		doc.sequence = sequence
+		doc.file_path = ""
+		doc.is_dirty = false
+		doc.undo_redo = UndoRedo.new()
+		doc.saved_history_version = 0
+		open_documents.append(doc)
 		tab_list_changed.emit()
 	else:
-		open_sequences[active_sequence_index] = sequence
+		var doc = get_current_document()
+		if doc:
+			doc.sequence = sequence
 	data_changed.emit(true, -1)

@@ -8,6 +8,7 @@ const TAB_ITEM_SCENE := preload("uid://fn2u0vl812p")
 func _ready() -> void:
 	ProjectData.tab_list_changed.connect(_rebuild_tabs)
 	ProjectData.data_changed.connect(_on_data_changed)
+	ProjectData.dirty_state_changed.connect(_update_dirty_states)
 	RenderManager.preview_updated.connect(_on_preview_updated)
 	RenderManager.bulk_raster_finished.connect(_refresh_all_thumbnails)
 	_rebuild_tabs()
@@ -23,13 +24,13 @@ func _rebuild_tabs() -> void:
 		hbox.remove_child(child)
 		child.queue_free()
 
-	var seqs := ProjectData.open_sequences
-	for i in seqs.size():
-		var seq: DrawCommandSequence = seqs[i]
+	var docs := ProjectData.open_documents
+	for i in docs.size():
+		var doc := docs[i]
 		var item: Control = TAB_ITEM_SCENE.instantiate()
 		hbox.add_child(item)
-		var is_active := (i == ProjectData.active_sequence_index)
-		item.setup(i, seq, is_active, false)
+		var is_active := (i == ProjectData.active_document_index)
+		item.setup(i, doc.sequence, is_active, doc.is_dirty)
 		item.tab_clicked.connect(_on_tab_clicked)
 		item.tab_closed.connect(_on_tab_closed)
 
@@ -41,6 +42,16 @@ func _rebuild_tabs() -> void:
 func _on_data_changed(_by_user: bool, _affected_frame: int) -> void:
 	_sync_active_states()
 	_refresh_active_thumbnail()
+	_update_dirty_states()
+
+
+func _update_dirty_states() -> void:
+	var docs := ProjectData.open_documents
+	var children := hbox.get_children()
+	for i in mini(docs.size(), children.size()):
+		var child = children[i]
+		if child.has_method("set_unsaved"):
+			child.set_unsaved(docs[i].is_dirty)
 
 
 func _on_preview_updated() -> void:
@@ -101,8 +112,27 @@ func _on_tab_clicked(index: int) -> void:
 ## emitted inside ProjectData.close_sequence() which also handles the same cleanup
 ## via signal — calling remove_tab() first means the signal handler is a no-op.
 func _on_tab_closed(index: int) -> void:
-	if ProjectData.open_sequences.size() <= 1:
+	if ProjectData.open_documents.size() <= 1:
 		return  # Cannot close the last tab.
+	
+	var doc = ProjectData.open_documents[index]
+	if doc.is_dirty:
+		var confirm_dialog := ConfirmationDialog.new()
+		confirm_dialog.dialog_text = "Close tab without saving? Your unsaved work will be lost!"
+		confirm_dialog.confirmed.connect(func():
+			_force_close_tab(index)
+			confirm_dialog.queue_free()
+		)
+		confirm_dialog.canceled.connect(func():
+			confirm_dialog.queue_free()
+		)
+		get_tree().root.add_child(confirm_dialog)
+		confirm_dialog.popup_centered()
+	else:
+		_force_close_tab(index)
+
+
+func _force_close_tab(index: int) -> void:
 	# Disconnect signals from the item about to be removed to avoid stale calls.
 	if index < hbox.get_child_count():
 		var item := hbox.get_child(index)

@@ -196,12 +196,15 @@ func _on_files_dropped(files: PackedStringArray) -> void:
 		if sequence:
 			var existing_index = ProjectData.sequence_paths.find(path)
 			if existing_index != -1:
-				ProjectData.open_sequences[existing_index] = sequence
-				ProjectData.sequence_paths[existing_index] = path
+				var doc = ProjectData.open_documents[existing_index]
+				doc.sequence = sequence
+				doc.file_path = path
+				doc.is_dirty = false
+				doc.undo_redo.clear_history()
+				doc.saved_history_version = doc.undo_redo.get_version()
 				ProjectData.active_sequence_index = existing_index
 				EditorState.set_current_frame(0)
 				EditorState.clear_selection()
-				HistoryManager.clear()
 				ProjectData.data_changed.emit(true, -1)
 			else:
 				ProjectData.add_sequence(sequence, path)
@@ -303,6 +306,7 @@ func gd_to_pdc(path: String, sequence: DrawCommandSequence) -> bool:
 		_pdc_write_sequence(file, sequence)
 
 	ProjectData.current_path = path
+	HistoryManager.mark_as_saved(ProjectData.get_current_document(), path)
 	file_saved.emit(file.get_position())
 	return true
 
