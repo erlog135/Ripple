@@ -15,8 +15,7 @@ signal gif_export_progress(completed: int, total: int)
 signal gif_export_finished
 
 func _ready():
-	pass  # pdc_loaded signal is kept for external listeners but no longer drives
-		  # tab creation; that is handled inline in pdc_to_gd().
+	get_window().files_dropped.connect(_on_files_dropped)
 
 ## Wipes the slate clean and builds a fresh, blank single-frame sequence of the
 ## given pixel [param size]. This is intentionally destructive (not undoable):
@@ -48,7 +47,7 @@ func load_project(path: String) -> void:
 	pdc_to_gd(path)
 
 func save_file() -> void:
-	if ProjectData.current_path.is_empty():
+	if ProjectData.current_path.is_empty() or ProjectData.current_path.to_lower().ends_with(".svg"):
 		save_as_file_dialog()
 	else:
 		gd_to_pdc(ProjectData.current_path, ProjectData.current_sequence)
@@ -77,7 +76,7 @@ func save_as_file_dialog():
 
 	file_dialog.popup_centered()
 
-func pdc_to_gd(path: String) -> DrawCommandSequence:
+func _load_pdc_sequence(path: String) -> DrawCommandSequence:
 	var file = FileAccess.open(path, FileAccess.READ)
 	if not file:
 		push_error("Failed to open PDC file: " + path)
@@ -85,7 +84,7 @@ func pdc_to_gd(path: String) -> DrawCommandSequence:
 
 	file.set_big_endian(false)
 	var magic = file.get_buffer(4).get_string_from_ascii()
-	file.get_32()  # total data size, unused
+	file.get_32() # total data size, unused
 
 	var sequence = DrawCommandSequence.new()
 
@@ -98,26 +97,128 @@ func pdc_to_gd(path: String) -> DrawCommandSequence:
 	else:
 		push_error("Unknown PDC magic word: " + magic)
 		return null
+	return sequence
 
-	var size_bytes := file.get_length()
+func pdc_to_gd(path: String) -> DrawCommandSequence:
+	var sequence = _load_pdc_sequence(path)
+	if not sequence:
+		return null
+
+	var file = FileAccess.open(path, FileAccess.READ)
+	var size_bytes := file.get_length() if file else 0
 	# Add as a new tab and switch to it, then notify listeners.
 	ProjectData.add_sequence(sequence, path)
 	file_loaded.emit(size_bytes)
-	pdc_loaded.emit(sequence)  # kept for any external listeners
+	pdc_loaded.emit(sequence) # kept for any external listeners
 	EditorState.fit_document_to_view()
 	return sequence
 
+func _on_files_dropped(files: PackedStringArray) -> void:
+	if files.is_empty():
+		return
+
+	var regex = RegEx.new()
+	regex.compile("^(.+?)(\\d+)$")
+
+	var items = []
+	var group_map = {}
+
+	for path in files:
+		var ext = path.get_extension().to_lower()
+		if ext == "pdc" or ext == "pdcs":
+			items.append({
+				"type": "pdc",
+				"paths": [path]
+			})
+		elif ext == "svg":
+			var dir = path.get_base_dir()
+			var basename = path.get_file().get_basename()
+			var m = regex.search(basename)
+			if m:
+				var prefix = m.get_string(1)
+				var num = m.get_string(2).to_int()
+				var key = dir.path_join(prefix)
+				if group_map.has(key):
+					var idx = group_map[key]
+					items[idx]["paths"].append(path)
+					items[idx]["numbers"].append(num)
+				else:
+					var idx = items.size()
+					group_map[key] = idx
+					items.append({
+						"type": "svg_sequence",
+						"paths": [path],
+						"numbers": [num],
+						"key": key
+					})
+			else:
+				items.append({
+					"type": "svg",
+					"paths": [path]
+				})
+
+	# Process sequences, sorting by their numeric suffix
+	for item in items:
+		if item["type"] == "svg_sequence":
+			if item["paths"].size() <= 1:
+				item["type"] = "svg"
+			else:
+				var pairs = []
+				for i in range(item["paths"].size()):
+					pairs.append([item["paths"][i], item["numbers"][i]])
+				pairs.sort_custom(func(a, b): return a[1] < b[1])
+				
+				item["paths"].clear()
+				for pair in pairs:
+					item["paths"].append(pair[0])
+
+	for item in items:
+		var path = item["paths"][0]
+		var sequence: DrawCommandSequence = null
+		if item["type"] == "pdc":
+			sequence = _load_pdc_sequence(path)
+		elif item["type"] == "svg":
+			var file = FileAccess.open(path, FileAccess.READ)
+			if file:
+				var content = file.get_as_text()
+				file.close()
+				sequence = SvgPdcHelper.svg_to_sequence(content)
+		elif item["type"] == "svg_sequence":
+			var contents: Array[String] = []
+			for p_path in item["paths"]:
+				var file = FileAccess.open(p_path, FileAccess.READ)
+				if file:
+					contents.append(file.get_as_text())
+					file.close()
+			if not contents.is_empty():
+				sequence = SvgPdcHelper.svg_files_to_sequence(contents)
+
+		if sequence:
+			var existing_index = ProjectData.sequence_paths.find(path)
+			if existing_index != -1:
+				ProjectData.open_sequences[existing_index] = sequence
+				ProjectData.sequence_paths[existing_index] = path
+				ProjectData.active_sequence_index = existing_index
+				EditorState.set_current_frame(0)
+				EditorState.clear_selection()
+				HistoryManager.clear()
+				ProjectData.data_changed.emit(true, -1)
+			else:
+				ProjectData.add_sequence(sequence, path)
+	
+	EditorState.fit_document_to_view()
+
 func _pdc_parse_image(file: FileAccess) -> DrawCommandImage:
-	file.get_8()  # version
-	file.get_8()  # reserved
+	file.get_8() # version
+	file.get_8() # reserved
 	var image = DrawCommandImage.new()
 	image.bounds = Vector2i(_pdc_int16(file), _pdc_int16(file))
 	image.commands = _pdc_parse_command_list(file)
 	return image
 
 func _pdc_parse_sequence(file: FileAccess, sequence: DrawCommandSequence) -> void:
-	file.get_8()  # version
-	file.get_8()  # reserved
+	file.get_8() # version
+	file.get_8() # reserved
 	var bounds = Vector2i(_pdc_int16(file), _pdc_int16(file))
 	sequence.play_count = file.get_16()
 	var frame_count = file.get_16()
@@ -206,15 +307,15 @@ func gd_to_pdc(path: String, sequence: DrawCommandSequence) -> bool:
 	return true
 
 func _pdc_write_image(file: FileAccess, image: DrawCommandImage) -> void:
-	file.store_8(1)  # version
-	file.store_8(0)  # reserved
+	file.store_8(1) # version
+	file.store_8(0) # reserved
 	_pdc_write_int16(file, image.bounds.x)
 	_pdc_write_int16(file, image.bounds.y)
 	_pdc_write_command_list(file, image.commands)
 
 func _pdc_write_sequence(file: FileAccess, sequence: DrawCommandSequence) -> void:
-	file.store_8(1)  # version
-	file.store_8(0)  # reserved
+	file.store_8(1) # version
+	file.store_8(0) # reserved
 	var bounds = sequence.frames[0].bounds
 	_pdc_write_int16(file, bounds.x)
 	_pdc_write_int16(file, bounds.y)
@@ -263,18 +364,18 @@ func _pdc_command_size(cmd: DrawCommand) -> int:
 	return 9 + cmd.points.size() * 4
 
 func _pdc_command_list_size(commands: Array[DrawCommand]) -> int:
-	var size = 2  # num_commands uint16
+	var size = 2 # num_commands uint16
 	for cmd in commands:
 		size += _pdc_command_size(cmd)
 	return size
 
 func _pdc_image_data_size(image: DrawCommandImage) -> int:
-	return 6 + _pdc_command_list_size(image.commands)  # version + reserved + viewbox
+	return 6 + _pdc_command_list_size(image.commands) # version + reserved + viewbox
 
 func _pdc_sequence_data_size(sequence: DrawCommandSequence) -> int:
-	var size = 10  # version + reserved + viewbox + play_count + frame_count
+	var size = 10 # version + reserved + viewbox + play_count + frame_count
 	for image in sequence.frames:
-		size += 2 + _pdc_command_list_size(image.commands)  # duration + command list
+		size += 2 + _pdc_command_list_size(image.commands) # duration + command list
 	return size
 
 func save_project(path: String) -> void:
