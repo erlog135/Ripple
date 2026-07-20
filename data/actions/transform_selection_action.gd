@@ -71,3 +71,61 @@ func undo_action() -> void:
 	for i in range(_close_indices.size()):
 		(frame.commands[_close_indices[i]] as DrawCommand).path_open = _close_old_path_open[i]
 	ProjectData.data_changed.emit(false, _frame_index)
+
+
+static func create_image_flip(horizontal: bool) -> TransformSelectionAction:
+	var image := ProjectData.get_current_image()
+	if not image:
+		return null
+	var center := Vector2(image.bounds) / 2.0
+	
+	var sf := Vector2(-1, 1) if horizontal else Vector2(1, -1)
+	var t := Transform2D.IDENTITY
+	t.x = Vector2(sf.x, 0.0)
+	t.y = Vector2(0.0, sf.y)
+	t.origin = center - Vector2(sf.x * center.x, sf.y * center.y)
+	
+	return create_image_transform(t)
+
+
+static func create_image_rotate(cw: bool) -> TransformSelectionAction:
+	var image := ProjectData.get_current_image()
+	if not image:
+		return null
+	var center := Vector2(image.bounds) / 2.0
+	
+	var ang := PI / 2.0 if cw else -PI / 2.0
+	var t := Transform2D(ang, Vector2.ZERO)
+	t.origin = center - t.basis_xform(center)
+	
+	return create_image_transform(t)
+
+
+static func create_image_transform(matrix: Transform2D) -> TransformSelectionAction:
+	var image := ProjectData.get_current_image()
+	if not image:
+		return null
+	var frame_idx := EditorState.current_frame
+	var command_indices: Array[int] = []
+	var new_points_arrays: Array = []
+	var new_radii: Array = []
+	
+	for i in range(image.commands.size()):
+		command_indices.append(i)
+	
+	var radius_scale := (matrix.x.length() + matrix.y.length()) / 2.0
+	
+	for idx in command_indices:
+		var cmd: DrawCommand = image.commands[idx]
+		var transformed := cmd.points.duplicate()
+		for pt_idx in range(transformed.size()):
+			transformed[pt_idx] = matrix * cmd.points[pt_idx]
+		new_points_arrays.append(transformed)
+		
+		var radius_new := -1
+		if cmd.draw_type == DrawCommand.Type.CIRCLE:
+			radius_new = maxi(1, roundi(float(cmd.circle_radius) * radius_scale))
+		new_radii.append(radius_new)
+		
+	return TransformSelectionAction.new(frame_idx, command_indices, new_points_arrays, new_radii)
+

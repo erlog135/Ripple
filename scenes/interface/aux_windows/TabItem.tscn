@@ -1,6 +1,8 @@
 [gd_scene format=3 uid="uid://fn2u0vl812p"]
 
 [ext_resource type="Script" uid="uid://thranx86hmb4" path="res://scenes/interface/aux_windows/tab_item.gd" id="1_ofo3d"]
+[ext_resource type="Texture2D" uid="uid://dyyf80en0n24u" path="res://assets/icons/close.png" id="2_kclkt"]
+[ext_resource type="Texture2D" uid="uid://byaoobqv6da2n" path="res://assets/icons/close_hover.png" id="3_ko3xn"]
 
 [node name="TabItem" type="Control" unique_id=234965310]
 clip_contents = true
@@ -49,10 +51,11 @@ text = " *"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="CloseButton" type="Button" parent="." unique_id=391827645]
+[node name="CloseButton" type="TextureButton" parent="." unique_id=1596580203]
 layout_mode = 0
-offset_right = 24.0
-offset_bottom = 31.0
-focus_mode = 0
-text = "×"
-flat = true
+offset_right = 32.0
+offset_bottom = 32.0
+texture_normal = ExtResource("2_kclkt")
+texture_hover = ExtResource("3_ko3xn")
+ignore_texture_size = true
+stretch_mode = 5

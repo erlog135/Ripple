@@ -58,6 +58,22 @@ func execute(action_id: String) -> void:
 			EditorState.deselect_all()
 		"image_resize":
 			PopupManager.open("resize_document", "res://scenes/interface/popups/ResizeDocumentPopup.tscn")
+		"image_flip_horizontal":
+			var action := TransformSelectionAction.create_image_flip(true)
+			if action:
+				HistoryManager.commit(action)
+		"image_flip_vertical":
+			var action := TransformSelectionAction.create_image_flip(false)
+			if action:
+				HistoryManager.commit(action)
+		"image_rotate_90_cw":
+			var action := TransformSelectionAction.create_image_rotate(true)
+			if action:
+				HistoryManager.commit(action)
+		"image_rotate_90_ccw":
+			var action := TransformSelectionAction.create_image_rotate(false)
+			if action:
+				HistoryManager.commit(action)
 		"view_raster":
 			var next_mode := EditorState.RenderMode.VECTOR if EditorState.render_mode == EditorState.RenderMode.RASTER else EditorState.RenderMode.RASTER
 			EditorState.set_render_mode(next_mode)

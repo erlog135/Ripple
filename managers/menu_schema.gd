@@ -249,5 +249,26 @@ func _build_menu_data() -> Dictionary:
 				"type": "action",
 				"label": "Resize Bounds...",
 			},
+			{"type": "separator"},
+			{
+				"id": "image_flip_horizontal",
+				"type": "action",
+				"label": "Flip Horizontal",
+			},
+			{
+				"id": "image_flip_vertical",
+				"type": "action",
+				"label": "Flip Vertical",
+			},
+			{
+				"id": "image_rotate_90_cw",
+				"type": "action",
+				"label": "Rotate 90° CW",
+			},
+			{
+				"id": "image_rotate_90_ccw",
+				"type": "action",
+				"label": "Rotate 90° CCW",
+			},
 		],
 	}

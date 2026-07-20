@@ -9,7 +9,7 @@ signal tab_closed(index: int)
 @onready var selector_rect: ReferenceRect = $SelectorRect
 @onready var unsaved_indicator: Label = $UnsavedIndicator
 @onready var name_label: Label = $NameLabel
-@onready var close_button: Button = $CloseButton
+@onready var close_button: TextureButton = $CloseButton
 
 var _index: int = 0
 
