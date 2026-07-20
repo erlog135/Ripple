@@ -1,0 +1,135 @@
+[gd_scene format=3 uid="uid://bkm3vkueow1d6"]
+
+[ext_resource type="Texture2D" uid="uid://bdao8dg4h5wx1" path="res://assets/icons/button_new.svg" id="1_1w0ff"]
+[ext_resource type="Texture2D" uid="uid://cmu4hd2lqtlfk" path="res://assets/icons/button_open.svg" id="2_f0p0l"]
+[ext_resource type="Texture2D" uid="uid://dcmxbehaihida" path="res://assets/icons/button_save.svg" id="3_48xwq"]
+[ext_resource type="Texture2D" uid="uid://usieb1idldun" path="res://assets/icons/button_cut.svg" id="4_mabtk"]
+[ext_resource type="Texture2D" uid="uid://pts64swwaa1h" path="res://assets/icons/button_copy.svg" id="5_xarw7"]
+[ext_resource type="Texture2D" uid="uid://dd3mxpm0e6v0v" path="res://assets/icons/button_paste.svg" id="6_emsp7"]
+[ext_resource type="Texture2D" uid="uid://xuf2brf61umx" path="res://assets/icons/button_undo.svg" id="7_emsp7"]
+[ext_resource type="Texture2D" uid="uid://dl6u2kh64kewr" path="res://assets/icons/button_redo.svg" id="8_finru"]
+[ext_resource type="Texture2D" uid="uid://bmjs0d3i3g4wr" path="res://assets/icons/button_zoom.svg" id="9_finru"]
+
+[node name="Toolbelt" type="Control" unique_id=1511463236]
+texture_filter = 5
+custom_minimum_size = Vector2(352, 0)
+layout_mode = 3
+anchors_preset = 10
+anchor_right = 1.0
+offset_right = -928.0
+offset_bottom = 40.0
+grow_horizontal = 2
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=184722153]
+layout_mode = 0
+offset_top = 16.0
+offset_right = 112.0
+offset_bottom = 40.0
+color = Color(1, 0.6666667, 0.33333334, 1)
+
+[node name="TextureButton" type="TextureButton" parent="." unique_id=1978978031]
+layout_mode = 0
+offset_right = 32.0
+offset_bottom = 32.0
+tooltip_text = "Create a new file"
+texture_normal = ExtResource("1_1w0ff")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="TextureButton2" type="TextureButton" parent="." unique_id=1707668824]
+layout_mode = 0
+offset_left = 40.0
+offset_right = 72.0
+offset_bottom = 32.0
+tooltip_text = "Open a file"
+texture_normal = ExtResource("2_f0p0l")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="TextureButton3" type="TextureButton" parent="." unique_id=1767878114]
+layout_mode = 0
+offset_left = 80.0
+offset_right = 112.0
+offset_bottom = 32.0
+tooltip_text = "Save"
+texture_normal = ExtResource("3_48xwq")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="ColorRect2" type="ColorRect" parent="." unique_id=624855836]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 16.0
+offset_right = 232.0
+offset_bottom = 40.0
+color = Color(1, 0.6666667, 0.6666667, 1)
+
+[node name="TextureButton4" type="TextureButton" parent="." unique_id=584840532]
+layout_mode = 0
+offset_left = 120.0
+offset_right = 152.0
+offset_bottom = 32.0
+texture_normal = ExtResource("4_mabtk")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="TextureButton5" type="TextureButton" parent="." unique_id=1935944424]
+layout_mode = 0
+offset_left = 160.0
+offset_right = 192.0
+offset_bottom = 32.0
+texture_normal = ExtResource("5_xarw7")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="TextureButton6" type="TextureButton" parent="." unique_id=148678812]
+layout_mode = 0
+offset_left = 200.0
+offset_right = 232.0
+offset_bottom = 32.0
+texture_normal = ExtResource("6_emsp7")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="ColorRect3" type="ColorRect" parent="." unique_id=1387637321]
+layout_mode = 0
+offset_left = 240.0
+offset_top = 16.0
+offset_right = 312.0
+offset_bottom = 40.0
+color = Color(0, 0.33333334, 0.6666667, 1)
+
+[node name="TextureButton7" type="TextureButton" parent="." unique_id=278988620]
+layout_mode = 0
+offset_left = 240.0
+offset_right = 272.0
+offset_bottom = 32.0
+texture_normal = ExtResource("7_emsp7")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="TextureButton8" type="TextureButton" parent="." unique_id=912124691]
+layout_mode = 0
+offset_left = 280.0
+offset_right = 312.0
+offset_bottom = 32.0
+texture_normal = ExtResource("8_finru")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="ColorRect4" type="ColorRect" parent="." unique_id=127698350]
+layout_mode = 0
+offset_left = 320.0
+offset_top = 16.0
+offset_right = 352.0
+offset_bottom = 40.0
+color = Color(0, 0.6666667, 0.33333334, 1)
+
+[node name="TextureButton9" type="TextureButton" parent="." unique_id=576799981]
+layout_mode = 0
+offset_left = 320.0
+offset_right = 352.0
+offset_bottom = 32.0
+texture_normal = ExtResource("9_finru")
+ignore_texture_size = true
+stretch_mode = 5

@@ -52,7 +52,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.23921569, 0.23921569, 0.23921569, 1)
+color = Color(0.23921569, 0.23921569, 0.23921569, 0.78431374)
 
 [node name="Line2D2" type="Line2D" parent="DocumentLayer/SubViewport/ArtboardClip/Document" unique_id=1003032040]
 visible = false

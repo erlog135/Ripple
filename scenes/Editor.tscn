@@ -4,10 +4,20 @@
 [ext_resource type="PackedScene" uid="uid://dsun2824rmyw3" path="res://scenes/interface/CanvasArea.tscn" id="2_3kl07"]
 [ext_resource type="PackedScene" uid="uid://dkotjhm13dn23" path="res://scenes/interface/aux_windows/ToolsWindow.tscn" id="2_diyc1"]
 [ext_resource type="PackedScene" uid="uid://c2t87wm7nys5k" path="res://scenes/interface/aux_windows/DocumentTabs.tscn" id="2_mwer8"]
+[ext_resource type="PackedScene" uid="uid://bkm3vkueow1d6" path="res://scenes/interface/aux_windows/Toolbelt.tscn" id="2_wfgtv"]
 [ext_resource type="PackedScene" uid="uid://da7bxcr1u5aj" path="res://scenes/interface/aux_windows/FillStrokeWindow.tscn" id="3_wmxca"]
 [ext_resource type="PackedScene" uid="uid://bg1ar0lfuwc5p" path="res://scenes/interface/aux_windows/DocumentPropertiesWindow.tscn" id="4_6tdr8"]
 [ext_resource type="PackedScene" uid="uid://dwex3u1hmrm4m" path="res://scenes/interface/aux_windows/LayerWindow.tscn" id="4_u6trk"]
 [ext_resource type="PackedScene" uid="uid://bsuhmppbhkr2x" path="res://scenes/interface/aux_windows/AnimatorWindow.tscn" id="5_wa12f"]
+[ext_resource type="Script" uid="uid://duv2cdubi3vdb" path="res://scenes/accent_color_rect.gd" id="10_5x8yu"]
+
+[sub_resource type="Gradient" id="Gradient_wfgtv"]
+colors = PackedColorArray(0.12591085, 0.12591085, 0.12591082, 1, 0.25323758, 0.25323758, 0.25323758, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_5x8yu"]
+gradient = SubResource("Gradient_wfgtv")
+fill_from = Vector2(1, 1)
+fill_to = Vector2(0, 0)
 
 [node name="Editor" type="Control" unique_id=1840015314]
 layout_mode = 3
@@ -29,25 +39,15 @@ grow_vertical = 2
 layout_mode = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer" unique_id=483431324]
+custom_minimum_size = Vector2(352, 0)
 layout_mode = 2
 
 [node name="TopMenuBar" parent="VBoxContainer/HBoxContainer/VBoxContainer" unique_id=2124299505 instance=ExtResource("1_ndpqs")]
 layout_mode = 2
 
-[node name="Toolbelt" type="Panel" parent="VBoxContainer/HBoxContainer/VBoxContainer" unique_id=87617283]
+[node name="Toolbelt" parent="VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1511463236 instance=ExtResource("2_wfgtv")]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
-
-[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer/VBoxContainer/Toolbelt" unique_id=899139387]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "Toolbelt"
-horizontal_alignment = 1
-vertical_alignment = 1
 
 [node name="DocumentTabs" parent="VBoxContainer/HBoxContainer" unique_id=339842044 instance=ExtResource("2_mwer8")]
 layout_mode = 2
@@ -139,3 +139,23 @@ grow_vertical = 2
 text = "Editor Hints"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1138446134]
+layer = -1
+
+[node name="TextureRect" type="TextureRect" parent="CanvasLayer" unique_id=1673987692]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture2D_5x8yu")
+
+[node name="AccentColorRect" type="ColorRect" parent="CanvasLayer" unique_id=130904599]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(1, 1, 1, 0.1882353)
+script = ExtResource("10_5x8yu")

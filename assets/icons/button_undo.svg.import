@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cxjvplctqluyg"
-path="res://.godot/imported/button_new_frame.svg-fe55ebd65c68787a1aa3587ee4a0c780.ctex"
+uid="uid://xuf2brf61umx"
+path="res://.godot/imported/button_undo.svg-b0f841f10cd0c54c1da365e5bcf09069.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/button_new_frame.svg"
-dest_files=["res://.godot/imported/button_new_frame.svg-fe55ebd65c68787a1aa3587ee4a0c780.ctex"]
+source_file="res://assets/icons/button_undo.svg"
+dest_files=["res://.godot/imported/button_undo.svg-b0f841f10cd0c54c1da365e5bcf09069.ctex"]
 
 [params]
 
