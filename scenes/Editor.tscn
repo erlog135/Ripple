@@ -3,6 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://vrudldeag2yr" path="res://scenes/interface/TopMenuBar.tscn" id="1_ndpqs"]
 [ext_resource type="PackedScene" uid="uid://dsun2824rmyw3" path="res://scenes/interface/CanvasArea.tscn" id="2_3kl07"]
 [ext_resource type="PackedScene" uid="uid://dkotjhm13dn23" path="res://scenes/interface/aux_windows/ToolsWindow.tscn" id="2_diyc1"]
+[ext_resource type="Texture2D" uid="uid://ih1i0io4u6et" path="res://assets/frames/editor_grain.png" id="2_e4056"]
 [ext_resource type="PackedScene" uid="uid://c2t87wm7nys5k" path="res://scenes/interface/aux_windows/DocumentTabs.tscn" id="2_mwer8"]
 [ext_resource type="PackedScene" uid="uid://bkm3vkueow1d6" path="res://scenes/interface/aux_windows/Toolbelt.tscn" id="2_wfgtv"]
 [ext_resource type="PackedScene" uid="uid://da7bxcr1u5aj" path="res://scenes/interface/aux_windows/FillStrokeWindow.tscn" id="3_wmxca"]
@@ -26,6 +27,37 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1138446134]
+layer = -1
+
+[node name="GradientRect" type="TextureRect" parent="CanvasLayer" unique_id=1673987692]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture2D_5x8yu")
+
+[node name="AccentColorRect" type="ColorRect" parent="CanvasLayer" unique_id=130904599]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(1, 1, 1, 0.1882353)
+script = ExtResource("10_5x8yu")
+
+[node name="GrainRect" type="TextureRect" parent="CanvasLayer" unique_id=485571745]
+modulate = Color(1, 1, 1, 0.03137255)
+texture_filter = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_e4056")
+stretch_mode = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1594344963]
 layout_mode = 1
@@ -139,23 +171,3 @@ grow_vertical = 2
 text = "Editor Hints"
 horizontal_alignment = 1
 vertical_alignment = 1
-
-[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1138446134]
-layer = -1
-
-[node name="TextureRect" type="TextureRect" parent="CanvasLayer" unique_id=1673987692]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = SubResource("GradientTexture2D_5x8yu")
-
-[node name="AccentColorRect" type="ColorRect" parent="CanvasLayer" unique_id=130904599]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(1, 1, 1, 0.1882353)
-script = ExtResource("10_5x8yu")

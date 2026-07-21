@@ -22,7 +22,6 @@ focus_mode = 1
 script = ExtResource("1_sgg8o")
 
 [node name="PlaybackPanel" type="Panel" parent="." unique_id=1387252710]
-texture_filter = 3
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
