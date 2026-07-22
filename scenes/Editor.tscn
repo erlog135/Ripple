@@ -59,89 +59,95 @@ grow_vertical = 2
 texture = ExtResource("2_e4056")
 stretch_mode = 1
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1594344963]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=985977153]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=1430901113]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1594344963]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer" unique_id=483431324]
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1430901113]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=483431324]
 custom_minimum_size = Vector2(352, 0)
 layout_mode = 2
 
-[node name="TopMenuBar" parent="VBoxContainer/HBoxContainer/VBoxContainer" unique_id=2124299505 instance=ExtResource("1_ndpqs")]
+[node name="TopMenuBar" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=2124299505 instance=ExtResource("1_ndpqs")]
 layout_mode = 2
 
-[node name="Toolbelt" parent="VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1511463236 instance=ExtResource("2_wfgtv")]
+[node name="Toolbelt" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1511463236 instance=ExtResource("2_wfgtv")]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
-[node name="DocumentTabs" parent="VBoxContainer/HBoxContainer" unique_id=339842044 instance=ExtResource("2_mwer8")]
+[node name="DocumentTabs" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=339842044 instance=ExtResource("2_mwer8")]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="BusyArea" type="HBoxContainer" parent="VBoxContainer" unique_id=926309464]
+[node name="BusyArea" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=926309464]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Panels" type="HSplitContainer" parent="VBoxContainer/BusyArea" unique_id=585861789]
+[node name="Panels" type="HSplitContainer" parent="MarginContainer/VBoxContainer/BusyArea" unique_id=585861789]
 layout_mode = 2
 size_flags_horizontal = 3
 split_offsets = PackedInt32Array(210, -197)
 split_offset = 210
 
-[node name="LeftPanel" type="VSplitContainer" parent="VBoxContainer/BusyArea/Panels" unique_id=1686839539]
+[node name="LeftPanel" type="VSplitContainer" parent="MarginContainer/VBoxContainer/BusyArea/Panels" unique_id=1686839539]
 clip_contents = true
 layout_mode = 2
 split_offsets = PackedInt32Array(0, 0)
 
-[node name="ToolsWindow" parent="VBoxContainer/BusyArea/Panels/LeftPanel" unique_id=1568918098 instance=ExtResource("2_diyc1")]
+[node name="ToolsWindow" parent="MarginContainer/VBoxContainer/BusyArea/Panels/LeftPanel" unique_id=1568918098 instance=ExtResource("2_diyc1")]
 clip_contents = true
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="FillStrokeWindow" parent="VBoxContainer/BusyArea/Panels/LeftPanel" unique_id=766531804 instance=ExtResource("3_wmxca")]
+[node name="FillStrokeWindow" parent="MarginContainer/VBoxContainer/BusyArea/Panels/LeftPanel" unique_id=766531804 instance=ExtResource("3_wmxca")]
 clip_contents = true
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="DocumentPropertiesWindow" parent="VBoxContainer/BusyArea/Panels/LeftPanel" unique_id=1121416412 instance=ExtResource("4_6tdr8")]
+[node name="DocumentPropertiesWindow" parent="MarginContainer/VBoxContainer/BusyArea/Panels/LeftPanel" unique_id=1121416412 instance=ExtResource("4_6tdr8")]
 clip_contents = true
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="MidPanel" type="VSplitContainer" parent="VBoxContainer/BusyArea/Panels" unique_id=1564072419]
+[node name="MidPanel" type="VSplitContainer" parent="MarginContainer/VBoxContainer/BusyArea/Panels" unique_id=1564072419]
 clip_contents = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="CanvasArea" parent="VBoxContainer/BusyArea/Panels/MidPanel" unique_id=1795288712 instance=ExtResource("2_3kl07")]
+[node name="CanvasArea" parent="MarginContainer/VBoxContainer/BusyArea/Panels/MidPanel" unique_id=1795288712 instance=ExtResource("2_3kl07")]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="AnimatorWindow" parent="VBoxContainer/BusyArea/Panels/MidPanel" unique_id=277590820 instance=ExtResource("5_wa12f")]
+[node name="AnimatorWindow" parent="MarginContainer/VBoxContainer/BusyArea/Panels/MidPanel" unique_id=277590820 instance=ExtResource("5_wa12f")]
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.5
 
-[node name="RightPanel" type="VSplitContainer" parent="VBoxContainer/BusyArea/Panels" unique_id=213196365]
+[node name="RightPanel" type="VSplitContainer" parent="MarginContainer/VBoxContainer/BusyArea/Panels" unique_id=213196365]
 clip_contents = true
 layout_mode = 2
 
-[node name="Preview" type="Panel" parent="VBoxContainer/BusyArea/Panels/RightPanel" unique_id=598848381]
+[node name="Preview" type="Panel" parent="MarginContainer/VBoxContainer/BusyArea/Panels/RightPanel" unique_id=598848381]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="VBoxContainer/BusyArea/Panels/RightPanel/Preview" unique_id=1842980290]
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/BusyArea/Panels/RightPanel/Preview" unique_id=1842980290]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -152,16 +158,16 @@ text = "Hardware Preview"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="LayerWindow" parent="VBoxContainer/BusyArea/Panels/RightPanel" unique_id=1039252092 instance=ExtResource("4_u6trk")]
+[node name="LayerWindow" parent="MarginContainer/VBoxContainer/BusyArea/Panels/RightPanel" unique_id=1039252092 instance=ExtResource("4_u6trk")]
 clip_contents = true
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Hints" type="Panel" parent="VBoxContainer" unique_id=1272784267]
+[node name="Hints" type="Panel" parent="MarginContainer/VBoxContainer" unique_id=1272784267]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBoxContainer/Hints" unique_id=1214642760]
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/Hints" unique_id=1214642760]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

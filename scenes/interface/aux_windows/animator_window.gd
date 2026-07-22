@@ -1,7 +1,7 @@
 extends Control
 
 @onready var playback_speed_spin: SpinBox = $PlaybackPanel/PlaybackSpeed
-@onready var loop_toggle: CheckBox = $PlaybackPanel/LoopToggle
+@onready var loop_toggle: Button = $PlaybackPanel/LoopToggle
 @onready var last_frame_button: Button = $PlaybackPanel/LastFrameButton
 @onready var play_button: Button = $PlaybackPanel/PlayButton
 @onready var first_frame_button: Button = $PlaybackPanel/FirstFrameButton
@@ -10,7 +10,7 @@ extends Control
 @onready var new_frame_button: Button = $PlaybackPanel/NewFrameButton
 @onready var duplicate_frame_button: Button = $PlaybackPanel/DuplicateFrameButton
 @onready var current_frame_spin: SpinBox = $PlaybackPanel/CurrentFrame
-@onready var onion_skin_toggle: CheckButton = $PlaybackPanel/OnionSkinToggle
+@onready var onion_skin_toggle: Button = $PlaybackPanel/OnionSkinToggle
 @onready var frame_duration: SpinBox = $PlaybackPanel/FrameDuration
 @onready var move_frame_right_button: Button = $PlaybackPanel/MoveFrameRightButton
 @onready var move_frame_left_button: Button = $PlaybackPanel/MoveFrameLeftButton

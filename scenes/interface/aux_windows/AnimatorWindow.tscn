@@ -3,8 +3,10 @@
 [ext_resource type="Script" uid="uid://cp24gndjd5xu5" path="res://scenes/interface/aux_windows/animator_window.gd" id="1_sgg8o"]
 [ext_resource type="Texture2D" uid="uid://baxkhmr3ggbe5" path="res://assets/icons/button_frame_dupe.svg" id="2_jdu6l"]
 [ext_resource type="Texture2D" uid="uid://d2jr4e6nftmhv" path="res://assets/icons/button_play.svg" id="2_kerko"]
+[ext_resource type="Texture2D" uid="uid://ey80rlttimg7" path="res://assets/icons/button_loop.svg" id="2_sfgt0"]
 [ext_resource type="Texture2D" uid="uid://mfawmwdwkv4i" path="res://assets/icons/playhead_grabpoint.png" id="2_sgg8o"]
 [ext_resource type="Texture2D" uid="uid://7kixvjc10wv8" path="res://assets/icons/button_last_frame.svg" id="3_5pajp"]
+[ext_resource type="Texture2D" uid="uid://c33508i00i6os" path="res://assets/icons/button_onion_skin.svg" id="3_hrwgu"]
 [ext_resource type="Texture2D" uid="uid://boiqdl7abd7hu" path="res://assets/icons/button_first_frame.svg" id="4_54jo5"]
 [ext_resource type="Texture2D" uid="uid://cxjvplctqluyg" path="res://assets/icons/button_frame_new.svg" id="6_005g1"]
 [ext_resource type="Texture2D" uid="uid://c4hode735ftlk" path="res://assets/icons/button_frame_right.svg" id="6_mauw5"]
@@ -32,8 +34,8 @@ grow_horizontal = 2
 layout_mode = 1
 anchors_preset = 9
 anchor_bottom = 1.0
-offset_left = 192.0
-offset_right = 320.0
+offset_left = 296.0
+offset_right = 416.0
 offset_bottom = -33.0
 grow_vertical = 2
 min_value = 0.1
@@ -44,64 +46,105 @@ alignment = 1
 update_on_text_changed = true
 suffix = "×"
 
-[node name="LoopToggle" type="CheckBox" parent="PlaybackPanel" unique_id=1473223585]
+[node name="PlaybackExtraFlair" type="ColorRect" parent="PlaybackPanel" unique_id=1624520368]
 layout_mode = 1
 anchors_preset = 9
 anchor_bottom = 1.0
-offset_left = 320.0
-offset_right = 448.0
-offset_bottom = -32.0
+offset_left = 176.0
+offset_top = 40.0
+offset_right = 288.0
 grow_vertical = 2
+color = Color(0.6666667, 0, 0.33333334, 1)
+
+[node name="LoopToggle" type="Button" parent="PlaybackPanel" unique_id=2136555443]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 176.0
+offset_right = 232.0
+offset_bottom = -8.0
+grow_vertical = 2
+toggle_mode = true
 text = "Loop"
+icon = ExtResource("2_sfgt0")
+icon_alignment = 1
+vertical_icon_alignment = 2
+expand_icon = true
+
+[node name="OnionSkinToggle" type="Button" parent="PlaybackPanel" unique_id=357896729]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 232.0
+offset_right = 288.0
+offset_bottom = -8.0
+grow_vertical = 2
+toggle_mode = true
+text = "Onion"
+icon = ExtResource("3_hrwgu")
+icon_alignment = 1
+vertical_icon_alignment = 2
+expand_icon = true
+
+[node name="PlaybackFlair" type="ColorRect" parent="PlaybackPanel" unique_id=346367450]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_top = 40.0
+offset_right = 168.0
+grow_vertical = 2
+color = Color(1, 0, 0.6666667, 1)
 
 [node name="PlayButton" type="Button" parent="PlaybackPanel" unique_id=208381902]
 layout_mode = 1
 anchors_preset = 9
 anchor_bottom = 1.0
-offset_left = 64.0
-offset_right = 128.0
+offset_left = 56.0
+offset_right = 112.0
+offset_bottom = -8.0
 grow_vertical = 2
 toggle_mode = true
+text = "Play"
 icon = ExtResource("2_kerko")
 icon_alignment = 1
-vertical_icon_alignment = 0
+vertical_icon_alignment = 2
 expand_icon = true
 
 [node name="LastFrameButton" type="Button" parent="PlaybackPanel" unique_id=221658795]
 layout_mode = 1
 anchors_preset = 9
 anchor_bottom = 1.0
-offset_left = 128.0
-offset_top = 8.0
-offset_right = 192.0
+offset_left = 112.0
+offset_right = 168.0
 offset_bottom = -8.0
 grow_vertical = 2
+text = "Last"
 icon = ExtResource("3_5pajp")
 icon_alignment = 1
-vertical_icon_alignment = 0
+vertical_icon_alignment = 2
 expand_icon = true
 
 [node name="FirstFrameButton" type="Button" parent="PlaybackPanel" unique_id=606162592]
 layout_mode = 1
 anchors_preset = 9
 anchor_bottom = 1.0
-offset_top = 8.0
-offset_right = 64.0
+offset_right = 56.0
 offset_bottom = -8.0
 grow_vertical = 2
 toggle_mode = true
+text = "First"
 icon = ExtResource("4_54jo5")
 icon_alignment = 1
-vertical_icon_alignment = 0
+vertical_icon_alignment = 2
 expand_icon = true
 
 [node name="CurrentFrame" type="SpinBox" parent="PlaybackPanel" unique_id=1577850282]
 layout_mode = 1
 anchors_preset = -1
 anchor_bottom = 1.0
-offset_left = 192.0
+offset_left = 296.0
 offset_top = 32.0
-offset_right = 320.0
+offset_right = 416.0
 grow_horizontal = 2
 grow_vertical = 0
 min_value = 1.0
@@ -112,25 +155,15 @@ alignment = 1
 update_on_text_changed = true
 suffix = "/ 1"
 
-[node name="OnionSkinToggle" type="CheckButton" parent="PlaybackPanel" unique_id=1486912039]
-layout_mode = 1
-anchors_preset = 9
-anchor_bottom = 1.0
-offset_left = 320.0
-offset_top = 32.0
-offset_right = 448.0
-grow_vertical = 2
-text = "Onion Skin"
-
 [node name="FrameDuration" type="SpinBox" parent="PlaybackPanel" unique_id=996176592]
 layout_mode = 1
 anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -424.0
+offset_left = -400.0
 offset_top = 8.0
-offset_right = -328.0
+offset_right = -304.0
 offset_bottom = -8.0
 grow_horizontal = 0
 grow_vertical = 2
@@ -143,21 +176,63 @@ update_on_text_changed = true
 suffix = "ms"
 select_all_on_focus = true
 
+[node name="FrameCreateFlair" type="ColorRect" parent="PlaybackPanel" unique_id=973272907]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -112.0
+offset_top = 40.0
+grow_horizontal = 0
+grow_vertical = 2
+color = Color(1, 0.33333334, 0, 1)
+
+[node name="NewFrameButton" type="Button" parent="PlaybackPanel" unique_id=667664672]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -56.0
+offset_bottom = -8.0
+grow_horizontal = 0
+grow_vertical = 2
+text = "New"
+icon = ExtResource("6_005g1")
+icon_alignment = 1
+vertical_icon_alignment = 2
+expand_icon = true
+
 [node name="DuplicateFrameButton" type="Button" parent="PlaybackPanel" unique_id=1768115367]
 layout_mode = 1
 anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -128.0
-offset_right = -64.0
+offset_left = -112.0
+offset_right = -56.0
+offset_bottom = -8.0
 grow_horizontal = 0
 grow_vertical = 2
 text = "Dupe"
 icon = ExtResource("2_jdu6l")
 icon_alignment = 1
-vertical_icon_alignment = 0
+vertical_icon_alignment = 2
 expand_icon = true
+
+[node name="FrameMoveFlair" type="ColorRect" parent="PlaybackPanel" unique_id=1243958932]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -232.0
+offset_top = 40.0
+offset_right = -120.0
+grow_horizontal = 0
+grow_vertical = 2
+color = Color(1, 0.33333334, 0.33333334, 1)
 
 [node name="MoveFrameRightButton" type="Button" parent="PlaybackPanel" unique_id=1650776147]
 layout_mode = 1
@@ -165,14 +240,15 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -192.0
-offset_right = -128.0
+offset_left = -176.0
+offset_right = -120.0
+offset_bottom = -8.0
 grow_horizontal = 0
 grow_vertical = 2
 text = "After"
 icon = ExtResource("6_mauw5")
 icon_alignment = 1
-vertical_icon_alignment = 0
+vertical_icon_alignment = 2
 expand_icon = true
 
 [node name="MoveFrameLeftButton" type="Button" parent="PlaybackPanel" unique_id=1369569173]
@@ -181,30 +257,29 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -256.0
-offset_right = -192.0
+offset_left = -232.0
+offset_right = -176.0
+offset_bottom = -8.0
 grow_horizontal = 0
 grow_vertical = 2
 text = "Before"
 icon = ExtResource("7_sfgt0")
 icon_alignment = 1
-vertical_icon_alignment = 0
+vertical_icon_alignment = 2
 expand_icon = true
 
-[node name="NewFrameButton" type="Button" parent="PlaybackPanel" unique_id=667664672]
+[node name="FrameDeleteFlair" type="ColorRect" parent="PlaybackPanel" unique_id=595877788]
 layout_mode = 1
 anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -64.0
+offset_left = -296.0
+offset_top = 40.0
+offset_right = -240.0
 grow_horizontal = 0
 grow_vertical = 2
-text = "New"
-icon = ExtResource("6_005g1")
-icon_alignment = 1
-vertical_icon_alignment = 0
-expand_icon = true
+color = Color(1, 0, 0.33333334, 1)
 
 [node name="DeleteFrameButton" type="Button" parent="PlaybackPanel" unique_id=675091755]
 layout_mode = 1
@@ -212,14 +287,15 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -320.0
-offset_right = -256.0
+offset_left = -296.0
+offset_right = -240.0
+offset_bottom = -8.0
 grow_horizontal = 0
 grow_vertical = 2
 text = "Erase"
 icon = ExtResource("9_hrwgu")
 icon_alignment = 1
-vertical_icon_alignment = 0
+vertical_icon_alignment = 2
 expand_icon = true
 
 [node name="FramesPanel" type="Panel" parent="." unique_id=1783542036]

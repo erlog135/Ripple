@@ -26,34 +26,28 @@ offset_right = 112.0
 offset_bottom = 40.0
 color = Color(1, 0.6666667, 0.33333334, 1)
 
-[node name="TextureButton" type="TextureButton" parent="." unique_id=1978978031]
+[node name="NewFileButton" type="Button" parent="." unique_id=939978841]
 layout_mode = 0
 offset_right = 32.0
 offset_bottom = 32.0
-tooltip_text = "Create a new file"
-texture_normal = ExtResource("1_1w0ff")
-ignore_texture_size = true
-stretch_mode = 5
+icon = ExtResource("1_1w0ff")
+expand_icon = true
 
-[node name="TextureButton2" type="TextureButton" parent="." unique_id=1707668824]
+[node name="OpenFileButton" type="Button" parent="." unique_id=2025180158]
 layout_mode = 0
 offset_left = 40.0
 offset_right = 72.0
 offset_bottom = 32.0
-tooltip_text = "Open a file"
-texture_normal = ExtResource("2_f0p0l")
-ignore_texture_size = true
-stretch_mode = 5
+icon = ExtResource("2_f0p0l")
+expand_icon = true
 
-[node name="TextureButton3" type="TextureButton" parent="." unique_id=1767878114]
+[node name="SaveFileButton" type="Button" parent="." unique_id=825705755]
 layout_mode = 0
 offset_left = 80.0
 offset_right = 112.0
 offset_bottom = 32.0
-tooltip_text = "Save"
-texture_normal = ExtResource("3_48xwq")
-ignore_texture_size = true
-stretch_mode = 5
+icon = ExtResource("3_48xwq")
+expand_icon = true
 
 [node name="ColorRect2" type="ColorRect" parent="." unique_id=624855836]
 layout_mode = 0
@@ -63,32 +57,29 @@ offset_right = 232.0
 offset_bottom = 40.0
 color = Color(1, 0.6666667, 0.6666667, 1)
 
-[node name="TextureButton4" type="TextureButton" parent="." unique_id=584840532]
+[node name="CutButton" type="Button" parent="." unique_id=1844266678]
 layout_mode = 0
 offset_left = 120.0
 offset_right = 152.0
 offset_bottom = 32.0
-texture_normal = ExtResource("4_mabtk")
-ignore_texture_size = true
-stretch_mode = 5
+icon = ExtResource("4_mabtk")
+expand_icon = true
 
-[node name="TextureButton5" type="TextureButton" parent="." unique_id=1935944424]
+[node name="CopyButton" type="Button" parent="." unique_id=207945065]
 layout_mode = 0
 offset_left = 160.0
 offset_right = 192.0
 offset_bottom = 32.0
-texture_normal = ExtResource("5_xarw7")
-ignore_texture_size = true
-stretch_mode = 5
+icon = ExtResource("5_xarw7")
+expand_icon = true
 
-[node name="TextureButton6" type="TextureButton" parent="." unique_id=148678812]
+[node name="PasteButton" type="Button" parent="." unique_id=1646542384]
 layout_mode = 0
 offset_left = 200.0
 offset_right = 232.0
 offset_bottom = 32.0
-texture_normal = ExtResource("6_emsp7")
-ignore_texture_size = true
-stretch_mode = 5
+icon = ExtResource("6_emsp7")
+expand_icon = true
 
 [node name="ColorRect3" type="ColorRect" parent="." unique_id=1387637321]
 layout_mode = 0
@@ -98,23 +89,21 @@ offset_right = 312.0
 offset_bottom = 40.0
 color = Color(0, 0.33333334, 0.6666667, 1)
 
-[node name="TextureButton7" type="TextureButton" parent="." unique_id=278988620]
+[node name="UndoButton" type="Button" parent="." unique_id=476999388]
 layout_mode = 0
 offset_left = 240.0
 offset_right = 272.0
 offset_bottom = 32.0
-texture_normal = ExtResource("7_emsp7")
-ignore_texture_size = true
-stretch_mode = 5
+icon = ExtResource("7_emsp7")
+expand_icon = true
 
-[node name="TextureButton8" type="TextureButton" parent="." unique_id=912124691]
+[node name="RedoButton" type="Button" parent="." unique_id=1055909512]
 layout_mode = 0
 offset_left = 280.0
 offset_right = 312.0
 offset_bottom = 32.0
-texture_normal = ExtResource("8_finru")
-ignore_texture_size = true
-stretch_mode = 5
+icon = ExtResource("8_finru")
+expand_icon = true
 
 [node name="ColorRect4" type="ColorRect" parent="." unique_id=127698350]
 layout_mode = 0
@@ -124,11 +113,10 @@ offset_right = 352.0
 offset_bottom = 40.0
 color = Color(0, 0.6666667, 0.33333334, 1)
 
-[node name="TextureButton9" type="TextureButton" parent="." unique_id=576799981]
+[node name="ZoomButton" type="Button" parent="." unique_id=677657293]
 layout_mode = 0
 offset_left = 320.0
 offset_right = 352.0
 offset_bottom = 32.0
-texture_normal = ExtResource("9_finru")
-ignore_texture_size = true
-stretch_mode = 5
+icon = ExtResource("9_finru")
+expand_icon = true
