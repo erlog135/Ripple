@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://da7bxcr1u5aj"]
 
 [ext_resource type="Script" uid="uid://chbb5epr5t07j" path="res://scenes/interface/aux_windows/fill_stroke_window.gd" id="1_fl6xs"]
+[ext_resource type="Texture2D" uid="uid://cpdl6fnldpm7h" path="res://assets/frames/transparent_underlay.png" id="2_s0f0n"]
 
 [node name="FillStrokeWindow" type="Control" unique_id=766531804]
 layout_mode = 3
@@ -11,7 +12,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_fl6xs")
 
-[node name="ColorRect" type="ColorRect" parent="." unique_id=1759876326]
+[node name="Flair" type="ColorRect" parent="." unique_id=1759876326]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -43,64 +44,116 @@ offset_top = 32.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=2018676905]
+[node name="StrokeRect" type="ColorRect" parent="Panel" unique_id=729224725]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = 120.0
+grow_horizontal = 2
+color = Color(0, 0, 0, 1)
+
+[node name="Transparent" type="TextureRect" parent="Panel/StrokeRect" unique_id=908085564]
+z_index = -1
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
+texture = ExtResource("2_s0f0n")
+stretch_mode = 1
 
-[node name="Options" type="VBoxContainer" parent="Panel/MarginContainer" unique_id=319997352]
+[node name="MarginContainer" type="MarginContainer" parent="Panel/StrokeRect" unique_id=1843793629]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Transparent" type="TextureRect" parent="Panel/StrokeRect/MarginContainer" unique_id=1384931358]
+layout_mode = 2
+texture = ExtResource("2_s0f0n")
+stretch_mode = 1
+
+[node name="FillRect" type="ColorRect" parent="Panel/StrokeRect/MarginContainer" unique_id=1487739529]
 layout_mode = 2
 
-[node name="FillColor" type="HBoxContainer" parent="Panel/MarginContainer/Options" unique_id=1408875895]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="Panel/MarginContainer/Options/FillColor" unique_id=1490989401]
-layout_mode = 2
-size_flags_horizontal = 3
+[node name="Label" type="Label" parent="Panel/StrokeRect/MarginContainer/FillRect" unique_id=169541720]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/outline_size = 10
 text = "Fill Color"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ColorRect" type="ColorRect" parent="Panel/MarginContainer/Options/FillColor" unique_id=168975516]
-layout_mode = 2
-size_flags_horizontal = 3
-color = Color(0.6666667, 0.6666667, 0.6666667, 1)
+[node name="Border" type="ReferenceRect" parent="Panel/StrokeRect/MarginContainer/FillRect" unique_id=1676428514]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+border_color = Color(1, 1, 1, 0.5019608)
+editor_only = false
 
-[node name="StrokeColor" type="HBoxContainer" parent="Panel/MarginContainer/Options" unique_id=1976280762]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="Panel/MarginContainer/Options/StrokeColor" unique_id=1579337994]
-layout_mode = 2
-size_flags_horizontal = 3
+[node name="Label" type="Label" parent="Panel/StrokeRect" unique_id=224047031]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -24.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/outline_size = 10
 text = "Stroke Color"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ColorRect" type="ColorRect" parent="Panel/MarginContainer/Options/StrokeColor" unique_id=366528599]
+[node name="Border" type="ReferenceRect" parent="Panel/StrokeRect" unique_id=337518285]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+border_color = Color(1, 1, 1, 0.5019608)
+editor_only = false
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel" unique_id=1603699432]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 8.0
+offset_top = 128.0
+offset_right = -8.0
+offset_bottom = 160.0
+grow_horizontal = 2
+
+[node name="Label" type="Label" parent="Panel/HBoxContainer" unique_id=1683640458]
 layout_mode = 2
 size_flags_horizontal = 3
-color = Color(0, 0, 0, 1)
-
-[node name="StrokeWidth" type="HBoxContainer" parent="Panel/MarginContainer/Options" unique_id=1421563024]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="Panel/MarginContainer/Options/StrokeWidth" unique_id=636313195]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Stroke Width"
-horizontal_alignment = 1
+size_flags_vertical = 1
+text = "Stroke width"
 vertical_alignment = 1
 
-[node name="SpinBox" type="SpinBox" parent="Panel/MarginContainer/Options/StrokeWidth" unique_id=551570525]
+[node name="StrokeWidth" type="SpinBox" parent="Panel/HBoxContainer" unique_id=1784694322]
 layout_mode = 2
 size_flags_horizontal = 3
-max_value = 255.0
+max_value = 256.0
+value = 2.0
 rounded = true
-update_on_text_changed = true

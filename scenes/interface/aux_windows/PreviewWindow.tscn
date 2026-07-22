@@ -11,7 +11,38 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Control" type="Control" parent="." unique_id=560715027]
+[node name="Flair" type="ColorRect" parent="." unique_id=285665946]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 24.0
+offset_bottom = 32.0
+grow_horizontal = 2
+color = Color(0.6666667, 0.33333334, 0.33333334, 1)
+
+[node name="Label" type="Label" parent="." unique_id=1709753030]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 32.0
+grow_horizontal = 2
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 20
+text = "PREVIEW"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Panel" type="Panel" parent="." unique_id=1375299891]
+clip_contents = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Control" type="Control" parent="Panel" unique_id=560715027]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -21,10 +52,10 @@ anchor_bottom = 0.5
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Frame" type="Sprite2D" parent="Control" unique_id=778879181]
+[node name="Frame" type="Sprite2D" parent="Panel/Control" unique_id=778879181]
 texture = ExtResource("1_imicb")
 
-[node name="BackgroundColor" type="ColorRect" parent="Control" unique_id=853127404]
+[node name="BackgroundColor" type="ColorRect" parent="Panel/Control" unique_id=853127404]
 custom_minimum_size = Vector2(144, 168)
 layout_mode = 0
 offset_left = -72.0
@@ -33,5 +64,5 @@ offset_right = 72.0
 offset_bottom = 84.0
 color = Color(0.6666667, 0.6666667, 0.6666667, 1)
 
-[node name="Overlay" type="Sprite2D" parent="Control" unique_id=1481239577]
+[node name="Overlay" type="Sprite2D" parent="Panel/Control" unique_id=1481239577]
 texture = ExtResource("2_rco4g")

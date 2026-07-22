@@ -1,9 +1,9 @@
 extends Control
 
 const COLOR_POPUP_SCENE := "res://scenes/interface/popups/ColorPopup.tscn"
-@onready var fill_rect: ColorRect = $Panel/MarginContainer/Options/FillColor/ColorRect
-@onready var stroke_rect: ColorRect = $Panel/MarginContainer/Options/StrokeColor/ColorRect
-@onready var stroke_width_spin: SpinBox = $Panel/MarginContainer/Options/StrokeWidth/SpinBox
+@onready var fill_rect: ColorRect = $Panel/StrokeRect/MarginContainer/FillRect
+@onready var stroke_rect: ColorRect = $Panel/StrokeRect
+@onready var stroke_width_spin: SpinBox = $Panel/HBoxContainer/StrokeWidth
 
 var _syncing := false
 

@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://dwex3u1hmrm4m" path="res://scenes/interface/aux_windows/LayerWindow.tscn" id="4_u6trk"]
 [ext_resource type="PackedScene" uid="uid://bsuhmppbhkr2x" path="res://scenes/interface/aux_windows/AnimatorWindow.tscn" id="5_wa12f"]
 [ext_resource type="Script" uid="uid://duv2cdubi3vdb" path="res://scenes/accent_color_rect.gd" id="10_5x8yu"]
+[ext_resource type="PackedScene" uid="uid://gyavlbbasx5h" path="res://scenes/interface/aux_windows/PreviewWindow.tscn" id="11_wumwc"]
 
 [sub_resource type="Gradient" id="Gradient_wfgtv"]
 colors = PackedColorArray(0.12591085, 0.12591085, 0.12591082, 1, 0.25323758, 0.25323758, 0.25323758, 1)
@@ -142,24 +143,15 @@ size_flags_stretch_ratio = 0.5
 clip_contents = true
 layout_mode = 2
 
-[node name="Preview" type="Panel" parent="MarginContainer/VBoxContainer/BusyArea/Panels/RightPanel" unique_id=598848381]
-custom_minimum_size = Vector2(0, 40)
+[node name="PreviewWindow" parent="MarginContainer/VBoxContainer/BusyArea/Panels/RightPanel" unique_id=951970215 instance=ExtResource("11_wumwc")]
+clip_contents = true
+custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/BusyArea/Panels/RightPanel/Preview" unique_id=1842980290]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "Hardware Preview"
-horizontal_alignment = 1
-vertical_alignment = 1
-
 [node name="LayerWindow" parent="MarginContainer/VBoxContainer/BusyArea/Panels/RightPanel" unique_id=1039252092 instance=ExtResource("4_u6trk")]
 clip_contents = true
+custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_vertical = 3
 

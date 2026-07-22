@@ -11,6 +11,15 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_4xcvi")
 
+[node name="Flair" type="ColorRect" parent="." unique_id=210302234]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 24.0
+offset_bottom = 32.0
+grow_horizontal = 2
+color = Color(0.6666667, 0.6666667, 0, 1)
+
 [node name="Label" type="Label" parent="." unique_id=667607164]
 layout_mode = 1
 anchors_preset = -1
@@ -18,6 +27,8 @@ anchor_right = 1.0
 offset_bottom = 32.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 20
 text = "LAYERS"
 horizontal_alignment = 1
 vertical_alignment = 1
