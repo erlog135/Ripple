@@ -271,4 +271,26 @@ func _build_menu_data() -> Dictionary:
 				"label": "Rotate 90° CCW",
 			},
 		],
+		"HELP": [
+			{
+				"id": "help_pdc_docs",
+				"type": "action",
+				"label": "PDC docs",
+			},
+			{
+				"id": "help_style_guide",
+				"type": "action",
+				"label": "Style guide",
+			},
+			{
+				"id": "help_art",
+				"type": "action",
+				"label": "Chat about art (on Discord)",
+			},
+			{
+				"id": "help_app",
+				"type": "action",
+				"label": "Chat about Ripple (via email)",
+			},
+		]
 	}

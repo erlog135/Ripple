@@ -94,6 +94,14 @@ func execute(action_id: String) -> void:
 			EditorState.zoom_to_document(EditorState.canvas_viewport_size)
 		"view_zoom_selection":
 			EditorState.zoom_to_selection(EditorState.canvas_viewport_size)
+		"help_pdc_docs":
+			OS.shell_open("https://developer.rebble.io/guides/graphics-and-animations/vector-graphics/")
+		"help_style_guide":
+			OS.shell_open("https://github.com/pebble-dev/iconography/blob/master/STYLE-GUIDE.md")
+		"help_art":
+			OS.shell_open("https://discordapp.com/invite/aRUAYFN")
+		"help_app":
+			OS.shell_open("mailto:loganhead_net+rpl@proton.me?subject=Message%20about%20Ripple")
 		_:
 			push_warning("MenuDispatcher: unknown action '%s'" % action_id)
 
