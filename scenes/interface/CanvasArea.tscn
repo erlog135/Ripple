@@ -8,7 +8,6 @@
 [ext_resource type="Script" uid="uid://dkng0sunfbeqw" path="res://scenes/interface/hud_layer.gd" id="5_2ofuf"]
 [ext_resource type="Script" path="res://scenes/interface/artboard_clip.gd" id="7_yh3rt"]
 [ext_resource type="Script" uid="uid://bymoxxarhboaj" path="res://scenes/interface/workspace_shortcuts.gd" id="8_df36l"]
-[ext_resource type="Texture2D" uid="uid://d22y2880h7xns" path="res://assets/frames/canvas_overlay.png" id="9_88xrp"]
 
 [node name="CanvasArea" type="Control" unique_id=1795288712]
 clip_contents = true
@@ -133,18 +132,3 @@ script = ExtResource("1_8k6yv")
 
 [node name="WorkspaceShortcuts" type="Node" parent="." unique_id=2132314204]
 script = ExtResource("8_df36l")
-
-[node name="NinePatchRect" type="NinePatchRect" parent="." unique_id=1516509987]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("9_88xrp")
-patch_margin_left = 8
-patch_margin_top = 8
-patch_margin_right = 7
-patch_margin_bottom = 7
-axis_stretch_horizontal = 1
-axis_stretch_vertical = 1
