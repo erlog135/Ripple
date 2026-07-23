@@ -3,6 +3,8 @@
 [ext_resource type="Texture2D" uid="uid://c7gvigdx18sgl" path="res://assets/icons/transparent.png" id="1_iovx0"]
 [ext_resource type="Script" uid="uid://c1ww81tpn8cey" path="res://scenes/interface/aux_windows/frame_item.gd" id="1_vule5"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vule5"]
+
 [node name="FrameItem" type="Control" unique_id=324150636]
 layout_mode = 3
 anchors_preset = 0
@@ -17,6 +19,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_vule5")
 
 [node name="TextureRect" type="TextureRect" parent="Panel" unique_id=950037640]
 layout_mode = 0

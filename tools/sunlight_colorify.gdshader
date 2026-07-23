@@ -3,126 +3,55 @@ shader_type canvas_item;
 // Screen texture sampler for Godot 4
 uniform sampler2D screen_texture : hint_screen_texture, filter_nearest;
 
-// Number of palette mappings
-const int PALETTE_SIZE = 55;
-const float TOLERANCE = 0.03;
+const int PALETTE_SIZE = 64;
+const float TOLERANCE = 0.2;
 
-// Array of original target colors (data-hex converted to normalized RGB)
-const vec3 target_colors[PALETTE_SIZE] = vec3[](
-    vec3(0.000, 0.000, 0.000), // #000000
-    vec3(0.000, 0.000, 0.333), // #000055
-    vec3(0.000, 0.000, 0.667), // #0000AA
-    vec3(0.000, 0.000, 1.000), // #0000FF
-    vec3(0.000, 0.333, 0.000), // #005500
-    vec3(0.000, 0.333, 0.333), // #005555
-    vec3(0.000, 0.333, 0.667), // #0055AA
-    vec3(0.000, 0.333, 1.000), // #0055FF
-    vec3(0.000, 0.667, 0.333), // #00AA55
-    vec3(0.000, 0.667, 1.000), // #00AAFF
-    vec3(0.000, 1.000, 0.333), // #00FF55
-    vec3(0.000, 1.000, 0.667), // #00FFAA
-    vec3(0.000, 1.000, 1.000), // #00FFFF
-    vec3(0.333, 0.000, 0.000), // #550000
-    vec3(0.333, 0.000, 0.333), // #550055
-    vec3(0.333, 0.000, 0.667), // #5500AA
-    vec3(0.333, 0.000, 1.000), // #5500FF
-    vec3(0.333, 0.333, 0.000), // #555500
-    vec3(0.333, 0.333, 1.000), // #5555FF
-    vec3(0.333, 0.667, 0.000), // #55AA00
-    vec3(0.333, 0.667, 0.333), // #55AA55
-    vec3(0.333, 0.667, 0.667), // #55AAAA
-    vec3(0.333, 0.667, 1.000), // #55AAFF
-    vec3(0.333, 1.000, 0.000), // #55FF00
-    vec3(0.333, 1.000, 0.333), // #55FF55
-    vec3(0.333, 1.000, 0.667), // #55FFAA
-    vec3(0.333, 1.000, 1.000), // #55FFFF
-    vec3(0.667, 0.000, 1.000), // #AA00FF
-    vec3(0.667, 0.333, 0.667), // #AA55AA
-    vec3(0.667, 0.333, 1.000), // #AA55FF
-    vec3(1.000, 1.000, 1.000), // #FFFFFF
-    vec3(0.667, 1.000, 0.000), // #AAFF00
-    vec3(0.667, 1.000, 0.333), // #AAFF55
-    vec3(0.667, 1.000, 0.667), // #AAFFAA
-    vec3(0.667, 1.000, 1.000), // #AAFFFF
-    vec3(1.000, 0.000, 1.000), // #FF00FF
-    vec3(1.000, 0.333, 1.000), // #FF55FF
-    vec3(1.000, 1.000, 0.000), // #FFFF00
-    vec3(1.000, 1.000, 0.333), // #FFFF55
-    vec3(1.000, 1.000, 0.667), // #FFFFAA
-    vec3(1.000, 0.667, 0.333), // #FFAA55
-    vec3(1.000, 0.667, 0.000), // #FFAA00
-    vec3(0.000, 1.000, 0.000), // #00FF00
-    vec3(0.667, 0.000, 0.333), // #AA0055
-    vec3(0.667, 0.000, 0.000), // #AA0000
-    vec3(0.000, 0.667, 0.667), // #00AAAA
-    vec3(0.667, 0.667, 0.667), // #AAAAAA
-    vec3(0.000, 0.667, 0.000), // #00AA00
-    vec3(0.333, 0.333, 0.667), // #5555AA
-    vec3(0.667, 0.667, 1.000), // #AAAAFF
-    vec3(1.000, 0.667, 0.667), // #FFAAAA
-    vec3(0.667, 0.667, 0.333), // #AAAA55
-    vec3(0.667, 0.667, 0.000), // #AAAA00
-    vec3(0.667, 0.000, 0.667), // #AA00AA
-    vec3(0.667, 0.333, 0.333)  // #AA5555
+// Converts a 24-bit hexadecimal integer (e.g., 0x0055FFAA) into a normalized RGB vec3
+vec3 hex_to_rgb(uint hex) {
+    float r = float((hex >> 16u) & 0xFFu) / 255.0;
+    float g = float((hex >> 8u) & 0xFFu) / 255.0;
+    float b = float(hex & 0xFFu) / 255.0;
+    return vec3(r, g, b);
+}
+
+// Target base colors (data-hex) in ascending hexadecimal order
+const uint target_hex[PALETTE_SIZE] = uint[](
+    0x000000u, 0x000055u, 0x0000AAu, 0x0000FFu,
+    0x005500u, 0x005555u, 0x0055AAu, 0x0055FFu,
+    0x00AA00u, 0x00AA55u, 0x00AAAAu, 0x00AAFFu,
+    0x00FF00u, 0x00FF55u, 0x00FFAAu, 0x00FFFFu,
+    0x550000u, 0x550055u, 0x5500AAu, 0x5500FFu,
+    0x555500u, 0x555555u, 0x5555AAu, 0x5555FFu,
+    0x55AA00u, 0x55AA55u, 0x55AAAAu, 0x55AAFFu,
+    0x55FF00u, 0x55FF55u, 0x55FFAAu, 0x55FFFFu,
+    0xAA0000u, 0xAA0055u, 0xAA00AAu, 0xAA00FFu,
+    0xAA5500u, 0xAA5555u, 0xAA55AAu, 0xAA55FFu,
+    0xAAAA00u, 0xAAAA55u, 0xAAAAAAu, 0xAAAAFFu,
+    0xAAFF00u, 0xAAFF55u, 0xAAFFAAu, 0xAAFFFFu,
+    0xFF0000u, 0xFF0055u, 0xFF00AAu, 0xFF00FFu,
+    0xFF5500u, 0xFF5555u, 0xFF55AAu, 0xFF55FFu,
+    0xFFAA00u, 0xFFAA55u, 0xFFAAAAu, 0xFFAAFFu,
+    0xFFFF00u, 0xFFFF55u, 0xFFFFAAu, 0xFFFFFFu
 );
 
-// Array of corresponding replacement colors (fill values normalized)
-const vec3 swap_colors[PALETTE_SIZE] = vec3[](
-    vec3(0.000, 0.000, 0.000), // #000000
-    vec3(0.000, 0.118, 0.255), // #001e41
-    vec3(0.000, 0.263, 0.529), // #004387
-    vec3(0.000, 0.408, 0.792), // #0068ca
-    vec3(0.169, 0.290, 0.173), // #2b4a2c
-    vec3(0.153, 0.318, 0.310), // #27514f
-    vec3(0.086, 0.388, 0.553), // #16638d
-    vec3(0.000, 0.490, 0.808), // #007dce
-    vec3(0.361, 0.608, 0.447), // #5c9b72
-    vec3(0.298, 0.706, 0.859), // #4cb4db
-    vec3(0.557, 0.902, 0.620), // #8ee69e
-    vec3(0.541, 0.922, 0.753), // #8aebc0
-    vec3(0.518, 0.961, 0.945), // #84f5f1
-    vec3(0.290, 0.086, 0.106), // #4a161b
-    vec3(0.282, 0.153, 0.282), // #482748
-    vec3(0.251, 0.282, 0.541), // #40488a
-    vec3(0.184, 0.420, 0.800), // #2f6bcc
-    vec3(0.337, 0.306, 0.212), // #564e36
-    vec3(0.255, 0.502, 0.816), // #4180d0
-    vec3(0.459, 0.604, 0.392), // #759a64
-    vec3(0.459, 0.616, 0.463), // #759d76
-    vec3(0.443, 0.651, 0.643), // #71a6a4
-    vec3(0.412, 0.710, 0.867), // #69b5dd
-    vec3(0.620, 0.898, 0.580), // #9ee594
-    vec3(0.616, 0.906, 0.627), // #9de7a0
-    vec3(0.608, 0.925, 0.761), // #9becc2
-    vec3(0.584, 0.965, 0.949), // #95f6f2
-    vec3(0.561, 0.455, 0.824), // #8f74d2
-    vec3(0.604, 0.439, 0.600), // #9a7099
-    vec3(0.584, 0.529, 0.835), // #9587d5
-    vec3(1.000, 1.000, 1.000), // #ffffff
-    vec3(0.788, 0.910, 0.616), // #c9e89d
-    vec3(0.788, 0.918, 0.655), // #c9eaa7
-    vec3(0.780, 0.941, 0.784), // #c7f0c8
-    vec3(0.765, 0.976, 0.969), // #c3f9f7
-    vec3(0.871, 0.514, 0.863), // #de83dc
-    vec3(0.882, 0.580, 0.875), // #e194df
-    vec3(1.000, 0.933, 0.671), // #ffeeab
-    vec3(1.000, 0.945, 0.710), // #fff1b5
-    vec3(1.000, 0.965, 0.827), // #fff6d3
-    vec3(0.945, 0.678, 0.576), // #f1ad93
-    vec3(0.945, 0.667, 0.525), // #f1aa86
-    vec3(0.557, 0.890, 0.569), // #8ee391
-    vec3(0.596, 0.243, 0.353), // #983e5a
-    vec3(0.600, 0.208, 0.247), // #99353f
-    vec3(0.341, 0.647, 0.635), // #57a5a2
-    vec3(0.671, 0.671, 0.671), // #ababab
-    vec3(0.369, 0.596, 0.376), // #5e9860
-    vec3(0.310, 0.404, 0.565), // #4f6790
-    vec3(0.655, 0.729, 0.886), // #a7bae2
-    vec3(0.937, 0.710, 0.722), // #efb5b8
-    vec3(0.682, 0.639, 0.510), // #aea382
-    vec3(0.686, 0.627, 0.447), // #afa072
-    vec3(0.584, 0.337, 0.580), // #955694
-    vec3(0.616, 0.376, 0.392)  // #9d6064
+// Corresponding sunlight replacements (fill) mapped to the same index
+const uint swap_hex[PALETTE_SIZE] = uint[](
+    0x000000u, 0x001E41u, 0x004387u, 0x0068CAu,
+    0x2B4A2Cu, 0x27514Fu, 0x16638Du, 0x007DCEu,
+    0x5E9860u, 0x5C9B72u, 0x57A5A2u, 0x4CB4DBu,
+    0x8EE391u, 0x8EE69Eu, 0x8AEBC0u, 0x84F5F1u,
+    0x4A161Bu, 0x482748u, 0x40488Au, 0x2F6BCCu,
+    0x564E36u, 0x545454u, 0x4F6790u, 0x4180D0u,
+    0x759A64u, 0x759D76u, 0x71A6A4u, 0x69B5DDu,
+    0x9EE594u, 0x9DE7A0u, 0x9BECC2u, 0x95F6F2u,
+    0x99353Fu, 0x983E5Au, 0x955694u, 0x8F74D2u,
+    0x9D5B4Du, 0x9D6064u, 0x9A7099u, 0x9587D5u,
+    0xAFA072u, 0xAEA382u, 0xABABABu, 0xA7BAE2u,
+    0xC9E89Du, 0xC9EAA7u, 0xC7F0C8u, 0xC3F9F7u,
+    0xE35462u, 0xE25874u, 0xE16AA3u, 0xDE83DCu,
+    0xE66E6Bu, 0xE6727Cu, 0xE37FA7u, 0xE194DFu,
+    0xF1AA86u, 0xF1AD93u, 0xEFB5B8u, 0xECC3EBu,
+    0xFFEEABu, 0xFFF1B5u, 0xFFF6D3u, 0xFFFFFFu
 );
 
 void fragment() {
@@ -130,8 +59,9 @@ void fragment() {
     vec3 result_color = original_color.rgb;
 
     for (int i = 0; i < PALETTE_SIZE; i++) {
-        if (distance(original_color.rgb, target_colors[i]) < TOLERANCE) {
-            result_color = swap_colors[i];
+        vec3 target_rgb = hex_to_rgb(target_hex[i]);
+        if (distance(original_color.rgb, target_rgb) < TOLERANCE) {
+            result_color = hex_to_rgb(swap_hex[i]);
             break;
         }
     }

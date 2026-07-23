@@ -14,7 +14,6 @@ offset_bottom = 80.0
 script = ExtResource("1_ofo3d")
 
 [node name="TextureRect" type="TextureRect" parent="." unique_id=1356638499]
-texture_filter = 3
 layout_mode = 0
 offset_right = 80.0
 offset_bottom = 80.0
@@ -44,16 +43,15 @@ vertical_alignment = 2
 
 [node name="UnsavedIndicator" type="Label" parent="." unique_id=856037016]
 layout_mode = 0
-offset_left = 56.0
-offset_right = 80.0
-offset_bottom = 20.0
+offset_right = 24.0
+offset_bottom = 23.0
 text = " *"
-horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="CloseButton" type="TextureButton" parent="." unique_id=1596580203]
 layout_mode = 0
-offset_right = 32.0
+offset_left = 48.0
+offset_right = 80.0
 offset_bottom = 32.0
 texture_normal = ExtResource("2_ko3xn")
 texture_hover = ExtResource("3_msynr")

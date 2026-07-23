@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bkm3vkueow1d6"]
 
 [ext_resource type="Texture2D" uid="uid://bdao8dg4h5wx1" path="res://assets/icons/button_new.svg" id="1_1w0ff"]
+[ext_resource type="Script" uid="uid://m8vxw7dvmnmv" path="res://scenes/interface/aux_windows/toolbelt.gd" id="1_wak1b"]
 [ext_resource type="Texture2D" uid="uid://cmu4hd2lqtlfk" path="res://assets/icons/button_open.svg" id="2_f0p0l"]
 [ext_resource type="Texture2D" uid="uid://dcmxbehaihida" path="res://assets/icons/button_save.svg" id="3_48xwq"]
 [ext_resource type="Texture2D" uid="uid://usieb1idldun" path="res://assets/icons/button_cut.svg" id="4_mabtk"]
@@ -18,6 +19,7 @@ anchor_right = 1.0
 offset_right = -928.0
 offset_bottom = 40.0
 grow_horizontal = 2
+script = ExtResource("1_wak1b")
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=184722153]
 layout_mode = 0

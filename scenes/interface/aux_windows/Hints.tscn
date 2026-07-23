@@ -1,0 +1,36 @@
+[gd_scene format=3 uid="uid://b3ptvlek05nu6"]
+
+[ext_resource type="Script" uid="uid://dgc5n50gy6qah" path="res://scenes/interface/aux_windows/hints.gd" id="1_x57ga"]
+
+[node name="Hints" type="Control" unique_id=602643241]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_x57ga")
+
+[node name="Panel" type="Panel" parent="." unique_id=151357611]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=1147269322]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="Label" type="Label" parent="Panel/MarginContainer" unique_id=735878704]
+layout_mode = 2
+vertical_alignment = 1

@@ -4,7 +4,6 @@
 [ext_resource type="Texture2D" uid="uid://baxkhmr3ggbe5" path="res://assets/icons/button_frame_dupe.svg" id="2_jdu6l"]
 [ext_resource type="Texture2D" uid="uid://d2jr4e6nftmhv" path="res://assets/icons/button_play.svg" id="2_kerko"]
 [ext_resource type="Texture2D" uid="uid://ey80rlttimg7" path="res://assets/icons/button_loop.svg" id="2_sfgt0"]
-[ext_resource type="Texture2D" uid="uid://mfawmwdwkv4i" path="res://assets/icons/playhead_grabpoint.png" id="2_sgg8o"]
 [ext_resource type="Texture2D" uid="uid://7kixvjc10wv8" path="res://assets/icons/button_last_frame.svg" id="3_5pajp"]
 [ext_resource type="Texture2D" uid="uid://c33508i00i6os" path="res://assets/icons/button_onion_skin.svg" id="3_hrwgu"]
 [ext_resource type="Texture2D" uid="uid://boiqdl7abd7hu" path="res://assets/icons/button_first_frame.svg" id="4_54jo5"]
@@ -12,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://c4hode735ftlk" path="res://assets/icons/button_frame_right.svg" id="6_mauw5"]
 [ext_resource type="Texture2D" uid="uid://dic8of38u0elt" path="res://assets/icons/button_frame_left.svg" id="7_sfgt0"]
 [ext_resource type="Texture2D" uid="uid://di4ot3d5sdufh" path="res://assets/icons/button_frame_delete.svg" id="9_hrwgu"]
+[ext_resource type="Texture2D" uid="uid://cvqfxnu6a6ly8" path="res://assets/icons/playhead_grabpoint.svg" id="12_sfgt0"]
 
 [node name="AnimatorWindow" type="Control" unique_id=277590820]
 layout_mode = 3
@@ -326,11 +326,12 @@ size_flags_vertical = 3
 [node name="Playhead" type="Node2D" parent="FramesPanel" unique_id=1758445357]
 
 [node name="GrabPoint" type="TextureRect" parent="FramesPanel/Playhead" unique_id=492421025]
-offset_right = 32.0
+offset_left = -16.0
+offset_right = 16.0
 offset_bottom = 32.0
-texture = ExtResource("2_sgg8o")
+texture = ExtResource("12_sfgt0")
 expand_mode = 1
 
 [node name="Line2D" type="Line2D" parent="FramesPanel/Playhead" unique_id=1874348204]
-points = PackedVector2Array(0, 0, 0, 640)
+points = PackedVector2Array(0, 8, 0, 640)
 width = 4.0

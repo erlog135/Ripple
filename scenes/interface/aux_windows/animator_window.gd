@@ -315,7 +315,7 @@ func _frame_index_at_global_x(global_x: float) -> int:
 	for i in range(n):
 		var c := frames_container.get_child(i) as Control
 		var r := c.get_global_rect()
-		if global_x < r.position.x + r.size.x:
+		if global_x < r.position.x + r.size.x/2.0:
 			return i
 	return n - 1
 
@@ -341,7 +341,7 @@ func _apply_playhead_visuals(playhead_x: float) -> void:
 			32.0,
 			scroll_container.position.y + scroll_container.size.y
 		)
-		playhead_line.points = PackedVector2Array([Vector2.ZERO, Vector2(0, h)])
+		playhead_line.points = PackedVector2Array([Vector2(0,8),Vector2(0, h)])
 
 
 func _deferred_playhead_after_layout() -> void:
