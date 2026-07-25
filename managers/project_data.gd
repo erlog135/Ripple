@@ -151,7 +151,10 @@ func add_sequence(seq: DrawCommandSequence, path: String = "") -> void:
 	EditorState.set_current_frame(0)
 	EditorState.clear_selection()
 	tab_list_changed.emit()
-	data_changed.emit(true, -1)
+	# Use seq.frames.size() as affected_frame (always out-of-range for the new sequence)
+	# so _on_data_changed clears the stale frame cache and triggers bulk rasterization
+	# even when the new sequence has the same canvas layout as the previous one.
+	data_changed.emit(true, seq.frames.size())
 
 
 ## Closes the tab at [param index]. The last tab cannot be closed.

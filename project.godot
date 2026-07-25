@@ -14,7 +14,7 @@ config/name="Ripple"
 run/main_scene="uid://c3myodinq1ol5"
 config/features=PackedStringArray("4.6")
 run/low_processor_mode=true
-config/icon="res://assets/icon.svg"
+config/icon="uid://b6y260y2td4ge"
 
 [autoload]
 

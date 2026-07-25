@@ -3,6 +3,14 @@ extends Node
 const GIFExporter := preload("res://addons/gdgifexporter/exporter.gd")
 const MedianCutQuantization := preload("res://addons/gdgifexporter/quantization/median_cut.gd")
 const SvgPdcHelper := preload("res://tools/svg_pdc.gd")
+const FileAccessWebClass := preload("res://addons/FileAccessWeb/core/file_access_web.gd")
+
+## Shared FileAccessWeb instance used for all browser-side file picks on HTML5.
+var _web_uploader: FileAccessWeb
+
+## Returns true when running in a browser (HTML5 export).
+func _is_web() -> bool:
+	return OS.get_name() == "Web"
 
 signal pdc_loaded(pdc: DrawCommandSequence)
 signal file_loaded(size_bytes: int)
@@ -16,6 +24,8 @@ signal gif_export_finished
 
 func _ready():
 	get_window().files_dropped.connect(_on_files_dropped)
+	if _is_web():
+		_web_uploader = FileAccessWebClass.new()
 
 ## Wipes the slate clean and builds a fresh, blank single-frame sequence of the
 ## given pixel [param size]. This is intentionally destructive (not undoable):
@@ -53,6 +63,15 @@ func save_file() -> void:
 		gd_to_pdc(ProjectData.current_path, ProjectData.current_sequence)
 
 func open_file_dialog():
+	if _is_web():
+		# On Web, trigger the browser file picker via FileAccessWeb.
+		# Disconnect any previous one-shot connection first.
+		if _web_uploader.loaded.is_connected(_on_web_pdc_loaded):
+			_web_uploader.loaded.disconnect(_on_web_pdc_loaded)
+		_web_uploader.loaded.connect(_on_web_pdc_loaded, CONNECT_ONE_SHOT)
+		_web_uploader.open(".pdc,.pdcs")
+		return
+
 	var file_dialog = FileDialog.new()
 	get_tree().root.add_child(file_dialog)
 	file_dialog.file_selected.connect(func(path: String): pdc_to_gd(path))
@@ -64,7 +83,25 @@ func open_file_dialog():
 	
 	file_dialog.popup_centered()
 
+## Callback for the Web file picker when opening a PDC/PDCS file.
+func _on_web_pdc_loaded(file_name: String, _type: String, base64_data: String) -> void:
+	var raw: PackedByteArray = Marshalls.base64_to_raw(base64_data)
+	var sequence = _load_pdc_sequence_from_bytes(raw)
+	if not sequence:
+		return
+	# On Web there is no real filesystem path; use the file name as a label.
+	var pseudo_path := "web://" + file_name
+	ProjectData.add_sequence(sequence, pseudo_path)
+	file_loaded.emit(raw.size())
+	pdc_loaded.emit(sequence)
+	EditorState.fit_document_to_view()
+
 func save_as_file_dialog():
+	if _is_web():
+		# On Web we write into memory and push a browser download.
+		_web_save_pdc(ProjectData.current_sequence)
+		return
+
 	var file_dialog = FileDialog.new()
 	get_tree().root.add_child(file_dialog)
 	file_dialog.file_selected.connect(func(path: String): gd_to_pdc(path, ProjectData.current_sequence))
@@ -81,19 +118,26 @@ func _load_pdc_sequence(path: String) -> DrawCommandSequence:
 	if not file:
 		push_error("Failed to open PDC file: " + path)
 		return null
+	return _load_pdc_sequence_from_bytes(file.get_buffer(file.get_length()))
 
-	file.set_big_endian(false)
-	var magic = file.get_buffer(4).get_string_from_ascii()
-	file.get_32() # total data size, unused
+## Parses a PDC/PDCS sequence from a raw byte array (used on all platforms).
+func _load_pdc_sequence_from_bytes(data: PackedByteArray) -> DrawCommandSequence:
+	var buf := StreamPeerBuffer.new()
+	buf.data_array = data
+	buf.big_endian = false
+
+	var magic_bytes = buf.get_data(4)[1]
+	var magic = magic_bytes.get_string_from_ascii()
+	buf.get_data(4) # total data size, unused
 
 	var sequence = DrawCommandSequence.new()
 
 	if magic == "PDCI":
-		var image = _pdc_parse_image(file)
+		var image = _pdc_parse_image_buf(buf)
 		sequence.frames.append(image)
 		sequence.frame_durations_ms.append(0)
 	elif magic == "PDCS":
-		_pdc_parse_sequence(file, sequence)
+		_pdc_parse_sequence_buf(buf, sequence)
 	else:
 		push_error("Unknown PDC magic word: " + magic)
 		return null
@@ -106,6 +150,8 @@ func pdc_to_gd(path: String) -> DrawCommandSequence:
 
 	var file = FileAccess.open(path, FileAccess.READ)
 	var size_bytes := file.get_length() if file else 0
+	if file:
+		file.close()
 	# Add as a new tab and switch to it, then notify listeners.
 	ProjectData.add_sequence(sequence, path)
 	file_loaded.emit(size_bytes)
@@ -205,54 +251,83 @@ func _on_files_dropped(files: PackedStringArray) -> void:
 				ProjectData.active_sequence_index = existing_index
 				EditorState.set_current_frame(0)
 				EditorState.clear_selection()
-				ProjectData.data_changed.emit(true, -1)
+				# Emit with an out-of-range affected_frame so _on_data_changed
+				# clears the stale cache (new sequence = new DrawCommandImage
+				# instance IDs) and triggers a full bulk rasterization.
+				ProjectData.data_changed.emit(true, sequence.frames.size())
 			else:
 				ProjectData.add_sequence(sequence, path)
 	
 	EditorState.fit_document_to_view()
 
+## FileAccess-based parse helpers (desktop). Delegate to the StreamPeerBuffer variants.
 func _pdc_parse_image(file: FileAccess) -> DrawCommandImage:
-	file.get_8() # version
-	file.get_8() # reserved
-	var image = DrawCommandImage.new()
-	image.bounds = Vector2i(_pdc_int16(file), _pdc_int16(file))
-	image.commands = _pdc_parse_command_list(file)
-	return image
+	var buf := _file_to_stream(file)
+	return _pdc_parse_image_buf(buf)
 
 func _pdc_parse_sequence(file: FileAccess, sequence: DrawCommandSequence) -> void:
-	file.get_8() # version
-	file.get_8() # reserved
-	var bounds = Vector2i(_pdc_int16(file), _pdc_int16(file))
-	sequence.play_count = file.get_16()
-	var frame_count = file.get_16()
+	var buf := _file_to_stream(file)
+	_pdc_parse_sequence_buf(buf, sequence)
+
+func _pdc_parse_command_list(file: FileAccess) -> Array[DrawCommand]:
+	var buf := _file_to_stream(file)
+	return _pdc_parse_command_list_buf(buf)
+
+## Wraps the remaining bytes of a FileAccess into a StreamPeerBuffer.
+func _file_to_stream(file: FileAccess) -> StreamPeerBuffer:
+	var remaining := file.get_buffer(file.get_length() - file.get_position())
+	var buf := StreamPeerBuffer.new()
+	buf.data_array = remaining
+	buf.big_endian = false
+	return buf
+
+## StreamPeerBuffer-based parse helpers (used on all platforms).
+func _pdc_parse_image_buf(buf: StreamPeerBuffer) -> DrawCommandImage:
+	buf.get_u8() # version
+	buf.get_u8() # reserved
+	var image = DrawCommandImage.new()
+	image.bounds = Vector2i(_pdc_int16_buf(buf), _pdc_int16_buf(buf))
+	image.commands = _pdc_parse_command_list_buf(buf)
+	return image
+
+func _pdc_parse_sequence_buf(buf: StreamPeerBuffer, sequence: DrawCommandSequence) -> void:
+	buf.get_u8() # version
+	buf.get_u8() # reserved
+	var bounds = Vector2i(_pdc_int16_buf(buf), _pdc_int16_buf(buf))
+	sequence.play_count = buf.get_u16()
+	var frame_count = buf.get_u16()
 	for _i in range(frame_count):
-		var duration = file.get_16()
+		var duration = buf.get_u16()
 		var image = DrawCommandImage.new()
 		image.bounds = bounds
-		image.commands = _pdc_parse_command_list(file)
+		image.commands = _pdc_parse_command_list_buf(buf)
 		sequence.frames.append(image)
 		sequence.frame_durations_ms.append(duration)
 
-func _pdc_parse_command_list(file: FileAccess) -> Array[DrawCommand]:
+func _pdc_parse_command_list_buf(buf: StreamPeerBuffer) -> Array[DrawCommand]:
 	var commands: Array[DrawCommand] = []
-	var num_commands = file.get_16()
+	var num_commands = buf.get_u16()
 	for _i in range(num_commands):
-		commands.append(_pdc_parse_command(file))
+		commands.append(_pdc_parse_command_buf(buf))
 	return commands
 
 func _pdc_parse_command(file: FileAccess) -> DrawCommand:
-	var type_val = file.get_8()
-	var flags = file.get_8()
-	var stroke_color_val = file.get_8()
-	var stroke_width_val = file.get_8()
-	var fill_color_val = file.get_8()
-	var path_open_or_radius = file.get_16()
-	var num_points = file.get_16()
+	var buf := _file_to_stream(file)
+	return _pdc_parse_command_buf(buf)
+
+func _pdc_parse_command_buf(buf: StreamPeerBuffer) -> DrawCommand:
+	var type_val = buf.get_u8()
+	var flags = buf.get_u8()
+	var stroke_color_val = buf.get_u8()
+	var stroke_width_val = buf.get_u8()
+	var fill_color_val = buf.get_u8()
+	var path_open_or_radius = buf.get_u16()
+	var num_points = buf.get_u16()
 
 	var points = PackedVector2Array()
 	for _i in range(num_points):
-		var x = _pdc_int16(file)
-		var y = _pdc_int16(file)
+		var x = _pdc_int16_buf(buf)
+		var y = _pdc_int16_buf(buf)
 		if type_val == DrawCommand.Type.PRECISE_PATH:
 			points.append(Vector2(x / 8.0 + 0.5, y / 8.0 + 0.5))
 		else:
@@ -277,6 +352,12 @@ func _pdc_int16(file: FileAccess) -> int:
 		val -= 65536
 	return val
 
+func _pdc_int16_buf(buf: StreamPeerBuffer) -> int:
+	var val = buf.get_u16()
+	if val > 32767:
+		val -= 65536
+	return val
+
 func _pdc_color(val: int) -> Color:
 	var a_val = (val >> 6) & 3
 	var r_val = (val >> 4) & 3
@@ -284,10 +365,64 @@ func _pdc_color(val: int) -> Color:
 	var b_val = val & 3
 	return Color(r_val / 3.0, g_val / 3.0, b_val / 3.0, a_val / 3.0)
 
+## Serialises [param sequence] into a raw PDC byte array.
+func _sequence_to_pdc_bytes(sequence: DrawCommandSequence) -> PackedByteArray:
+	var buf := StreamPeerBuffer.new()
+	buf.big_endian = false
+	if sequence.frames.size() == 1:
+		buf.put_data("PDCI".to_ascii_buffer())
+		buf.put_32(_pdc_image_data_size(sequence.frames[0]))
+		_pdc_write_image_buf(buf, sequence.frames[0])
+	else:
+		buf.put_data("PDCS".to_ascii_buffer())
+		buf.put_32(_pdc_sequence_data_size(sequence))
+		_pdc_write_sequence_buf(buf, sequence)
+	return buf.data_array
+
+## Triggers a browser download of the current sequence on the Web platform.
+func _web_save_pdc(sequence: DrawCommandSequence) -> void:
+	if sequence == null or sequence.frames.is_empty():
+		push_error("Cannot export empty sequence")
+		return
+	var ext := "pdcs" if sequence.frames.size() > 1 else "pdc"
+	var fname := ProjectData.current_path.get_file()
+	if fname.is_empty():
+		fname = "drawing." + ext
+	var raw := _sequence_to_pdc_bytes(sequence)
+	_web_download_bytes(raw, fname)
+	file_saved.emit(raw.size())
+
+## Uses the JS Blob/anchor trick to push a byte array as a file download in the browser.
+func _web_download_bytes(data: PackedByteArray, file_name: String) -> void:
+	var b64 := Marshalls.raw_to_base64(data)
+	var js := """
+		(function() {
+			var b = atob('%s');
+			var arr = new Uint8Array(b.length);
+			for (var i = 0; i < b.length; i++) arr[i] = b.charCodeAt(i);
+			var blob = new Blob([arr], {type: 'application/octet-stream'});
+			var url = URL.createObjectURL(blob);
+			var a = document.createElement('a');
+			a.href = url;
+			a.download = '%s';
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
+		})();
+	""" % [b64, file_name]
+	JavaScriptBridge.eval(js)
+
 func gd_to_pdc(path: String, sequence: DrawCommandSequence) -> bool:
 	if sequence == null or sequence.frames.is_empty():
 		push_error("Cannot export empty sequence")
 		return false
+
+	if _is_web():
+		_web_save_pdc(sequence)
+		ProjectData.current_path = path
+		HistoryManager.mark_as_saved(ProjectData.get_current_document(), path)
+		return true
 
 	var file = FileAccess.open(path, FileAccess.WRITE)
 	if not file:
@@ -310,52 +445,75 @@ func gd_to_pdc(path: String, sequence: DrawCommandSequence) -> bool:
 	file_saved.emit(file.get_position())
 	return true
 
+## FileAccess write helpers — thin wrappers around the StreamPeerBuffer variants.
 func _pdc_write_image(file: FileAccess, image: DrawCommandImage) -> void:
-	file.store_8(1) # version
-	file.store_8(0) # reserved
-	_pdc_write_int16(file, image.bounds.x)
-	_pdc_write_int16(file, image.bounds.y)
-	_pdc_write_command_list(file, image.commands)
+	var buf := StreamPeerBuffer.new()
+	buf.big_endian = false
+	_pdc_write_image_buf(buf, image)
+	file.store_buffer(buf.data_array)
 
 func _pdc_write_sequence(file: FileAccess, sequence: DrawCommandSequence) -> void:
-	file.store_8(1) # version
-	file.store_8(0) # reserved
-	var bounds = sequence.frames[0].bounds
-	_pdc_write_int16(file, bounds.x)
-	_pdc_write_int16(file, bounds.y)
-	file.store_16(sequence.play_count)
-	file.store_16(sequence.frames.size())
-	for i in range(sequence.frames.size()):
-		var duration = sequence.frame_durations_ms[i] if i < sequence.frame_durations_ms.size() else 0
-		file.store_16(duration)
-		_pdc_write_command_list(file, sequence.frames[i].commands)
+	var buf := StreamPeerBuffer.new()
+	buf.big_endian = false
+	_pdc_write_sequence_buf(buf, sequence)
+	file.store_buffer(buf.data_array)
 
 func _pdc_write_command_list(file: FileAccess, commands: Array[DrawCommand]) -> void:
-	file.store_16(commands.size())
-	for cmd in commands:
-		_pdc_write_command(file, cmd)
+	var buf := StreamPeerBuffer.new()
+	buf.big_endian = false
+	_pdc_write_command_list_buf(buf, commands)
+	file.store_buffer(buf.data_array)
 
-func _pdc_write_command(file: FileAccess, cmd: DrawCommand) -> void:
-	file.store_8(cmd.draw_type)
-	file.store_8(1 if cmd.hidden else 0)
-	file.store_8(_pdc_color_encode(cmd.stroke_color))
-	file.store_8(cmd.stroke_width)
-	file.store_8(_pdc_color_encode(cmd.fill_color))
+## StreamPeerBuffer write helpers (used on all platforms).
+func _pdc_write_image_buf(buf: StreamPeerBuffer, image: DrawCommandImage) -> void:
+	buf.put_u8(1) # version
+	buf.put_u8(0) # reserved
+	_pdc_write_int16_buf(buf, image.bounds.x)
+	_pdc_write_int16_buf(buf, image.bounds.y)
+	_pdc_write_command_list_buf(buf, image.commands)
+
+func _pdc_write_sequence_buf(buf: StreamPeerBuffer, sequence: DrawCommandSequence) -> void:
+	buf.put_u8(1) # version
+	buf.put_u8(0) # reserved
+	var bounds = sequence.frames[0].bounds
+	_pdc_write_int16_buf(buf, bounds.x)
+	_pdc_write_int16_buf(buf, bounds.y)
+	buf.put_u16(sequence.play_count)
+	buf.put_u16(sequence.frames.size())
+	for i in range(sequence.frames.size()):
+		var duration = sequence.frame_durations_ms[i] if i < sequence.frame_durations_ms.size() else 0
+		buf.put_u16(duration)
+		_pdc_write_command_list_buf(buf, sequence.frames[i].commands)
+
+func _pdc_write_command_list_buf(buf: StreamPeerBuffer, commands: Array[DrawCommand]) -> void:
+	buf.put_u16(commands.size())
+	for cmd in commands:
+		_pdc_write_command_buf(buf, cmd)
+
+func _pdc_write_command_buf(buf: StreamPeerBuffer, cmd: DrawCommand) -> void:
+	buf.put_u8(cmd.draw_type)
+	buf.put_u8(1 if cmd.hidden else 0)
+	buf.put_u8(_pdc_color_encode(cmd.stroke_color))
+	buf.put_u8(cmd.stroke_width)
+	buf.put_u8(_pdc_color_encode(cmd.fill_color))
 	if cmd.draw_type == DrawCommand.Type.CIRCLE:
-		file.store_16(cmd.circle_radius)
+		buf.put_u16(cmd.circle_radius)
 	else:
-		file.store_16(1 if cmd.path_open else 0)
-	file.store_16(cmd.points.size())
+		buf.put_u16(1 if cmd.path_open else 0)
+	buf.put_u16(cmd.points.size())
 	for pt in cmd.points:
 		if cmd.draw_type == DrawCommand.Type.PRECISE_PATH:
-			_pdc_write_int16(file, roundi((pt.x - 0.5) * 8))
-			_pdc_write_int16(file, roundi((pt.y - 0.5) * 8))
+			_pdc_write_int16_buf(buf, roundi((pt.x - 0.5) * 8))
+			_pdc_write_int16_buf(buf, roundi((pt.y - 0.5) * 8))
 		else:
-			_pdc_write_int16(file, roundi(pt.x))
-			_pdc_write_int16(file, roundi(pt.y))
+			_pdc_write_int16_buf(buf, roundi(pt.x))
+			_pdc_write_int16_buf(buf, roundi(pt.y))
 
 func _pdc_write_int16(file: FileAccess, val: int) -> void:
 	file.store_16(val & 0xFFFF)
+
+func _pdc_write_int16_buf(buf: StreamPeerBuffer, val: int) -> void:
+	buf.put_u16(val & 0xFFFF)
 
 func _pdc_color_encode(color: Color) -> int:
 	var a = clampi(roundi(color.a * 3), 0, 3)
@@ -393,6 +551,19 @@ func export_all_tabs_as_pdc() -> void:
 	if ProjectData.open_sequences.is_empty():
 		push_error("Fileman: no open tabs to export")
 		return
+
+	if _is_web():
+		# On Web, download each tab individually via the browser.
+		for i in ProjectData.open_sequences.size():
+			var seq: DrawCommandSequence = ProjectData.open_sequences[i]
+			if seq == null or seq.frames.is_empty():
+				continue
+			var bounds: Vector2i = seq.frames[0].bounds
+			var fname := "%dx%d.%s" % [bounds.x, bounds.y, "pdcs" if seq.frames.size() > 1 else "pdc"]
+			var raw := _sequence_to_pdc_bytes(seq)
+			_web_download_bytes(raw, fname)
+		return
+
 	var dialog := FileDialog.new()
 	get_tree().root.add_child(dialog)
 	dialog.file_mode = FileDialog.FILE_MODE_OPEN_DIR
@@ -430,6 +601,15 @@ func save_frame_as_pdc() -> void:
 		push_error("Fileman: no project loaded, cannot save frame as PDC")
 		return
 	var frame_data: DrawCommandImage = seq.frames[EditorState.current_frame]
+
+	if _is_web():
+		var buf := StreamPeerBuffer.new()
+		buf.big_endian = false
+		buf.put_data("PDCI".to_ascii_buffer())
+		buf.put_32(_pdc_image_data_size(frame_data))
+		_pdc_write_image_buf(buf, frame_data)
+		_web_download_bytes(buf.data_array, "frame.pdc")
+		return
 
 	var dialog := FileDialog.new()
 	get_tree().root.add_child(dialog)
@@ -505,6 +685,11 @@ func export_frame_as_png(transparent_bg: bool = true) -> void:
 		)
 		img = img.get_region(clip)
 
+	if _is_web():
+		var raw := img.save_png_to_buffer()
+		_web_download_bytes(raw, "frame.png")
+		return
+
 	var dialog := FileDialog.new()
 	get_tree().root.add_child(dialog)
 	dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
@@ -530,6 +715,10 @@ func export_sequence_as_gif() -> void:
 		return
 	if RenderManager.get_frame_texture(0) == null:
 		push_error("Fileman: rasterized textures not available for GIF export")
+		return
+
+	if _is_web():
+		_encode_gif_async("")
 		return
 
 	var dialog := FileDialog.new()
@@ -585,17 +774,30 @@ func _encode_gif_async(save_path: String) -> void:
 		gif_export_progress.emit(i + 1, total)
 		await get_tree().process_frame
 
+	var gif_data := exporter.export_file_data()
+	if _is_web() or save_path.is_empty():
+		_web_download_bytes(gif_data, "animation.gif")
+		gif_export_finished.emit()
+		return
+
 	var file := FileAccess.open(save_path, FileAccess.WRITE)
 	if file == null:
 		push_error("Fileman: failed to open '%s' for writing GIF" % save_path)
 		gif_export_finished.emit()
 		return
-	file.store_buffer(exporter.export_file_data())
+	file.store_buffer(gif_data)
 	file.close()
 	gif_export_finished.emit()
 
 
 func import_svg_dialog() -> void:
+	if _is_web():
+		if _web_uploader.loaded.is_connected(_on_web_svg_loaded):
+			_web_uploader.loaded.disconnect(_on_web_svg_loaded)
+		_web_uploader.loaded.connect(_on_web_svg_loaded, CONNECT_ONE_SHOT)
+		_web_uploader.open(".svg")
+		return
+
 	var file_dialog = FileDialog.new()
 	get_tree().root.add_child(file_dialog)
 	file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
@@ -620,8 +822,28 @@ func import_svg_dialog() -> void:
 	)
 	file_dialog.popup_centered()
 
+func _on_web_svg_loaded(_file_name: String, _type: String, base64_data: String) -> void:
+	var raw := Marshalls.base64_to_raw(base64_data)
+	var content := raw.get_string_from_utf8()
+	var sequence = SvgPdcHelper.svg_to_sequence(content)
+	if sequence == null or sequence.frames.is_empty():
+		push_error("Failed to parse SVG from browser upload")
+		return
+	ProjectData.add_sequence(sequence, "")
+	EditorState.fit_document_to_view()
+
+
+## Accumulates SVG frames received one-at-a-time via the browser file picker on Web.
+var _web_svg_sequence_contents: Array[String] = []
 
 func import_svg_sequence_dialog() -> void:
+	if _is_web():
+		# The browser picker only allows one file at a time with FileAccessWeb.
+		# We collect frames until the user cancels, then build the sequence.
+		_web_svg_sequence_contents.clear()
+		_web_start_svg_sequence_pick()
+		return
+
 	var file_dialog = FileDialog.new()
 	get_tree().root.add_child(file_dialog)
 	file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILES
@@ -654,11 +876,43 @@ func import_svg_sequence_dialog() -> void:
 	)
 	file_dialog.popup_centered()
 
+func _web_start_svg_sequence_pick() -> void:
+	if _web_uploader.loaded.is_connected(_on_web_svg_frame_loaded):
+		_web_uploader.loaded.disconnect(_on_web_svg_frame_loaded)
+	if _web_uploader.upload_cancelled.is_connected(_on_web_svg_sequence_cancelled):
+		_web_uploader.upload_cancelled.disconnect(_on_web_svg_sequence_cancelled)
+	_web_uploader.loaded.connect(_on_web_svg_frame_loaded, CONNECT_ONE_SHOT)
+	_web_uploader.upload_cancelled.connect(_on_web_svg_sequence_cancelled, CONNECT_ONE_SHOT)
+	_web_uploader.open(".svg")
+
+func _on_web_svg_frame_loaded(_file_name: String, _type: String, base64_data: String) -> void:
+	var raw := Marshalls.base64_to_raw(base64_data)
+	_web_svg_sequence_contents.append(raw.get_string_from_utf8())
+	# Ask for another frame; user cancels when done.
+	_web_start_svg_sequence_pick()
+
+func _on_web_svg_sequence_cancelled() -> void:
+	if _web_svg_sequence_contents.is_empty():
+		return
+	var sequence = SvgPdcHelper.svg_files_to_sequence(_web_svg_sequence_contents)
+	_web_svg_sequence_contents.clear()
+	if sequence == null or sequence.frames.is_empty():
+		push_error("Failed to parse SVG sequence from browser uploads")
+		return
+	ProjectData.add_sequence(sequence, "")
+	EditorState.fit_document_to_view()
+
 
 func export_frame_as_svg_dialog() -> void:
 	var seq := ProjectData.current_sequence
 	if seq == null or seq.frames.is_empty():
 		push_error("Fileman: no project loaded, cannot export SVG")
+		return
+
+	if _is_web():
+		var frame_idx := EditorState.current_frame
+		var svg_str = SvgPdcHelper.frame_to_svg(seq, frame_idx)
+		_web_download_bytes(svg_str.to_utf8_buffer(), "frame.svg")
 		return
 	
 	var dialog := FileDialog.new()
@@ -686,6 +940,11 @@ func export_sequence_as_animated_svg_dialog() -> void:
 	if seq == null or seq.frames.is_empty():
 		push_error("Fileman: no project loaded, cannot export SVG sequence")
 		return
+
+	if _is_web():
+		var svg_str = SvgPdcHelper.sequence_to_animated_svg(seq)
+		_web_download_bytes(svg_str.to_utf8_buffer(), "animation.svg")
+		return
 	
 	var dialog := FileDialog.new()
 	get_tree().root.add_child(dialog)
@@ -710,6 +969,13 @@ func export_sequence_as_multiple_svgs_dialog() -> void:
 	var seq := ProjectData.current_sequence
 	if seq == null or seq.frames.is_empty():
 		push_error("Fileman: no project loaded, cannot export SVGs")
+		return
+
+	if _is_web():
+		# Download each frame individually via the browser.
+		for i in range(seq.frames.size()):
+			var frame_svg = SvgPdcHelper.frame_to_svg(seq, i)
+			_web_download_bytes(frame_svg.to_utf8_buffer(), "frame_%03d.svg" % i)
 		return
 		
 	var dialog := FileDialog.new()
