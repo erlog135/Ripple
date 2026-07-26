@@ -14,6 +14,9 @@ config/name="Ripple"
 run/main_scene="uid://c3myodinq1ol5"
 config/features=PackedStringArray("4.6")
 run/low_processor_mode=true
+boot_splash/stretch_mode=0
+boot_splash/use_filter=false
+boot_splash/image="uid://byw1iiq8eynxl"
 config/icon="uid://b6y260y2td4ge"
 
 [autoload]
