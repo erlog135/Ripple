@@ -1,15 +1,14 @@
-# Ripple
-Multiplatform studio application for Pebble graphics
+# ![Ripple](./assets/RippleFull5.png)
 
 ### About this thing
 Ripple is a lightweight vector graphics editor and animation studio. (Well, the app itself isn't very lightweight, just the graphics format.)
-It's free & open source, and compatible with all major desktop platforms.
+It's free & open source, and compatible with all major desktop platforms, plus the web.
 
 ### What it's for
 It's designed to let you create, edit, and convert PDC ([Pebble Draw Command](https://developer.repebble.com/guides/graphics-and-animations/vector-graphics/)) files. Though it is intended for building graphics and animations for the Pebble smartwatch platform, SVG imports and SVG/PNG/GIF exports are supported. So you can certainly use this for general purpose creations, provided you can work with the limited selection of graphics types. 
 
 ### How I built it
-This app is wholly a [Godot](https://godotengine.org/) project. App code and architecture were devised in other places, including Cursor and Google AI Studio. Despite being intended for games, the Godot Engine has a surprisingly mature GUI framework, which made some parts of app construction easier. Another big advantage is that it's multiplatform, so I can export this app for Windows, macOS, Linux and the web! (Plus Android and iOS if I wanted to)
+This app is wholly a [Godot](https://godotengine.org/) project. App code and architecture were devised in other places, including Cursor and Google AI Studio. Despite being intended for games, the Godot Engine has a surprisingly mature GUI framework, which made some parts of app construction easier. Another big advantage is that it's multiplatform, so I can export this app for Windows, macOS, Linux, and the web! (Plus Android and iOS if I wanted to)
 
 ### Why I built it
 Ripple was built to solve a very niche problem: there is no free, accessible, modern software that lets you edit vector graphics (PDC compatible or otherwise) frame by frame, and import/export in a standard vector file batch. *Please disprove me, because I spent way too much time looking for equivalent software and working on this project.*
