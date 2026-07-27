@@ -126,6 +126,12 @@ anti_aliasing = false
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_1e6ds"]
 color = Color(1, 1, 1, 0.19607843)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_diyq5"]
+bg_color = Color(0, 0, 0, 0.19607843)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lv013"]
+bg_color = Color(1, 1, 1, 0.3137255)
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_l0h6j"]
 bg_color = Color(1, 1, 1, 0.3137255)
 corner_detail = 5
@@ -197,6 +203,8 @@ Panel/styles/panel = SubResource("StyleBoxFlat_4spe3")
 PopupMenu/styles/hover = SubResource("StyleBoxFlat_gyj2j")
 PopupMenu/styles/panel = SubResource("StyleBoxFlat_digyt")
 PopupMenu/styles/separator = SubResource("StyleBoxLine_1e6ds")
+ProgressBar/styles/background = SubResource("StyleBoxFlat_diyq5")
+ProgressBar/styles/fill = SubResource("StyleBoxFlat_lv013")
 Tree/styles/hovered = SubResource("StyleBoxFlat_l0h6j")
 Tree/styles/panel = SubResource("StyleBoxFlat_4spe3")
 Tree/styles/selected_focus = SubResource("StyleBoxFlat_qpvad")

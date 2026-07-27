@@ -209,7 +209,7 @@ offset_top = 144.0
 offset_right = -16.0
 offset_bottom = 176.0
 grow_horizontal = 2
-text = "Fin. Banner 50x50"
+text = "Weather 50x50"
 
 [node name="Example4Button" type="Button" parent="Control/Examples" unique_id=1532042193]
 layout_mode = 1

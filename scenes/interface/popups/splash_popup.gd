@@ -17,7 +17,7 @@ const NEW_FILE_POPUP := "res://scenes/interface/popups/NewFilePopup.tscn"
 const EXAMPLE_PATHS := [
 	"res://test/pdc/confirm_sequence.pdc",
 	"res://test/pdc/mute_sequence.pdc",
-	"res://test/pdc/Fin_50px.pdc",
+	"res://test/pdc/Weather_50px.pdc",
 	"res://test/pdc/Bell_25px.pdc",
 ]
 
