@@ -56,6 +56,18 @@ func _default_stroke_width_for(size: Vector2i) -> int:
 func load_project(path: String) -> void:
 	pdc_to_gd(path)
 
+
+## Loads a bundled example PDC (e.g. from res://test/pdc/) as an unsaved document.
+## Unlike [method pdc_to_gd], the source path is intentionally not stored so that
+## a subsequent File → Save opens the "Save As" dialog instead of overwriting the asset.
+func open_example(path: String) -> void:
+	var sequence := _load_pdc_sequence(path)
+	if sequence == null:
+		return
+	ProjectData.add_sequence(sequence, "")
+	EditorState.fit_document_to_view()
+
+
 func save_file() -> void:
 	if ProjectData.current_path.is_empty() or ProjectData.current_path.to_lower().ends_with(".svg"):
 		save_as_file_dialog()

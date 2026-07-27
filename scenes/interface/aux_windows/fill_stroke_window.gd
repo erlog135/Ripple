@@ -2,8 +2,11 @@ extends Control
 
 const COLOR_POPUP_SCENE := "res://scenes/interface/popups/ColorPopup.tscn"
 @onready var fill_rect: ColorRect = $Panel/StrokeRect/MarginContainer/FillRect
+@onready var fill_label: Label = $Panel/StrokeRect/MarginContainer/FillRect/Label
 @onready var stroke_rect: ColorRect = $Panel/StrokeRect
+@onready var stroke_label: Label = $Panel/StrokeRect/Label
 @onready var stroke_width_spin: SpinBox = $Panel/HBoxContainer/StrokeWidth
+
 
 var _syncing := false
 
@@ -30,7 +33,10 @@ func _sync_from_editor_state() -> void:
 		return
 	_syncing = true
 	fill_rect.color = EditorState.current_fill_color
+	fill_label.text = "Fill: %s" % GColor.COLOR_NAMES[EditorState.current_fill_color]
+
 	stroke_rect.color = EditorState.current_stroke_color
+	stroke_label.text = "Stroke: %s" % GColor.COLOR_NAMES[EditorState.current_stroke_color]
 	stroke_width_spin.value = EditorState.current_stroke_width
 	_syncing = false
 
@@ -58,6 +64,7 @@ func _sync_current_from_editor_ui() -> void:
 
 func _on_fill_color_selected(color: Color) -> void:
 	fill_rect.color = color
+	fill_label.text = "Fill: %s" % GColor.COLOR_NAMES[color]
 	EditorState.set_current_fill_color(color)
 	if _syncing:
 		return
@@ -69,6 +76,7 @@ func _on_fill_color_selected(color: Color) -> void:
 
 func _on_stroke_color_selected(color: Color) -> void:
 	stroke_rect.color = color
+	stroke_label.text = "Stroke: %s" % GColor.COLOR_NAMES[color]
 	EditorState.set_current_stroke_color(color)
 	if _syncing:
 		return
@@ -117,7 +125,11 @@ func _on_selection_changed(_by_user: bool) -> void:
 
 	_syncing = true
 	fill_rect.color = shared_fill
+	fill_label.text = "Fill: %s" % GColor.COLOR_NAMES[shared_fill]
+	
 	stroke_rect.color = shared_stroke
+	stroke_label.text = "Stroke: %s" % GColor.COLOR_NAMES[shared_stroke]
+
 	stroke_width_spin.value = shared_width
 	EditorState.set_current_fill_stroke(shared_fill, shared_stroke, shared_width)
 	_syncing = false

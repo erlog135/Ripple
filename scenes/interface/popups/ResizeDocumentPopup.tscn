@@ -56,7 +56,6 @@ select_all_on_focus = true
 
 [node name="KeepAspectToggle" type="CheckButton" parent="Panel/VBoxContainer" unique_id=1204361846]
 layout_mode = 2
-button_pressed = true
 text = "Keep aspect"
 
 [node name="Label" type="Label" parent="Panel/VBoxContainer" unique_id=1673299610]

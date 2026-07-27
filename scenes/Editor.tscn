@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://c3myodinq1ol5"]
 
 [ext_resource type="PackedScene" uid="uid://vrudldeag2yr" path="res://scenes/interface/TopMenuBar.tscn" id="1_ndpqs"]
+[ext_resource type="Script" uid="uid://dt6wv2ofodk4s" path="res://scenes/editor.gd" id="1_xo7do"]
 [ext_resource type="PackedScene" uid="uid://dsun2824rmyw3" path="res://scenes/interface/CanvasArea.tscn" id="2_3kl07"]
 [ext_resource type="PackedScene" uid="uid://dkotjhm13dn23" path="res://scenes/interface/aux_windows/ToolsWindow.tscn" id="2_diyc1"]
 [ext_resource type="Texture2D" uid="uid://ih1i0io4u6et" path="res://assets/frames/editor_grain.png" id="2_e4056"]
@@ -30,6 +31,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_xo7do")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1138446134]
 layer = -1

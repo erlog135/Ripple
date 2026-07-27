@@ -1,13 +1,15 @@
 [gd_scene format=3 uid="uid://dy8c6qa14v5pk"]
 
 [ext_resource type="Texture2D" uid="uid://byw1iiq8eynxl" path="res://assets/RippleFull5.png" id="1_885t0"]
+[ext_resource type="Script" uid="uid://227c3nq71r5n" path="res://scenes/interface/popups/splash_popup.gd" id="1_nm134"]
 
 [node name="SplashPopup" type="Window" unique_id=1972758153]
 oversampling_override = 1.0
 title = "Welcome"
-position = Vector2i(0, 36)
+initial_position = 2
 size = Vector2i(400, 400)
 min_size = Vector2i(400, 400)
+script = ExtResource("1_nm134")
 
 [node name="Control" type="Control" parent="." unique_id=1227082461]
 layout_mode = 3
@@ -39,7 +41,7 @@ by Logan Head"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="GetStarted" type="Control" parent="Control" unique_id=1341185410]
+[node name="Start" type="Control" parent="Control" unique_id=1341185410]
 layout_mode = 1
 anchor_top = 1.0
 anchor_right = 0.5
@@ -48,7 +50,7 @@ offset_top = -244.0
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="Panel" type="Panel" parent="Control/GetStarted" unique_id=1130464152]
+[node name="Panel" type="Panel" parent="Control/Start" unique_id=1130464152]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 1.0
@@ -58,7 +60,7 @@ offset_top = 40.0
 offset_right = -8.0
 offset_bottom = -8.096008
 
-[node name="ColorRect" type="ColorRect" parent="Control/GetStarted" unique_id=1135422111]
+[node name="ColorRect" type="ColorRect" parent="Control/Start" unique_id=1135422111]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -66,9 +68,10 @@ offset_left = 8.0
 offset_top = 32.0
 offset_right = -8.0
 offset_bottom = 40.0
+grow_horizontal = 2
 color = Color(1, 1, 0, 1)
 
-[node name="Label" type="Label" parent="Control/GetStarted" unique_id=1148605567]
+[node name="Label" type="Label" parent="Control/Start" unique_id=1148605567]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -76,6 +79,7 @@ offset_left = 8.0
 offset_top = 8.0
 offset_right = -8.0
 offset_bottom = 40.0
+grow_horizontal = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 10
 theme_override_font_sizes/font_size = 20
@@ -83,7 +87,7 @@ text = "GET STARTED"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="NewFileButton" type="Button" parent="Control/GetStarted" unique_id=624683999]
+[node name="NewFileButton" type="Button" parent="Control/Start" unique_id=624683999]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -94,7 +98,7 @@ offset_bottom = 80.0
 grow_horizontal = 2
 text = "New File"
 
-[node name="Blank25Button" type="Button" parent="Control/GetStarted" unique_id=471305965]
+[node name="Blank25Button" type="Button" parent="Control/Start" unique_id=471305965]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -105,7 +109,7 @@ offset_bottom = 128.0
 grow_horizontal = 2
 text = "Blank 25x25"
 
-[node name="Blank50Button" type="Button" parent="Control/GetStarted" unique_id=1149036644]
+[node name="Blank50Button" type="Button" parent="Control/Start" unique_id=1149036644]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -116,7 +120,7 @@ offset_bottom = 176.0
 grow_horizontal = 2
 text = "Blank 50x50"
 
-[node name="Blank80Button" type="Button" parent="Control/GetStarted" unique_id=1936860122]
+[node name="Blank80Button" type="Button" parent="Control/Start" unique_id=1936860122]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -127,7 +131,7 @@ offset_bottom = 224.0
 grow_horizontal = 2
 text = "Blank 80x80"
 
-[node name="SeeExamples" type="Control" parent="Control" unique_id=501526521]
+[node name="Examples" type="Control" parent="Control" unique_id=501526521]
 layout_mode = 1
 anchor_left = 0.5
 anchor_top = 1.0
@@ -137,7 +141,7 @@ offset_top = -244.0
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="Panel" type="Panel" parent="Control/SeeExamples" unique_id=1568393583]
+[node name="Panel" type="Panel" parent="Control/Examples" unique_id=1568393583]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 1.0
@@ -147,7 +151,7 @@ offset_top = 40.0
 offset_right = -8.0
 offset_bottom = -8.096008
 
-[node name="ColorRect" type="ColorRect" parent="Control/SeeExamples" unique_id=676655876]
+[node name="ColorRect" type="ColorRect" parent="Control/Examples" unique_id=676655876]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -155,9 +159,10 @@ offset_left = 8.0
 offset_top = 32.0
 offset_right = -8.0
 offset_bottom = 40.0
+grow_horizontal = 2
 color = Color(0.6666667, 0, 1, 1)
 
-[node name="Label" type="Label" parent="Control/SeeExamples" unique_id=439801040]
+[node name="Label" type="Label" parent="Control/Examples" unique_id=439801040]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -169,11 +174,11 @@ grow_horizontal = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 10
 theme_override_font_sizes/font_size = 20
-text = "SEE EXAMPLES"
+text = "LOAD EXAMPLES"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Example1Button" type="Button" parent="Control/SeeExamples" unique_id=688824063]
+[node name="Example1Button" type="Button" parent="Control/Examples" unique_id=688824063]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -184,7 +189,7 @@ offset_bottom = 80.0
 grow_horizontal = 2
 text = "Confirm 80x80"
 
-[node name="Example2Button" type="Button" parent="Control/SeeExamples" unique_id=1052241787]
+[node name="Example2Button" type="Button" parent="Control/Examples" unique_id=1052241787]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -195,7 +200,7 @@ offset_bottom = 128.0
 grow_horizontal = 2
 text = "Mute 80x80"
 
-[node name="Example3Button" type="Button" parent="Control/SeeExamples" unique_id=111170623]
+[node name="Example3Button" type="Button" parent="Control/Examples" unique_id=111170623]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -206,7 +211,7 @@ offset_bottom = 176.0
 grow_horizontal = 2
 text = "Fin. Banner 50x50"
 
-[node name="Example4Button" type="Button" parent="Control/SeeExamples" unique_id=1532042193]
+[node name="Example4Button" type="Button" parent="Control/Examples" unique_id=1532042193]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
