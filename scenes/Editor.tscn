@@ -163,3 +163,4 @@ custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 
 [node name="LoadingOverlay" parent="." unique_id=-1294967295 instance=ExtResource("14_overlay")]
+visible = false

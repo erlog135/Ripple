@@ -273,6 +273,12 @@ func _build_menu_data() -> Dictionary:
 		],
 		"HELP": [
 			{
+				"id":"help_src",
+				"type":"action",
+				"label":"Project source"
+			},
+			{"type": "separator"},
+			{
 				"id": "help_pdc_docs",
 				"type": "action",
 				"label": "PDC docs",
@@ -282,6 +288,7 @@ func _build_menu_data() -> Dictionary:
 				"type": "action",
 				"label": "Style guide",
 			},
+			{"type": "separator"},
 			{
 				"id": "help_art",
 				"type": "action",

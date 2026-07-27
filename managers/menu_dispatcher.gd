@@ -94,6 +94,8 @@ func execute(action_id: String) -> void:
 			EditorState.zoom_to_document(EditorState.canvas_viewport_size)
 		"view_zoom_selection":
 			EditorState.zoom_to_selection(EditorState.canvas_viewport_size)
+		"help_src":
+			OS.shell_open("https://github.com/erlog135/Ripple")
 		"help_pdc_docs":
 			OS.shell_open("https://developer.rebble.io/guides/graphics-and-animations/vector-graphics/")
 		"help_style_guide":
