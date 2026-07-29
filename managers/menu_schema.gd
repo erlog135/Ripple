@@ -238,6 +238,19 @@ func _build_menu_data() -> Dictionary:
 			},
 			{"type": "separator"},
 			{
+				"id": "view_ui_scale_up",
+				"type": "action",
+				"label": "UI Scale Up",
+				"shortcut": shortcut(KEY_EQUAL, true, true),
+			},
+			{
+				"id": "view_ui_scale_down",
+				"type": "action",
+				"label": "UI Scale Down",
+				"shortcut": shortcut(KEY_MINUS, true, true),
+			},
+			{"type": "separator"},
+			{
 				"id": "view_validate_angles",
 				"type": "checkbox",
 				"label": "Validate Line Angles",

@@ -82,7 +82,7 @@ func _on_shape_preview_changed() -> void:
 func _on_mouse_position_changed(screen_pos: Vector2) -> void:
 	var canvas_center := get_viewport().get_visible_rect().size / 2.0
 	_cursor_world_pos = EditorState.current_camera_pos + (screen_pos - canvas_center) / EditorState.current_zoom
-	if EditorState.current_zoom >= 20.0:
+	if EditorState.current_zoom >= 40.0:
 		queue_redraw()
 
 func _draw() -> void:
@@ -290,7 +290,7 @@ func _draw_drag_selection_box() -> void:
 	draw_rect(_drag_selection_rect, DRAG_SELECTION_BOX_COLOR, false, line_w)
 
 func _draw_cursor_coords() -> void:
-	if EditorState.current_zoom < 20.0:
+	if EditorState.current_zoom < 40.0:
 		return
 
 	var pos := _cursor_world_pos

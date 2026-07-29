@@ -12,6 +12,8 @@ config_version=5
 
 config/name="Ripple"
 run/main_scene="uid://c3myodinq1ol5"
+config/use_custom_user_dir=true
+config/custom_user_dir_name="net.loganhead.ripple"
 config/features=PackedStringArray("4.6")
 run/low_processor_mode=true
 boot_splash/bg_color=Color(0.2, 0.2, 0.2, 1)

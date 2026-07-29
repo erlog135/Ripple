@@ -84,6 +84,12 @@ func execute(action_id: String) -> void:
 			EditorState.clip_to_document_bounds = not EditorState.clip_to_document_bounds
 		"view_validate_angles":
 			EditorState.validate_line_angles = not EditorState.validate_line_angles
+		"view_ui_scale_up":
+			get_tree().root.content_scale_factor = clampf(
+					get_tree().root.content_scale_factor + 0.1, 0.5, 3.0)
+		"view_ui_scale_down":
+			get_tree().root.content_scale_factor = clampf(
+					get_tree().root.content_scale_factor - 0.1, 0.5, 3.0)
 		"view_zoom_in":
 			EditorState.zoom_in_centered()
 		"view_zoom_out":

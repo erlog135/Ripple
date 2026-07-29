@@ -73,6 +73,14 @@ func _gui_input(event: InputEvent) -> void:
 			if event.pressed:
 				if EditorState.selected_point_indices.is_empty():
 					_try_select_point_for_transform(world_pos)
+				else:
+					# Check hover *before* committing to a drag. If the click
+					# lands outside all handles / the selection box, try to pick
+					# a different point or segment and make it the new selection.
+					_transform_tool.update_hover(world_pos)
+					if _transform_tool.current_hover_mode == EditorState.TransformMode.NONE:
+						EditorState.deselect_all()
+						_try_select_point_for_transform(world_pos)
 				_transform_tool.handle_left_press(world_pos)
 			else:
 				_transform_tool.handle_left_release(world_pos)
