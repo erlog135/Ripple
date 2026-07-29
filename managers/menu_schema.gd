@@ -99,12 +99,7 @@ func _build_menu_data() -> Dictionary:
 					{
 						"id": "file_export_frame_png",
 						"type": "action",
-						"label": "PNG (transparent)...",
-					},
-					{
-						"id": "file_export_frame_png_flat",
-						"type": "action",
-						"label": "PNG (background)...",
+						"label": "PNG...",
 					},
 				],
 			},

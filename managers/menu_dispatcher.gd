@@ -30,8 +30,6 @@ func execute(action_id: String) -> void:
 			Fileman.export_frame_as_svg_dialog()
 		"file_export_frame_png":
 			Fileman.export_frame_as_png()
-		"file_export_frame_png_flat":
-			Fileman.export_frame_as_png(false)
 		"file_export_sequence_gif":
 			Fileman.export_sequence_as_gif()
 		"file_export_sequence_animated_svg":

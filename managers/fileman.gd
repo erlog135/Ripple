@@ -656,7 +656,7 @@ func _prefill_dialog(dialog: FileDialog, ext: String) -> void:
 
 ## Rasterizer background pixels are filled with 0xAA across all channels; drawn pixels get A=0xFF.
 ## When [param transparent_bg] is true, background pixels become fully transparent (RGBA all 0).
-## When false, they become fully opaque (A set to 255, RGB kept as the 0xAA gray).
+## When false, they become fully opaque (A set to 255, RGB kept as composited colour).
 func _fix_raster_alpha(img: Image, transparent_bg: bool) -> Image:
 	var data := img.get_data()
 	for i in range(3, data.size(), 4):
@@ -672,8 +672,9 @@ func _fix_raster_alpha(img: Image, transparent_bg: bool) -> Image:
 
 
 ## Exports the current frame as a PNG. Respects the Clip to Document Bounds setting.
-## [param transparent_bg] controls whether unpainted pixels are transparent or opaque gray.
-func export_frame_as_png(transparent_bg: bool = true) -> void:
+## Transparency of unpainted pixels follows [member EditorState.current_bg_color]:
+## transparent when its alpha is 0, opaque otherwise.
+func export_frame_as_png() -> void:
 	var seq := ProjectData.current_sequence
 	if seq == null or seq.frames.is_empty():
 		push_error("Fileman: no project loaded, cannot export PNG")
@@ -686,6 +687,7 @@ func export_frame_as_png(transparent_bg: bool = true) -> void:
 
 	var img := tex.get_image()
 	img.convert(Image.FORMAT_RGBA8)
+	var transparent_bg := EditorState.current_bg_color.a == 0.0
 	img = _fix_raster_alpha(img, transparent_bg)
 
 	if EditorState.clip_to_document_bounds:
