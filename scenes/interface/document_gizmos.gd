@@ -22,6 +22,7 @@ const PenToolScr = preload("res://scenes/interface/aux_windows/tools/line_pen_to
 
 var _drag_selection_rect := Rect2()
 var _drag_selection_active := false
+var _cursor_world_pos := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -37,6 +38,7 @@ func _ready() -> void:
 	EditorState.line_pen_hover_changed.connect(_on_line_pen_hover_changed)
 	EditorState.validate_line_angles_changed.connect(_on_validate_line_angles_changed)
 	EditorState.shape_preview_changed.connect(_on_shape_preview_changed)
+	EditorState.mouse_position_changed.connect(_on_mouse_position_changed)
 
 func _on_data_changed(_by_user: bool, _affected_frame: int) -> void:
 	queue_redraw()
@@ -77,6 +79,12 @@ func _on_validate_line_angles_changed(_enabled: bool) -> void:
 func _on_shape_preview_changed() -> void:
 	queue_redraw()
 
+func _on_mouse_position_changed(screen_pos: Vector2) -> void:
+	var canvas_center := get_viewport().get_visible_rect().size / 2.0
+	_cursor_world_pos = EditorState.current_camera_pos + (screen_pos - canvas_center) / EditorState.current_zoom
+	if EditorState.current_zoom >= 20.0:
+		queue_redraw()
+
 func _draw() -> void:
 	if EditorState.is_playing:
 		return
@@ -89,6 +97,7 @@ func _draw() -> void:
 	_draw_line_pen_preview()
 	_draw_drag_selection_box()
 	_draw_selection_box()
+	_draw_cursor_coords()
 
 func _draw_pixel_grid() -> void:
 	var vp_rect := get_viewport().get_visible_rect()
@@ -279,6 +288,28 @@ func _draw_drag_selection_box() -> void:
 
 	var line_w := SKELLY_PATH_WIDTH_PX / EditorState.current_zoom
 	draw_rect(_drag_selection_rect, DRAG_SELECTION_BOX_COLOR, false, line_w)
+
+func _draw_cursor_coords() -> void:
+	if EditorState.current_zoom < 20.0:
+		return
+
+	var pos := _cursor_world_pos
+	var zoom := EditorState.current_zoom
+
+	# Dot at the exact coordinate (translucent white).
+	var dot_r := 2.0 / zoom
+	draw_circle(pos.floor(), dot_r, Color(1.0, 1.0, 1.0, 0.5))
+
+	# Text label offset to the bottom-right of the cursor.
+	var label := "%d, %d" % [floori(pos.x), floori(pos.y)]
+	var font := ThemeDB.fallback_font
+	var font_size := 14
+	var px_per_unit := 1.0 / zoom
+
+	draw_set_transform(pos.floor(), 0.0, Vector2(px_per_unit, px_per_unit))
+	draw_string_outline(font, Vector2.ZERO, label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, 2, Color(0.0, 0.0, 0.0, 0.9))
+	draw_string(font, Vector2.ZERO, label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1.0, 1.0, 1.0, 1.0))
+	draw_set_transform(Vector2.ZERO)
 
 func get_point_at(world_pos: Vector2) -> Array:
 	var frame: DrawCommandImage = ProjectData.get_current_image()
