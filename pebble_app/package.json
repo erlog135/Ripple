@@ -1,0 +1,41 @@
+{
+  "name": "ripple-viewer",
+  "author": "Logan Head",
+  "version": "1.0.0",
+  "keywords": [
+    "pebble-app"
+  ],
+  "private": true,
+  "dependencies": {
+    "@rebble/clay": "^1.0.10"
+  },
+  "pebble": {
+    "displayName": "Ripple Viewer",
+    "uuid": "3398e4c5-b55f-4ec3-bb26-688ae7a66ddf",
+    "sdkVersion": "3",
+    "enableMultiJS": true,
+    "targetPlatforms": [
+      "aplite",
+      "basalt",
+      "chalk",
+      "diorite",
+      "emery",
+      "flint",
+      "gabbro"
+    ],
+    "watchapp": {
+      "watchface": false
+    },
+    "messageKeys": [
+      "PDC_SIZE",
+      "PDC_DATA",
+      "PDC_DONE",
+      "BG_COLOR",
+      "CLIP_MODE",
+      "URL"
+    ],
+    "resources": {
+      "media": []
+    }
+  }
+}

@@ -378,7 +378,7 @@ func _pdc_color(val: int) -> Color:
 	return Color(r_val / 3.0, g_val / 3.0, b_val / 3.0, a_val / 3.0)
 
 ## Serialises [param sequence] into a raw PDC byte array.
-func _sequence_to_pdc_bytes(sequence: DrawCommandSequence) -> PackedByteArray:
+func sequence_to_pdc_bytes(sequence: DrawCommandSequence) -> PackedByteArray:
 	var buf := StreamPeerBuffer.new()
 	buf.big_endian = false
 	if sequence.frames.size() == 1:
@@ -400,7 +400,7 @@ func _web_save_pdc(sequence: DrawCommandSequence) -> void:
 	var fname := ProjectData.current_path.get_file()
 	if fname.is_empty():
 		fname = "drawing." + ext
-	var raw := _sequence_to_pdc_bytes(sequence)
+	var raw := sequence_to_pdc_bytes(sequence)
 	_web_download_bytes(raw, fname)
 	file_saved.emit(raw.size())
 
@@ -572,7 +572,7 @@ func export_all_tabs_as_pdc() -> void:
 				continue
 			var bounds: Vector2i = seq.frames[0].bounds
 			var fname := "%dx%d.%s" % [bounds.x, bounds.y, "pdcs" if seq.frames.size() > 1 else "pdc"]
-			var raw := _sequence_to_pdc_bytes(seq)
+			var raw := sequence_to_pdc_bytes(seq)
 			_web_download_bytes(raw, fname)
 		return
 

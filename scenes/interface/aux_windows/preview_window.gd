@@ -3,6 +3,10 @@ extends Control
 @onready var image: Sprite2D = $Panel/Control/PreviewClip/PreviewOrigin/Image
 @onready var background_color: ColorRect = $Panel/Control/BackgroundColor
 
+@onready var live_sync: HBoxContainer = $Panel/LiveSync
+
+@onready var send_button: Button = $Panel/LiveSync/SendButton
+@onready var server_button: Button = $Panel/LiveSync/ServerButton
 
 func _ready() -> void:
 	EditorState.current_frame_changed.connect(_on_current_frame_changed)
@@ -10,6 +14,14 @@ func _ready() -> void:
 	EditorState.clip_to_bounds_changed.connect(_on_clip_to_bounds_changed)
 	RenderManager.preview_updated.connect(_on_preview_updated)
 	ProjectData.data_changed.connect(_on_data_changed)
+	
+	if OS.get_name() == "Web":
+		live_sync.hide()
+	
+	send_button.pressed.connect(_on_send_button_pressed)
+	server_button.pressed.connect(_on_server_button_pressed)
+	
+	LiveSyncManager.server_status_changed.connect(_on_server_status_changed)
 
 	_update_preview()
 
@@ -57,3 +69,20 @@ func _update_preview() -> void:
 		image.region_enabled = false
 		var tex_size := tex.get_size()
 		image.position = raster_origin + (tex_size / 2.0) - (doc_size / 2.0)
+
+func _on_send_button_pressed():
+	LiveSyncManager.send_current_preview()
+
+func _on_server_button_pressed():
+	if server_button.text == "Start Server":
+		server_button.text = "Starting..."
+		LiveSyncManager.start_server()
+	else:
+		LiveSyncManager.stop_server()
+
+func _on_server_status_changed(is_active: bool, address: String, port: int):
+	
+	send_button.visible = is_active
+	
+	server_button.tooltip_text = ("Live at %s:%d" % [address,port]) if is_active else ""
+	server_button.text = "Live at..." if is_active else "Start Server"
