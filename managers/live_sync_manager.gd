@@ -7,11 +7,7 @@ const TYPE_CLIP_MODE = 3
 var tcp_server := TCPServer.new()
 var sockets: Array[WebSocketPeer] = []
 var active_port: int = 0
-signal server_status_changed(is_running: bool, ip: String, port: int)
-
-func _ready():
-	pass
-	#TODO: Hook into the save event!
+signal server_status_changed(is_running: bool, ip: PackedStringArray, port: int)
 
 
 func start_server(target_port: int = 12199):
@@ -32,18 +28,17 @@ func start_server(target_port: int = 12199):
 	# Evaluate the final result
 	if err == OK:
 		active_port = target_port
-		#TODO: show IP address
-		server_status_changed.emit(true,"",active_port)
+		server_status_changed.emit(true,IP.get_local_addresses(),active_port)
 	else:
 		active_port = 0
 		printerr("Error binding port: ",error_string(err))
-		server_status_changed.emit(false,"",-1)
+		server_status_changed.emit(false,PackedStringArray([]),-1)
 
 func stop_server():
 	tcp_server.stop()
 	sockets.clear()
 	active_port = 0
-	server_status_changed.emit(false, "", 0)
+	server_status_changed.emit(false,PackedStringArray([]), 0)
 
 func _process(_delta):
 	if not tcp_server.is_listening():

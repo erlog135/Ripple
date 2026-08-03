@@ -80,9 +80,18 @@ func _on_server_button_pressed():
 	else:
 		LiveSyncManager.stop_server()
 
-func _on_server_status_changed(is_active: bool, address: String, port: int):
+func _on_server_status_changed(is_active: bool, addresses: PackedStringArray, port: int):
 	
 	send_button.visible = is_active
 	
-	server_button.tooltip_text = ("Live at %s:%d" % [address,port]) if is_active else ""
+	
+	var address_txt = ""
+	if is_active:
+		for address in addresses:
+			if not address.contains("."):
+				continue
+		
+			address_txt += "%s:%d\n" % [address,port]
+	
+	server_button.tooltip_text = ("Live at:\n" + address_txt) if is_active else ""
 	server_button.text = "Live at..." if is_active else "Start Server"

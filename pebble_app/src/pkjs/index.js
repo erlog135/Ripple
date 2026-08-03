@@ -44,7 +44,7 @@ function sendPdcBytes(bytes) {
             },
             function (e) {
                 console.log("PDC_DATA chunk failed at offset " + offset +
-                            ", retrying in 500ms: " + JSON.stringify(e));
+                    ", retrying in 500ms: " + JSON.stringify(e));
                 // Retry same chunk — offset has NOT been advanced.
                 setTimeout(sendNextChunk, 500);
             }
@@ -73,7 +73,7 @@ function handleWebSocketMessage(event) {
         return;
     }
 
-    var buf  = new Uint8Array(event.data);
+    var buf = new Uint8Array(event.data);
     if (buf.length < 2) {
         console.log("WS: message too short, ignoring");
         return;
@@ -152,7 +152,17 @@ Pebble.addEventListener('webviewclosed', function (e) {
 });
 
 Pebble.addEventListener('ready', function (e) {
+
+
+
+    var info = Pebble.getActiveWatchInfo();
+
     var url = localStorage.getItem('ws_url');
+
+    if (!url && info.model.includes("qemu")) {
+        url = "ws://localhost:12199";
+    }
+
     if (url) {
         connectWebSocket(url);
     }
