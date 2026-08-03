@@ -12,7 +12,7 @@ func _ready() -> void:
 static func shortcut(key: Key, ctrl: bool = false, shift: bool = false, alt: bool = false) -> Shortcut:
 	var event := InputEventKey.new()
 	event.keycode = key
-	event.ctrl_pressed = ctrl
+	event.command_or_control_autoremap = ctrl
 	event.shift_pressed = shift
 	event.alt_pressed = alt
 	var sc := Shortcut.new()

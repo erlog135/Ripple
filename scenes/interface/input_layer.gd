@@ -111,7 +111,7 @@ func _screen_to_world(screen_pos: Vector2) -> Vector2:
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_DELETE:
+		if event.keycode == KEY_DELETE or event.keycode == KEY_BACKSPACE:
 			_delete_selected_points()
 
 
