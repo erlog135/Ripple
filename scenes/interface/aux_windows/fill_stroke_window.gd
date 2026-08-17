@@ -32,13 +32,22 @@ func _sync_from_editor_state() -> void:
 	if _syncing:
 		return
 	_syncing = true
-	fill_rect.color = EditorState.current_fill_color
-	fill_label.text = "Fill: %s" % GColor.COLOR_NAMES[EditorState.current_fill_color]
-
-	stroke_rect.color = EditorState.current_stroke_color
-	stroke_label.text = "Stroke: %s" % GColor.COLOR_NAMES[EditorState.current_stroke_color]
+	_update_fill_ui(EditorState.current_fill_color)
+	_update_stroke_ui(EditorState.current_stroke_color)
 	stroke_width_spin.value = EditorState.current_stroke_width
 	_syncing = false
+
+
+func _update_fill_ui(color: Color) -> void:
+	fill_rect.color = color
+	fill_label.text = "Fill: %s" % GColor.COLOR_NAMES[color]
+	fill_label.add_theme_color_override("font_color", GColor.legible_over(color))
+
+
+func _update_stroke_ui(color: Color) -> void:
+	stroke_rect.color = color
+	stroke_label.text = "Stroke: %s" % GColor.COLOR_NAMES[color]
+	stroke_label.add_theme_color_override("font_color", GColor.legible_over(color))
 
 
 ## Opens (or refocuses) the shared color picker for one swatch, syncing its
@@ -63,8 +72,7 @@ func _sync_current_from_editor_ui() -> void:
 
 
 func _on_fill_color_selected(color: Color) -> void:
-	fill_rect.color = color
-	fill_label.text = "Fill: %s" % GColor.COLOR_NAMES[color]
+	_update_fill_ui(color)
 	EditorState.set_current_fill_color(color)
 	if _syncing:
 		return
@@ -75,8 +83,7 @@ func _on_fill_color_selected(color: Color) -> void:
 
 
 func _on_stroke_color_selected(color: Color) -> void:
-	stroke_rect.color = color
-	stroke_label.text = "Stroke: %s" % GColor.COLOR_NAMES[color]
+	_update_stroke_ui(color)
 	EditorState.set_current_stroke_color(color)
 	if _syncing:
 		return
@@ -124,11 +131,8 @@ func _on_selection_changed(_by_user: bool) -> void:
 			return
 
 	_syncing = true
-	fill_rect.color = shared_fill
-	fill_label.text = "Fill: %s" % GColor.COLOR_NAMES[shared_fill]
-	
-	stroke_rect.color = shared_stroke
-	stroke_label.text = "Stroke: %s" % GColor.COLOR_NAMES[shared_stroke]
+	_update_fill_ui(shared_fill)
+	_update_stroke_ui(shared_stroke)
 
 	stroke_width_spin.value = shared_width
 	EditorState.set_current_fill_stroke(shared_fill, shared_stroke, shared_width)

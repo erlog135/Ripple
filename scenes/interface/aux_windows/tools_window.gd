@@ -6,13 +6,11 @@ const TOOL_CIRCLE = preload("uid://buco5y6muxvhn")
 const TOOL_LINE_PEN = preload("uid://c1epqd3vwb1b5")
 const TOOL_PAN = preload("uid://mh3kx6yvter7")
 const TOOL_RECTANGLE = preload("uid://dy4p0t40vnyy2")
-const TOOL_SELECT = preload("uid://0g8p7lvto7v8")
-const TOOL_TRANSFORM = preload("uid://b0w4xtlid8vne")
+const TOOL_EDIT = preload("uid://0g8p7lvto7v8")
 
 
 const TOOL_ICONS: Dictionary[EditorState.Tool,Resource] = {
-	EditorState.Tool.SELECT: TOOL_SELECT,
-	EditorState.Tool.TRANSFORM: TOOL_TRANSFORM,
+	EditorState.Tool.EDIT: TOOL_EDIT,
 	EditorState.Tool.LINE_PEN: TOOL_LINE_PEN,
 	EditorState.Tool.CIRCLE: TOOL_CIRCLE,
 	EditorState.Tool.RECTANGLE: TOOL_RECTANGLE,

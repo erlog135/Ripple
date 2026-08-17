@@ -135,14 +135,11 @@ func _draw_skeletons() -> void:
 
 	var line_w := SKELLY_PATH_WIDTH_PX / EditorState.current_zoom
 	var pt_r := SKELLY_POINT_RADIUS_PX / EditorState.current_zoom
-	var show_only_selected := (
-		EditorState.active_tool != EditorState.Tool.SELECT
-		and EditorState.active_tool != EditorState.Tool.TRANSFORM
-	)
-	# For TRANSFORM and LINE_PEN, show all points/segments within a command
+	var show_only_selected := EditorState.active_tool != EditorState.Tool.EDIT
+	# For EDIT and LINE_PEN, show all points/segments within a command
 	# (non-selected ones render in the dimmed white/gray palette to provide context).
 	var show_full_cmd := (
-		EditorState.active_tool == EditorState.Tool.TRANSFORM
+		EditorState.active_tool == EditorState.Tool.EDIT
 		or EditorState.active_tool == EditorState.Tool.LINE_PEN
 	)
 
@@ -254,9 +251,9 @@ func _draw_selection_box() -> void:
 	var rect := Rect2(min_pos, max_pos - min_pos)
 	draw_rect(rect, SELECTION_BOX_COLOR, false, line_w)
 
-	# Resize handles for the Transform tool (only when idle and the box has area).
+	# Resize handles for the Edit tool (only when idle and the box has area).
 	if (
-		EditorState.active_tool == EditorState.Tool.TRANSFORM
+		EditorState.active_tool == EditorState.Tool.EDIT
 		and not EditorState.is_transform_previewing()
 		and (rect.size.x > 0.0001 or rect.size.y > 0.0001)
 	):
@@ -420,9 +417,9 @@ func _draw_angle_validation() -> void:
 	if frame == null:
 		return
 	var line_w := SKELLY_PATH_WIDTH_PX / EditorState.current_zoom
-	var show_only_selected := EditorState.active_tool != EditorState.Tool.SELECT
+	var show_only_selected := EditorState.active_tool != EditorState.Tool.EDIT
 	var show_full_cmd := (
-		EditorState.active_tool == EditorState.Tool.TRANSFORM
+		EditorState.active_tool == EditorState.Tool.EDIT
 		or EditorState.active_tool == EditorState.Tool.LINE_PEN
 	)
 	for cmd_idx in range(frame.commands.size()):

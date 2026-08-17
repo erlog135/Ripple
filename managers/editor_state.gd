@@ -31,8 +31,7 @@ const MIN_ZOOM  := 0.2
 const MAX_ZOOM  := 80.0
 
 enum Tool {
-	SELECT,
-	TRANSFORM,
+	EDIT,
 	LINE_PEN,
 	CIRCLE,
 	RECTANGLE,
@@ -44,7 +43,7 @@ enum TransformMode { NONE, MOVE, SCALE, ROTATE }
 
 enum RenderMode { VECTOR, RASTER }
 
-var active_tool: Tool = Tool.SELECT
+var active_tool: Tool = Tool.EDIT
 var render_mode: RenderMode = RenderMode.VECTOR
 var current_frame: int = 0
 var onion_skin_enabled: bool = false:
@@ -110,7 +109,7 @@ var line_pen_hover_world := Vector2.ZERO
 
 ## Shape drawing preview data
 var shape_preview_active: bool = false
-var shape_preview_type: Tool = Tool.SELECT
+var shape_preview_type: Tool = Tool.EDIT
 var shape_preview_rect_points: PackedVector2Array = PackedVector2Array()
 var shape_preview_circle_center: Vector2 = Vector2.ZERO
 var shape_preview_circle_radius: float = 0.0

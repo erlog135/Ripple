@@ -1,14 +1,12 @@
 extends Control
 
-const SelectionTool = preload("res://scenes/interface/aux_windows/tools/selection_tool.gd")
-const TransformTool = preload("res://scenes/interface/aux_windows/tools/transform_tool.gd")
+const EditTool = preload("res://scenes/interface/aux_windows/tools/edit_tool.gd")
 const PenToolScr = preload("res://scenes/interface/aux_windows/tools/line_pen_tool.gd")
 const CircleToolScr = preload("res://scenes/interface/aux_windows/tools/circle_tool.gd")
 const RectangleToolScr = preload("res://scenes/interface/aux_windows/tools/rectangle_tool.gd")
 
 @onready var _gizmos = $"../DocumentLayer/SubViewport/DocumentGizmos"
-@onready var _selection_tool = SelectionTool.new()
-@onready var _transform_tool = TransformTool.new()
+@onready var _edit_tool = EditTool.new()
 @onready var _line_pen_tool: RefCounted = PenToolScr.new()
 @onready var _circle_tool = CircleToolScr.new()
 @onready var _rectangle_tool = RectangleToolScr.new()
@@ -29,10 +27,10 @@ func _gui_input(event: InputEvent) -> void:
 		EditorState.update_mouse_position(event.position)
 		if EditorState.active_tool == EditorState.Tool.LINE_PEN:
 			_line_pen_tool.handle_mouse_motion(_screen_to_world(event.position))
-		elif EditorState.active_tool == EditorState.Tool.TRANSFORM:
-			# Handles both contextual hover and active drag (the tool branches internally).
-			_transform_tool.handle_mouse_motion(_screen_to_world(event.position))
-			mouse_default_cursor_shape = _transform_tool.cursor_shape
+		elif EditorState.active_tool == EditorState.Tool.EDIT:
+			# Handles hover, active rect-select drag, and active transform drag internally.
+			_edit_tool.handle_mouse_motion(_screen_to_world(event.position), _gizmos)
+			mouse_default_cursor_shape = _edit_tool.cursor_shape
 		elif EditorState.active_tool == EditorState.Tool.CIRCLE:
 			_circle_tool.handle_mouse_motion(_screen_to_world(event.position))
 		elif EditorState.active_tool == EditorState.Tool.RECTANGLE:
@@ -41,8 +39,6 @@ func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 		if EditorState.active_tool == EditorState.Tool.PAN:
 			EditorState.pan(-event.relative)
-		elif EditorState.active_tool == EditorState.Tool.SELECT:
-			_selection_tool.handle_mouse_motion(_screen_to_world(event.position), _gizmos)
 
 	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_MIDDLE):
 		EditorState.pan(-event.relative)
@@ -54,37 +50,21 @@ func _gui_input(event: InputEvent) -> void:
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed and event.double_click:
-			var world_pos_dc := _screen_to_world(event.position)
-			if _toggle_tool_on_selected_point(world_pos_dc):
+			if EditorState.active_tool == EditorState.Tool.EDIT:
+				var world_pos_dc := _screen_to_world(event.position)
+				var additive := Input.is_key_pressed(KEY_SHIFT) or Input.is_key_pressed(KEY_CTRL)
+				_edit_tool.handle_double_click(world_pos_dc, additive, _gizmos)
 				accept_event()
 				return
-			if EditorState.active_tool == EditorState.Tool.TRANSFORM:
-				EditorState.deselect_all()
-				accept_event()
-				return
-		if EditorState.active_tool == EditorState.Tool.SELECT:
+
+		if EditorState.active_tool == EditorState.Tool.EDIT:
 			var world_pos := _screen_to_world(event.position)
 			if event.pressed:
-				_selection_tool.handle_left_press(world_pos, Input.is_key_pressed(KEY_SHIFT))
+				var additive := Input.is_key_pressed(KEY_SHIFT) or Input.is_key_pressed(KEY_CTRL)
+				_edit_tool.handle_left_press(world_pos, additive, _gizmos)
 			else:
-				_selection_tool.handle_left_release(world_pos, _gizmos)
-		elif EditorState.active_tool == EditorState.Tool.TRANSFORM:
-			var world_pos := _screen_to_world(event.position)
-			if event.pressed:
-				if EditorState.selected_point_indices.is_empty():
-					_try_select_point_for_transform(world_pos)
-				else:
-					# Check hover *before* committing to a drag. If the click
-					# lands outside all handles / the selection box, try to pick
-					# a different point or segment and make it the new selection.
-					_transform_tool.update_hover(world_pos)
-					if _transform_tool.current_hover_mode == EditorState.TransformMode.NONE:
-						EditorState.deselect_all()
-						_try_select_point_for_transform(world_pos)
-				_transform_tool.handle_left_press(world_pos)
-			else:
-				_transform_tool.handle_left_release(world_pos)
-			mouse_default_cursor_shape = _transform_tool.cursor_shape
+				_edit_tool.handle_left_release(world_pos, _gizmos)
+			mouse_default_cursor_shape = _edit_tool.cursor_shape
 		elif EditorState.active_tool == EditorState.Tool.LINE_PEN:
 			var lp_world_pos := _screen_to_world(event.position)
 			if event.pressed:
@@ -101,8 +81,6 @@ func _gui_input(event: InputEvent) -> void:
 				_rectangle_tool.handle_left_press(world_pos)
 			else:
 				_rectangle_tool.handle_left_release(world_pos)
-		elif event.pressed:
-			_selection_tool.cancel(_gizmos)
 
 
 func _screen_to_world(screen_pos: Vector2) -> Vector2:
@@ -128,55 +106,7 @@ func _delete_selected_points() -> void:
 
 
 func _on_tool_changed(_tool: EditorState.Tool) -> void:
-	_selection_tool.cancel(_gizmos)
-	_transform_tool.cancel()
+	_edit_tool.cancel(_gizmos)
 	_circle_tool.cancel()
 	_rectangle_tool.cancel()
-	mouse_default_cursor_shape = _transform_tool.cursor_shape
-
-
-## Selects the nearest point or segment to world_pos (if any) so the Transform
-## tool can immediately begin a MOVE drag from a previously empty selection.
-func _try_select_point_for_transform(world_pos: Vector2) -> void:
-	var half := Vector2(0.5, 0.5)
-	var rect := Rect2(world_pos - half, Vector2.ONE)
-	var best_hit: Array = _gizmos.get_best_point_in_rect(rect, world_pos)
-	if not best_hit.is_empty():
-		EditorState.select_point(best_hit[0], best_hit[1], true)
-		return
-	var seg_hit: Array = _gizmos.get_segment_at(world_pos, 4.0)
-	if not seg_hit.is_empty():
-		EditorState.select_point(seg_hit[0], seg_hit[1], true)
-		EditorState.select_point(seg_hit[0], seg_hit[2], true)
-
-
-## Toggles between Select and Transform when a double-click lands on a selected
-## point or anywhere inside the selection bounding box. Returns true when toggled.
-## Returns false (no toggle) when the double-click hits an unselected point.
-func _toggle_tool_on_selected_point(world_pos: Vector2) -> bool:
-	var tool := EditorState.active_tool
-	if tool != EditorState.Tool.SELECT and tool != EditorState.Tool.TRANSFORM:
-		return false
-
-	var half := Vector2(0.5, 0.5)
-	var rect := Rect2(world_pos - half, Vector2.ONE)
-	var best_hit: Array = _gizmos.get_best_point_in_rect(rect, world_pos)
-
-	var should_toggle := false
-	if best_hit.is_empty():
-		if not EditorState.selected_point_indices.is_empty():
-			var g := EditorState.get_gizmo_scale()
-			should_toggle = EditorState.get_selection_bounds().grow(8.0 * g).has_point(world_pos)
-	else:
-		var cmd_idx: int = best_hit[0]
-		var pt_idx: int = best_hit[1]
-		var sel: Dictionary = EditorState.selected_point_indices
-		should_toggle = sel.has(cmd_idx) and pt_idx in sel[cmd_idx]
-
-	if not should_toggle:
-		return false
-	if tool == EditorState.Tool.SELECT:
-		EditorState.change_tool(EditorState.Tool.TRANSFORM)
-	else:
-		EditorState.change_tool(EditorState.Tool.SELECT)
-	return true
+	mouse_default_cursor_shape = _edit_tool.cursor_shape

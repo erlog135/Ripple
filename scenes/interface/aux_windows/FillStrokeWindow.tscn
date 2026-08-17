@@ -93,7 +93,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/outline_size = 10
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = "Fill: White"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -120,11 +120,11 @@ anchor_bottom = 1.0
 offset_top = -24.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_constants/outline_size = 10
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = "Stroke: Black"
 horizontal_alignment = 1
 vertical_alignment = 1
-text_overrun_behavior = 1
+text_overrun_behavior = 5
 
 [node name="Border" type="ReferenceRect" parent="Panel/StrokeRect" unique_id=337518285]
 layout_mode = 1

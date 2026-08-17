@@ -6,10 +6,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		return 
 
 	# --- TOOL SWITCHING ---
-	if event.is_action("tool_select"):
-		EditorState.change_tool(EditorState.Tool.SELECT)
-	elif event.is_action("tool_transform"):
-		EditorState.change_tool(EditorState.Tool.TRANSFORM)
+	if event.is_action("tool_edit"):
+		EditorState.change_tool(EditorState.Tool.EDIT)
 	elif event.is_action("tool_line_pen"):
 		EditorState.change_tool(EditorState.Tool.LINE_PEN)
 	elif event.is_action("tool_circle"):

@@ -4,16 +4,17 @@ extends Control
 
 func _ready() -> void:
 	EditorState.tool_changed.connect(_on_tool_updated)
+	EditorState.selection_changed.connect(func(_by_user: bool): _on_tool_updated(EditorState.active_tool))
 	_on_tool_updated(EditorState.active_tool)
 
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
 func _on_tool_updated(tool: EditorState.Tool) -> void:
 	match tool:
-		EditorState.Tool.SELECT:
-			label.text = "Click to select. Click and drag to select a rectangular area. Double click a selection to switch to Transform."
-		EditorState.Tool.TRANSFORM:
-			label.text = "Drag within the selection to move. Drag the edge handles to scale. Drag outside the edges to rotate. Double click a selection to switch to Select."
+		EditorState.Tool.EDIT:
+			if EditorState.selected_command_indices.is_empty():
+				label.text = "Click to select. Double click to select whole shape. Click and drag to select a rectangular area."
+			else:
+				label.text = "Drag within the selection to move. Drag the edge handles to scale. Drag outside the edges to rotate."
 		EditorState.Tool.LINE_PEN:
 			label.text = "Click to place a point. If one is already selected, extend or close the shape. If two are selected, add point between them."
 		EditorState.Tool.CIRCLE:
