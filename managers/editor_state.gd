@@ -372,8 +372,9 @@ func get_gizmo_scale() -> float:
 	return 1.0 / current_zoom
 
 
-## Bounding box (world space) around all currently selected points. Returns a
-## zero-size Rect2 when fewer than one point is selected.
+## Bounding box (world space) around all currently selected points. For circles,
+## the bounds are expanded by circle_radius so the edit tool shows scale handles.
+## Returns a zero-size Rect2 when fewer than one point is selected.
 func get_selection_bounds() -> Rect2:
 	var frame: DrawCommandImage = ProjectData.get_current_image()
 	if frame == null:
@@ -399,6 +400,14 @@ func get_selection_bounds() -> Rect2:
 			else:
 				min_pos = min_pos.min(p)
 				max_pos = max_pos.max(p)
+		# For circles, expand the bounding box by the radius so the selection
+		# has area and the edit tool shows scale handles around the arc.
+		if cmd.draw_type == DrawCommand.Type.CIRCLE and not cmd.points.is_empty():
+			if 0 in selected_point_indices[cmd_idx]:
+				var r := float(cmd.circle_radius)
+				var c: Vector2 = cmd.points[0]
+				min_pos = min_pos.min(c - Vector2(r, r))
+				max_pos = max_pos.max(c + Vector2(r, r))
 
 	if not has_any:
 		return Rect2()

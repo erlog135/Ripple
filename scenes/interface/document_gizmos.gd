@@ -89,6 +89,7 @@ func _draw() -> void:
 	if EditorState.is_playing:
 		return
 	_draw_shape_preview()
+	_draw_shape_tool_gizmo()
 	if EditorState.current_zoom >= 10.0:
 		_draw_pixel_grid()
 	_draw_document_bounds()
@@ -236,10 +237,20 @@ func _draw_selection_box() -> void:
 			continue
 		for pt_idx in EditorState.selected_point_indices[cmd_idx]:
 			if pt_idx < cmd.points.size():
-				selected_positions.append(_point_with_drag_offset(cmd.points[pt_idx], cmd_idx, pt_idx))
+				var p := _point_with_drag_offset(cmd.points[pt_idx], cmd_idx, pt_idx)
+				selected_positions.append(p)
+				# For circles, also push the four cardinal arc extents so the
+				# bounding box has area and the scale handles appear.
+				if cmd.draw_type == DrawCommand.Type.CIRCLE and pt_idx == 0:
+					var r := float(cmd.circle_radius)
+					selected_positions.append(p + Vector2(r, 0.0))
+					selected_positions.append(p - Vector2(r, 0.0))
+					selected_positions.append(p + Vector2(0.0, r))
+					selected_positions.append(p - Vector2(0.0, r))
 
 	if selected_positions.size() < 2:
 		return
+
 
 	var min_pos := selected_positions[0]
 	var max_pos := selected_positions[0]
@@ -378,8 +389,18 @@ func get_segment_at(world_pos: Vector2, tolerance_px: float) -> Array:
 		var cmd: DrawCommand = frame.commands[cmd_idx]
 		if cmd.hidden:
 			continue
+		if cmd.draw_type == DrawCommand.Type.CIRCLE:
+			# Hit-test the arc: measure how close the cursor is to the circle edge.
+			if not cmd.points.is_empty():
+				var center := _point_with_drag_offset(cmd.points[0], cmd_idx, 0)
+				var dist := absf(world_pos.distance_to(center) - float(cmd.circle_radius))
+				if dist < best_dist:
+					best_dist = dist
+					best = [cmd_idx, 0, 0]
+			continue
 		if cmd.draw_type != DrawCommand.Type.PATH and cmd.draw_type != DrawCommand.Type.PRECISE_PATH:
 			continue
+
 		var n := cmd.points.size()
 		if n < 2:
 			continue
@@ -504,7 +525,15 @@ func _draw_circle_skeleton(cmd: DrawCommand, cmd_idx: int, sel_pts: Array, line_
 	var outline_color := SKELLY_SELECTED_PATH_COLOR if is_selected else SKELLY_PATH_COLOR
 	var pt_color := SKELLY_SELECTED_POINT_COLOR if is_selected else SKELLY_POINT_COLOR
 
-	draw_arc(center, float(cmd.circle_radius), 0.0, TAU, 64, outline_color, line_w)
+	# During a scale preview, show the radius scaled by the current transform matrix
+	# so the arc visually matches what will be committed on release.
+	var display_radius := float(cmd.circle_radius)
+	if is_selected and EditorState.is_transform_previewing() and EditorState.transform_mode == EditorState.TransformMode.SCALE:
+		var m := EditorState.transform_matrix
+		var radius_scale := (m.x.length() + m.y.length()) / 2.0
+		display_radius = maxf(1.0, display_radius * radius_scale)
+
+	draw_arc(center, display_radius, 0.0, TAU, 64, outline_color, line_w)
 	draw_circle(center, pt_r, pt_color)
 
 func _point_with_drag_offset(point: Vector2, cmd_idx: int, pt_idx: int) -> Vector2:
@@ -512,7 +541,15 @@ func _point_with_drag_offset(point: Vector2, cmd_idx: int, pt_idx: int) -> Vecto
 		return point
 	var selected_pts: Array = EditorState.selected_point_indices.get(cmd_idx, [])
 	if pt_idx in selected_pts:
-		return EditorState.transform_matrix * point
+		var transformed := EditorState.transform_matrix * point
+		if EditorState.grid_snap:
+			var frame: DrawCommandImage = ProjectData.get_current_image()
+			if frame != null and cmd_idx < frame.commands.size():
+				var cmd: DrawCommand = frame.commands[cmd_idx]
+				transformed = EditorState.snap_world_position(
+					transformed, cmd.draw_type, cmd.stroke_width
+				)
+		return transformed
 	return point
 
 func _points_with_drag_offset(points: PackedVector2Array, cmd_idx: int) -> PackedVector2Array:
@@ -521,19 +558,58 @@ func _points_with_drag_offset(points: PackedVector2Array, cmd_idx: int) -> Packe
 	var selected_pts: Array = EditorState.selected_point_indices.get(cmd_idx, [])
 	if selected_pts.is_empty():
 		return points
+	var frame: DrawCommandImage = ProjectData.get_current_image() if EditorState.grid_snap else null
+	var cmd: DrawCommand = frame.commands[cmd_idx] if (frame != null and cmd_idx < frame.commands.size()) else null
 	var shifted: PackedVector2Array = points.duplicate()
 	for pt_idx in selected_pts:
 		if pt_idx >= 0 and pt_idx < shifted.size():
-			shifted[pt_idx] = EditorState.transform_matrix * shifted[pt_idx]
+			var transformed := EditorState.transform_matrix * shifted[pt_idx]
+			if cmd != null:
+				transformed = EditorState.snap_world_position(
+					transformed, cmd.draw_type, cmd.stroke_width
+				)
+			shifted[pt_idx] = transformed
 	return shifted
 
+
+## Draws a skeleton-style wireframe overlay (blue lines + point dots) on top of
+## the shape-preview fill/stroke, giving visual feedback consistent with the edit
+## tool's gizmo while the circle or rectangle drawing tool is actively dragging.
+func _draw_shape_tool_gizmo() -> void:
+	if not EditorState.shape_preview_active:
+		return
+
+	var line_w := SKELLY_PATH_WIDTH_PX / EditorState.current_zoom
+	var pt_r := SKELLY_POINT_RADIUS_PX / EditorState.current_zoom
+
+	if EditorState.shape_preview_type == EditorState.Tool.CIRCLE:
+		var center := EditorState.shape_preview_circle_center
+		var radius := EditorState.shape_preview_circle_radius
+		if radius < 0.0001:
+			return
+		draw_arc(center, radius, 0.0, TAU, 64, SKELLY_SELECTED_PATH_COLOR, line_w)
+		draw_circle(center, pt_r, SKELLY_SELECTED_POINT_COLOR)
+
+	elif EditorState.shape_preview_type == EditorState.Tool.RECTANGLE:
+		var points := EditorState.shape_preview_rect_points
+		if points.size() < 4:
+			return
+		# Draw the four edges as a closed polyline.
+		var closed := PackedVector2Array(points)
+		closed.append(points[0])
+		draw_polyline(closed, SKELLY_SELECTED_PATH_COLOR, line_w)
+		# Draw a dot at each corner.
+		for pt in points:
+			draw_circle(pt, pt_r, SKELLY_SELECTED_POINT_COLOR)
 
 func _draw_shape_preview() -> void:
 	if not EditorState.shape_preview_active:
 		return
 
+
 	var fill_color := EditorState.current_fill_color
 	var stroke_color := EditorState.current_stroke_color
+
 	var stroke_width := float(EditorState.current_stroke_width)
 
 	if EditorState.shape_preview_type == EditorState.Tool.CIRCLE:
