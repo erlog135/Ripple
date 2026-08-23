@@ -20,3 +20,4 @@ mono_crash.*.json
 # other
 build/
 builds/
+.godotlauncher
