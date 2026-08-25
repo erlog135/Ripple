@@ -182,8 +182,8 @@ func _draw_line_pen_preview() -> void:
 						if EditorState.validate_line_angles and _is_segment_angle_valid(a, hover):
 							draw_line(a, hover, ANGLE_VALID_COLOR, line_w)
 				elif pts.size() == 2:
-					var ia := int(pts[0])
-					var ib := int(pts[1])
+					var ia: int = int(pts[0])
+					var ib: int = int(pts[1])
 					if ia >= 0 and ia < cmd.points.size() and ib >= 0 and ib < cmd.points.size():
 						var pa := _point_with_drag_offset(cmd.points[ia], cmd_idx, ia)
 						var pb := _point_with_drag_offset(cmd.points[ib], cmd_idx, ib)
@@ -251,7 +251,6 @@ func _draw_selection_box() -> void:
 	if selected_positions.size() < 2:
 		return
 
-
 	var min_pos := selected_positions[0]
 	var max_pos := selected_positions[0]
 	for pos in selected_positions:
@@ -262,7 +261,7 @@ func _draw_selection_box() -> void:
 	var rect := Rect2(min_pos, max_pos - min_pos)
 	draw_rect(rect, SELECTION_BOX_COLOR, false, line_w)
 
-	# Resize handles for the Edit tool (only when idle and the box has area).
+	# Resize handles for the Edit tool (only when idle and the box has width or height).
 	if (
 		EditorState.active_tool == EditorState.Tool.EDIT
 		and not EditorState.is_transform_previewing()
@@ -275,16 +274,35 @@ func _draw_transform_handles(rect: Rect2, line_w: float) -> void:
 	var p := rect.position
 	var s := rect.size
 	var c := rect.get_center()
-	var positions := [
-		p,
-		Vector2(p.x + s.x, p.y),
-		p + s,
-		Vector2(p.x, p.y + s.y),
-		Vector2(c.x, p.y),
-		Vector2(c.x, p.y + s.y),
-		Vector2(p.x, c.y),
-		Vector2(p.x + s.x, c.y),
-	]
+
+	var has_x := s.x > 0.0001
+	var has_y := s.y > 0.0001
+
+	var positions: Array[Vector2] = []
+	if has_x and has_y:
+		positions = [
+			p,                            # 0 TL
+			Vector2(p.x + s.x, p.y),      # 1 TR
+			p + s,                        # 2 BR
+			Vector2(p.x, p.y + s.y),      # 3 BL
+			Vector2(c.x, p.y),            # 4 TM
+			Vector2(c.x, p.y + s.y),      # 5 BM
+			Vector2(p.x, c.y),            # 6 LM
+			Vector2(p.x + s.x, c.y),      # 7 RM
+		]
+	elif has_x:
+		positions = [
+			Vector2(p.x, c.y),            # 6 LM
+			Vector2(p.x + s.x, c.y),      # 7 RM
+		]
+	elif has_y:
+		positions = [
+			Vector2(c.x, p.y),            # 4 TM
+			Vector2(c.x, p.y + s.y),      # 5 BM
+		]
+	else:
+		return
+
 	for hp in positions:
 		var hr := Rect2(hp - Vector2(handle, handle), Vector2(handle, handle) * 2.0)
 		draw_rect(hr, GColor.WHITE, true)

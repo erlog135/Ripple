@@ -94,9 +94,10 @@ func update_hover(world_pos: Vector2) -> void:
 	var g := EditorState.get_gizmo_scale()
 	var handle := HANDLE_SIZE * g
 	var rot_zone := ROTATE_ZONE * g
-	var has_area := bounds.size.x > 0.0001 or bounds.size.y > 0.0001
+	var has_x := bounds.size.x > 0.0001
+	var has_y := bounds.size.y > 0.0001
 
-	if not has_area:
+	if not has_x and not has_y:
 		# Single point (or degenerate selection): movement only.
 		if bounds.grow(handle).has_point(world_pos):
 			_set_hover(EditorState.TransformMode.MOVE, -1)
@@ -110,9 +111,10 @@ func update_hover(world_pos: Vector2) -> void:
 		_set_hover(EditorState.TransformMode.SCALE, hit)
 		return
 
-	if bounds.grow(rot_zone).has_point(world_pos) and not bounds.grow(handle).has_point(world_pos):
-		_set_hover(EditorState.TransformMode.ROTATE, -1)
-		return
+	if has_x and has_y:
+		if bounds.grow(rot_zone).has_point(world_pos) and not bounds.grow(handle).has_point(world_pos):
+			_set_hover(EditorState.TransformMode.ROTATE, -1)
+			return
 
 	if bounds.grow(handle).has_point(world_pos):
 		_set_hover(EditorState.TransformMode.MOVE, -1)
@@ -175,9 +177,11 @@ func _compute_matrix(world_pos: Vector2) -> Transform2D:
 					sf.x = (1.0 if sf.x >= 0.0 else -1.0) * u
 					sf.y = (1.0 if sf.y >= 0.0 else -1.0) * u
 				elif _scale_axes.x > 0.0:
-					sf.y = sf.x
+					if _original_bounds.size.y > 0.0001:
+						sf.y = sf.x
 				else:
-					sf.x = sf.y
+					if _original_bounds.size.x > 0.0001:
+						sf.x = sf.y
 			return _scale_matrix(pivot, sf)
 
 		EditorState.TransformMode.ROTATE:
@@ -232,8 +236,20 @@ func _handle_axes(idx: int) -> Vector2:
 
 
 func _hit_handle(world_pos: Vector2, bounds: Rect2, handle: float) -> int:
+	var has_x := bounds.size.x > 0.0001
+	var has_y := bounds.size.y > 0.0001
+	var active_indices: Array[int] = []
+	if has_x and has_y:
+		active_indices = [0, 1, 2, 3, 4, 5, 6, 7]
+	elif has_x:
+		active_indices = [6, 7]
+	elif has_y:
+		active_indices = [4, 5]
+	else:
+		return -1
+
 	var positions := _handle_positions(bounds)
-	for i in range(positions.size()):
+	for i in active_indices:
 		var hp: Vector2 = positions[i]
 		var rect := Rect2(hp - Vector2(handle, handle), Vector2(handle, handle) * 2.0)
 		if rect.has_point(world_pos):
