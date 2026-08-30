@@ -6,6 +6,7 @@ extends Window
 ## user's choice and forwards it to the appropriate manager:
 ##   - Fileman.new_file()      → blank document of a preset size
 ##   - Fileman.pdc_to_gd()    → load an example PDC from res://test/pdc/
+##   - Fileman.load_project() → load a recent project file
 ##   - PopupManager.open()    → open the custom-size "New File" dialog
 ##
 ## No ProjectData, EditorState, or DrawCommandSequence access here.
@@ -31,6 +32,8 @@ const EXAMPLE_PATHS := [
 @onready var example_3_button: Button = $Control/Examples/Example3Button
 @onready var example_4_button: Button = $Control/Examples/Example4Button
 
+@onready var recent_files: ItemList = $Control/Recent/ItemList
+
 
 func _ready() -> void:
 	exclusive = true
@@ -47,6 +50,30 @@ func _ready() -> void:
 	example_2_button.pressed.connect(_on_example_pressed.bind(EXAMPLE_PATHS[1]))
 	example_3_button.pressed.connect(_on_example_pressed.bind(EXAMPLE_PATHS[2]))
 	example_4_button.pressed.connect(_on_example_pressed.bind(EXAMPLE_PATHS[3]))
+
+	# --- Recent Files column ---
+	_populate_recent_files()
+	recent_files.item_activated.connect(_on_recent_item_selected)
+	recent_files.item_selected.connect(_on_recent_item_selected)
+	if is_instance_valid(SettingsManager):
+		SettingsManager.recent_files_changed.connect(_populate_recent_files)
+
+
+func _populate_recent_files() -> void:
+	recent_files.clear()
+	if not is_instance_valid(SettingsManager):
+		return
+	for path: String in SettingsManager.recent_files:
+		var item_idx := recent_files.add_item(path.get_file())
+		recent_files.set_item_tooltip(item_idx, path)
+		recent_files.set_item_metadata(item_idx, path)
+
+
+func _on_recent_item_selected(index: int) -> void:
+	var path_val: Variant = recent_files.get_item_metadata(index)
+	if path_val is String and not (path_val as String).is_empty():
+		Fileman.load_project(path_val as String)
+		queue_free()
 
 
 # Opens the custom-size "New File" dialog and closes the splash.

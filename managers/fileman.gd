@@ -54,7 +54,24 @@ func _default_stroke_width_for(size: Vector2i) -> int:
 	return 2
 
 func load_project(path: String) -> void:
-	pdc_to_gd(path)
+	var ext := path.get_extension().to_lower()
+	if ext == "svg":
+		var file := FileAccess.open(path, FileAccess.READ)
+		if not file:
+			push_error("Failed to open SVG file: " + path)
+			return
+		var content := file.get_as_text()
+		file.close()
+		var sequence := SvgPdcHelper.svg_to_sequence(content)
+		if sequence == null or sequence.frames.is_empty():
+			push_error("Failed to parse SVG: " + path)
+			return
+		ProjectData.add_sequence(sequence, path)
+		if is_instance_valid(SettingsManager) and not path.begins_with("res://") and not path.begins_with("web://"):
+			SettingsManager.add_recent_file(path)
+		EditorState.fit_document_to_view()
+	else:
+		pdc_to_gd(path)
 
 
 ## Loads a bundled example PDC (e.g. from res://test/pdc/) as an unsaved document.
@@ -166,6 +183,8 @@ func pdc_to_gd(path: String) -> DrawCommandSequence:
 		file.close()
 	# Add as a new tab and switch to it, then notify listeners.
 	ProjectData.add_sequence(sequence, path)
+	if is_instance_valid(SettingsManager) and not path.begins_with("res://") and not path.begins_with("web://"):
+		SettingsManager.add_recent_file(path)
 	file_loaded.emit(size_bytes)
 	pdc_loaded.emit(sequence) # kept for any external listeners
 	EditorState.fit_document_to_view()
@@ -269,6 +288,8 @@ func _on_files_dropped(files: PackedStringArray) -> void:
 				ProjectData.data_changed.emit(true, sequence.frames.size())
 			else:
 				ProjectData.add_sequence(sequence, path)
+			if is_instance_valid(SettingsManager) and not path.begins_with("res://") and not path.begins_with("web://"):
+				SettingsManager.add_recent_file(path)
 	
 	EditorState.fit_document_to_view()
 
@@ -454,6 +475,8 @@ func gd_to_pdc(path: String, sequence: DrawCommandSequence) -> bool:
 
 	ProjectData.current_path = path
 	HistoryManager.mark_as_saved(ProjectData.get_current_document(), path)
+	if is_instance_valid(SettingsManager) and not path.begins_with("res://") and not path.begins_with("web://"):
+		SettingsManager.add_recent_file(path)
 	file_saved.emit(file.get_position())
 	return true
 

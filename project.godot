@@ -36,6 +36,7 @@ MenuSchema="*res://managers/menu_schema.gd"
 MenuDispatcher="*res://managers/menu_dispatcher.gd"
 PopupManager="*res://managers/popup_manager.gd"
 LiveSyncManager="*uid://bwnx5xm5n4u8v"
+SettingsManager="*uid://cf1h5j2ijphhh"
 
 [display]
 

@@ -6,8 +6,8 @@
 [node name="SplashPopup" type="Window" unique_id=1972758153]
 oversampling_override = 1.0
 title = "Welcome"
-initial_position = 2
-size = Vector2i(400, 400)
+initial_position = 4
+size = Vector2i(400, 544)
 min_size = Vector2i(400, 400)
 script = ExtResource("1_nm134")
 
@@ -46,7 +46,8 @@ layout_mode = 1
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_top = -244.0
+offset_top = -376.0
+offset_bottom = -152.0
 grow_horizontal = 2
 grow_vertical = 0
 
@@ -54,20 +55,19 @@ grow_vertical = 0
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 1.0
-anchor_bottom = 0.984
+anchor_bottom = 1.0
 offset_left = 8.0
-offset_top = 40.0
+offset_top = 32.0
 offset_right = -8.0
-offset_bottom = -8.096008
 
 [node name="ColorRect" type="ColorRect" parent="Control/Start" unique_id=1135422111]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 8.0
-offset_top = 32.0
+offset_top = 24.0
 offset_right = -8.0
-offset_bottom = 40.0
+offset_bottom = 32.0
 grow_horizontal = 2
 color = Color(1, 1, 0, 1)
 
@@ -76,9 +76,8 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 8.0
-offset_top = 8.0
 offset_right = -8.0
-offset_bottom = 40.0
+offset_bottom = 32.0
 grow_horizontal = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 10
@@ -92,9 +91,9 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 16.0
-offset_top = 48.0
+offset_top = 40.0
 offset_right = -16.0
-offset_bottom = 80.0
+offset_bottom = 72.0
 grow_horizontal = 2
 text = "New File"
 
@@ -103,9 +102,9 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 16.0
-offset_top = 96.0
+offset_top = 88.0
 offset_right = -16.0
-offset_bottom = 128.0
+offset_bottom = 120.0
 grow_horizontal = 2
 text = "Blank 25x25"
 
@@ -114,9 +113,9 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 16.0
-offset_top = 144.0
+offset_top = 136.0
 offset_right = -16.0
-offset_bottom = 176.0
+offset_bottom = 168.0
 grow_horizontal = 2
 text = "Blank 50x50"
 
@@ -125,9 +124,9 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 16.0
-offset_top = 192.0
+offset_top = 184.0
 offset_right = -16.0
-offset_bottom = 224.0
+offset_bottom = 216.0
 grow_horizontal = 2
 text = "Blank 80x80"
 
@@ -137,7 +136,8 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -244.0
+offset_top = -376.0
+offset_bottom = -152.0
 grow_horizontal = 2
 grow_vertical = 0
 
@@ -145,20 +145,19 @@ grow_vertical = 0
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 1.0
-anchor_bottom = 0.984
+anchor_bottom = 1.0
 offset_left = 8.0
-offset_top = 40.0
+offset_top = 32.0
 offset_right = -8.0
-offset_bottom = -8.096008
 
 [node name="ColorRect" type="ColorRect" parent="Control/Examples" unique_id=676655876]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 8.0
-offset_top = 32.0
+offset_top = 24.0
 offset_right = -8.0
-offset_bottom = 40.0
+offset_bottom = 32.0
 grow_horizontal = 2
 color = Color(0.6666667, 0, 1, 1)
 
@@ -167,9 +166,8 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 8.0
-offset_top = 8.0
 offset_right = -8.0
-offset_bottom = 40.0
+offset_bottom = 32.0
 grow_horizontal = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 10
@@ -183,9 +181,9 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 16.0
-offset_top = 48.0
+offset_top = 40.0
 offset_right = -16.0
-offset_bottom = 80.0
+offset_bottom = 72.0
 grow_horizontal = 2
 text = "Confirm 80x80"
 
@@ -194,9 +192,9 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 16.0
-offset_top = 96.0
+offset_top = 88.0
 offset_right = -16.0
-offset_bottom = 128.0
+offset_bottom = 120.0
 grow_horizontal = 2
 text = "Mute 80x80"
 
@@ -205,9 +203,9 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 16.0
-offset_top = 144.0
+offset_top = 136.0
 offset_right = -16.0
-offset_bottom = 176.0
+offset_bottom = 168.0
 grow_horizontal = 2
 text = "Weather 50x50"
 
@@ -216,8 +214,52 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 16.0
-offset_top = 192.0
+offset_top = 184.0
 offset_right = -16.0
-offset_bottom = 224.0
+offset_bottom = 216.0
 grow_horizontal = 2
 text = "Bell 25x25"
+
+[node name="Recent" type="Control" parent="Control" unique_id=923132201]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -144.0
+offset_right = -8.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="ColorRect" type="ColorRect" parent="Control/Recent" unique_id=367461769]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 24.0
+offset_bottom = 32.0
+grow_horizontal = 2
+color = Color(0.33333334, 0.6666667, 0.33333334, 1)
+
+[node name="Label" type="Label" parent="Control/Recent" unique_id=816328592]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 32.0
+grow_horizontal = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 20
+text = "LOAD RECENT"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ItemList" type="ItemList" parent="Control/Recent" unique_id=40724137]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 32.0
+grow_horizontal = 2
+grow_vertical = 2

@@ -24,6 +24,7 @@ signal clip_to_bounds_changed(enabled: bool)
 signal validate_line_angles_changed(enabled: bool)
 signal shape_preview_changed
 signal onion_skin_changed(enabled: bool)
+signal editor_scale_changed(scale: float)
 
 
 const ZOOM_STEP := 0.1
@@ -83,6 +84,16 @@ var current_stroke_color: Color = GColor.BLACK
 var current_stroke_width: int = 2
 var current_bg_color: Color = GColor.LIGHT_GRAY
 
+## Editor UI scale factor. Persistent via SettingsManager.
+var editor_scale: float:
+	get:
+		if is_instance_valid(SettingsManager):
+			return SettingsManager.editor_scale
+		return 1.0
+	set(value):
+		if is_instance_valid(SettingsManager):
+			SettingsManager.set_editor_scale(value)
+
 ## When true, vector/raster preview under this node is clipped to the declared document bounds (Pebble-style clipped preview).
 var clip_to_document_bounds: bool = false:
 	set(value):
@@ -113,6 +124,16 @@ var shape_preview_type: Tool = Tool.EDIT
 var shape_preview_rect_points: PackedVector2Array = PackedVector2Array()
 var shape_preview_circle_center: Vector2 = Vector2.ZERO
 var shape_preview_circle_radius: float = 0.0
+
+
+func _ready() -> void:
+	if is_instance_valid(SettingsManager):
+		SettingsManager.editor_scale_changed.connect(func(scale: float): editor_scale_changed.emit(scale))
+
+
+func set_editor_scale(scale: float) -> void:
+	if is_instance_valid(SettingsManager):
+		SettingsManager.set_editor_scale(scale)
 
 
 func update_shape_preview(active: bool, type: Tool, rect_pts: PackedVector2Array, circle_center: Vector2, circle_radius: float) -> void:
