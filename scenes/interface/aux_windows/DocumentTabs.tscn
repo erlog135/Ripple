@@ -13,6 +13,7 @@ grow_vertical = 2
 script = ExtResource("1_2b5qi")
 
 [node name="ScrollContainer" type="ScrollContainer" parent="." unique_id=983165777]
+custom_minimum_size = Vector2(0, 80)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

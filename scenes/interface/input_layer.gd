@@ -48,6 +48,10 @@ func _gui_input(event: InputEvent) -> void:
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 		EditorState.zoom_out(event.position)
 
+	if event is InputEventMouseButton and event.pressed:
+		# Release focus from any SpinBox/LineEdit so canvas shortcuts work immediately.
+		get_viewport().gui_release_focus()
+
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed and event.double_click:
 			if EditorState.active_tool == EditorState.Tool.EDIT:
@@ -91,6 +95,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_DELETE or event.keycode == KEY_BACKSPACE:
 			_delete_selected_points()
+		if event.keycode == KEY_ESCAPE:
+			EditorState.deselect_all()
+			EditorState.change_tool(EditorState.Tool.EDIT)
 
 
 func _delete_selected_points() -> void:

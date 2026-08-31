@@ -92,7 +92,12 @@ layout_mode = 2
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 
-[node name="DocumentTabs" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=339842044 instance=ExtResource("2_mwer8")]
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1428846852]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_top = 4
+
+[node name="DocumentTabs" parent="MarginContainer/VBoxContainer/HBoxContainer/MarginContainer" unique_id=339842044 instance=ExtResource("2_mwer8")]
 layout_mode = 2
 size_flags_horizontal = 3
 

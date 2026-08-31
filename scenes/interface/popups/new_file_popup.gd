@@ -17,6 +17,10 @@ func _ready() -> void:
 	cancel_button.pressed.connect(_on_cancel_pressed)
 	close_requested.connect(queue_free)
 
+	# Rule 3B: pressing Enter in a SpinBox releases focus.
+	_connect_spinbox_enter_release(image_width)
+	_connect_spinbox_enter_release(image_height)
+
 
 func _on_create_pressed() -> void:
 	var new_size := Vector2i(int(image_width.value), int(image_height.value))
@@ -26,3 +30,15 @@ func _on_create_pressed() -> void:
 
 func _on_cancel_pressed() -> void:
 	queue_free()
+
+
+## Connects the hidden LineEdit inside [param box] so that pressing Enter
+## drops keyboard focus back to the canvas (Zero-Focus UI, Rule 3B).
+func _connect_spinbox_enter_release(box: SpinBox) -> void:
+	var le := box.get_line_edit()
+	if le != null and not le.text_submitted.is_connected(_on_spinbox_text_submitted):
+		le.text_submitted.connect(_on_spinbox_text_submitted.bind(le))
+
+
+func _on_spinbox_text_submitted(_new_text: String, le: LineEdit) -> void:
+	le.release_focus()

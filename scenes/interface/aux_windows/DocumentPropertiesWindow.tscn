@@ -74,12 +74,15 @@ color = Color(0.6666667, 0.6666667, 0.6666667, 1)
 
 [node name="ClipBoundsToggle" type="CheckButton" parent="Panel/MarginContainer/VBoxContainer" unique_id=257828607]
 layout_mode = 2
+focus_mode = 0
 text = "Clip to Bounds"
 
 [node name="RasterPreviewToggle" type="CheckButton" parent="Panel/MarginContainer/VBoxContainer" unique_id=1984382342]
 layout_mode = 2
+focus_mode = 0
 text = "Raster Preview"
 
 [node name="ResizeButton" type="Button" parent="Panel/MarginContainer/VBoxContainer" unique_id=302689405]
 layout_mode = 2
+focus_mode = 0
 text = "Resize bounds..."

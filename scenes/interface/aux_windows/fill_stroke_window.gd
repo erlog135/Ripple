@@ -25,6 +25,9 @@ func _ready() -> void:
 	EditorState.playback_state_changed.connect(_on_playback_state_changed)
 	_sync_from_editor_state()
 
+	# Rule 3B: pressing Enter in the SpinBox releases focus.
+	_connect_spinbox_enter_release(stroke_width_spin)
+
 
 ## Mirrors the panel widgets to EditorState's current fill/stroke/width without
 ## re-committing to history (e.g. after a New Image reset).
@@ -137,3 +140,15 @@ func _on_selection_changed(_by_user: bool) -> void:
 	stroke_width_spin.value = shared_width
 	EditorState.set_current_fill_stroke(shared_fill, shared_stroke, shared_width)
 	_syncing = false
+
+
+## Connects the hidden LineEdit inside [param box] so that pressing Enter
+## drops keyboard focus back to the canvas (Zero-Focus UI, Rule 3B).
+func _connect_spinbox_enter_release(box: SpinBox) -> void:
+	var le := box.get_line_edit()
+	if le != null and not le.text_submitted.is_connected(_on_spinbox_text_submitted):
+		le.text_submitted.connect(_on_spinbox_text_submitted.bind(le))
+
+
+func _on_spinbox_text_submitted(_new_text: String, le: LineEdit) -> void:
+	le.release_focus()

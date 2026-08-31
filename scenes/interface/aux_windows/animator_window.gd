@@ -55,6 +55,11 @@ func _ready() -> void:
 	frame_duration.value_changed.connect(_on_frame_duration_changed)
 	current_frame_spin.value_changed.connect(_on_current_frame_spin_changed)
 
+	# Rule 3B: pressing Enter in any SpinBox releases focus back to the canvas.
+	_connect_spinbox_enter_release(playback_speed_spin)
+	_connect_spinbox_enter_release(frame_duration)
+	_connect_spinbox_enter_release(current_frame_spin)
+
 	ProjectData.data_changed.connect(_on_project_data_changed)
 	RenderManager.bulk_raster_finished.connect(_rebuild_timeline)
 	EditorState.current_frame_changed.connect(_on_editor_current_frame_changed)
@@ -453,3 +458,15 @@ func _update_playhead_and_ui() -> void:
 		if child.has_method("set_selected"):
 			child.set_selected(idx == cf)
 		idx += 1
+
+
+## Connects the hidden LineEdit inside [param box] so that pressing Enter
+## drops keyboard focus back to the canvas (Zero-Focus UI, Rule 3B).
+func _connect_spinbox_enter_release(box: SpinBox) -> void:
+	var le := box.get_line_edit()
+	if le != null and not le.text_submitted.is_connected(_on_spinbox_text_submitted):
+		le.text_submitted.connect(_on_spinbox_text_submitted.bind(le))
+
+
+func _on_spinbox_text_submitted(_new_text: String, le: LineEdit) -> void:
+	le.release_focus()
