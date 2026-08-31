@@ -43,6 +43,7 @@ var _snapshot: Array = []
 func handle_mouse_motion(world_pos: Vector2, gizmos) -> void:
 	match _mode:
 		_Mode.TRANSFORMING:
+			_drag_has_moved = _drag_has_moved or world_pos != _drag_start_transform
 			EditorState.update_transform_matrix(_compute_matrix(world_pos))
 		_Mode.RECT_SELECT:
 			_drag_end_world = world_pos
@@ -100,8 +101,8 @@ func handle_left_press(world_pos: Vector2, additive: bool, gizmos) -> void:
 func handle_left_release(world_pos: Vector2, gizmos) -> void:
 	match _mode:
 		_Mode.TRANSFORMING:
-			var matrix := _compute_matrix(world_pos)
-			if matrix != Transform2D.IDENTITY:
+			if _drag_has_moved:
+				var matrix := _compute_matrix(world_pos)
 				_commit(matrix)
 			_snapshot.clear()
 			EditorState.end_transform()
@@ -221,9 +222,6 @@ func _compute_matrix(world_pos: Vector2) -> Transform2D:
 					delta.y = 0.0
 				else:
 					delta.x = 0.0
-			# Snap movement preview to the grid when grid snap is enabled.
-			if EditorState.grid_snap:
-				delta = delta.snapped(Vector2.ONE)
 			return Transform2D(0.0, delta)
 
 		EditorState.TransformMode.SCALE:
@@ -327,6 +325,7 @@ func _hit_handle(world_pos: Vector2, bounds: Rect2, handle: float) -> int:
 ## after [member current_hover_mode] and [member _active_handle] are up to date.
 func _begin_transform_drag(world_pos: Vector2) -> void:
 	_mode = _Mode.TRANSFORMING
+	_drag_has_moved = false
 	_locked_mode = current_hover_mode
 	_drag_start_transform = world_pos
 	_original_bounds = EditorState.get_selection_bounds()
@@ -421,6 +420,23 @@ func _commit(matrix: Transform2D) -> void:
 			new_radii.append(radius_new)
 
 	if command_indices.is_empty():
+		return
+
+	# Only commit if at least one point, radius, or path state actually changed
+	var any_changed := false
+	for i in range(command_indices.size()):
+		var cmd_idx := command_indices[i]
+		var cmd: DrawCommand = frame.commands[cmd_idx]
+		if cmd.points != new_points_arrays[i]:
+			any_changed = true
+			break
+		if cmd.draw_type == DrawCommand.Type.CIRCLE and new_radii[i] != cmd.circle_radius:
+			any_changed = true
+			break
+	if not path_close_indices.is_empty():
+		any_changed = true
+
+	if not any_changed:
 		return
 
 	HistoryManager.commit(TransformSelectionAction.new(

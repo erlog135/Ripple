@@ -60,7 +60,7 @@ func _update_selection_dimensions() -> void:
 		for pt_idx in EditorState.selected_point_indices[cmd_idx]:
 			if pt_idx < cmd.points.size():
 				var pt: Vector2 = cmd.points[pt_idx]
-				if EditorState.is_transform_previewing():
+				if EditorState.is_transform_previewing() and EditorState.transform_matrix != Transform2D.IDENTITY:
 					pt = EditorState.transform_matrix * pt
 				selected_positions.append(pt)
 

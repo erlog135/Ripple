@@ -167,7 +167,12 @@ func _draw_command_to_canvas(cmd: DrawCommand, cmd_idx: int, canvas: Node2D, app
 	var points := _points_with_drag_offset(cmd.points, cmd_idx) if apply_drag_offset else cmd.points
 
 	if cmd.draw_type == DrawCommand.Type.CIRCLE and points.size() > 0:
-		points = _circle_points(points[0], cmd.circle_radius)
+		var radius := float(cmd.circle_radius)
+		if apply_drag_offset and EditorState.is_transform_previewing() and EditorState.transform_mode == EditorState.TransformMode.SCALE and EditorState.transform_matrix != Transform2D.IDENTITY:
+			var m := EditorState.transform_matrix
+			var radius_scale := (m.x.length() + m.y.length()) / 2.0
+			radius = maxf(1.0, radius * radius_scale)
+		points = _circle_points(points[0], radius)
 
 	if cmd.fill_color.a > 0:
 		var poly := Polygon2D.new()
@@ -194,17 +199,24 @@ func _draw_command_to_canvas(cmd: DrawCommand, cmd_idx: int, canvas: Node2D, app
 		canvas.add_child(line)
 
 func _points_with_drag_offset(points: PackedVector2Array, cmd_idx: int) -> PackedVector2Array:
-	if not EditorState.is_transform_previewing():
+	if not EditorState.is_transform_previewing() or EditorState.transform_matrix == Transform2D.IDENTITY:
 		return points
 
 	var selected_pts: Array = EditorState.selected_point_indices.get(cmd_idx, [])
 	if selected_pts.is_empty():
 		return points
 
+	var frame: DrawCommandImage = ProjectData.get_current_image() if EditorState.grid_snap else null
+	var cmd: DrawCommand = frame.commands[cmd_idx] if (frame != null and cmd_idx < frame.commands.size()) else null
 	var shifted: PackedVector2Array = points.duplicate()
 	for pt_idx in selected_pts:
 		if pt_idx >= 0 and pt_idx < shifted.size():
-			shifted[pt_idx] = EditorState.transform_matrix * shifted[pt_idx]
+			var transformed := EditorState.transform_matrix * shifted[pt_idx]
+			if cmd != null:
+				transformed = EditorState.snap_world_position(
+					transformed, cmd.draw_type, cmd.stroke_width
+				)
+			shifted[pt_idx] = transformed
 	return shifted
 
 func _circle_points(center: Vector2, radius: float) -> PackedVector2Array:

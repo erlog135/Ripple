@@ -36,6 +36,8 @@ func _ready() -> void:
 	EditorState.tool_changed.connect(_on_tool_changed)
 	EditorState.transform_preview_changed.connect(_on_transform_preview_changed)
 	EditorState.line_pen_hover_changed.connect(_on_line_pen_hover_changed)
+	EditorState.clip_to_bounds_changed.connect(func(_enabled): queue_redraw())
+	EditorState.grid_snap_changed.connect(func(_enabled): queue_redraw())
 	EditorState.validate_line_angles_changed.connect(_on_validate_line_angles_changed)
 	EditorState.shape_preview_changed.connect(_on_shape_preview_changed)
 	EditorState.mouse_position_changed.connect(_on_mouse_position_changed)
@@ -546,7 +548,7 @@ func _draw_circle_skeleton(cmd: DrawCommand, cmd_idx: int, sel_pts: Array, line_
 	# During a scale preview, show the radius scaled by the current transform matrix
 	# so the arc visually matches what will be committed on release.
 	var display_radius := float(cmd.circle_radius)
-	if is_selected and EditorState.is_transform_previewing() and EditorState.transform_mode == EditorState.TransformMode.SCALE:
+	if is_selected and EditorState.is_transform_previewing() and EditorState.transform_mode == EditorState.TransformMode.SCALE and EditorState.transform_matrix != Transform2D.IDENTITY:
 		var m := EditorState.transform_matrix
 		var radius_scale := (m.x.length() + m.y.length()) / 2.0
 		display_radius = maxf(1.0, display_radius * radius_scale)
@@ -555,7 +557,7 @@ func _draw_circle_skeleton(cmd: DrawCommand, cmd_idx: int, sel_pts: Array, line_
 	draw_circle(center, pt_r, pt_color)
 
 func _point_with_drag_offset(point: Vector2, cmd_idx: int, pt_idx: int) -> Vector2:
-	if not EditorState.is_transform_previewing():
+	if not EditorState.is_transform_previewing() or EditorState.transform_matrix == Transform2D.IDENTITY:
 		return point
 	var selected_pts: Array = EditorState.selected_point_indices.get(cmd_idx, [])
 	if pt_idx in selected_pts:
@@ -571,7 +573,7 @@ func _point_with_drag_offset(point: Vector2, cmd_idx: int, pt_idx: int) -> Vecto
 	return point
 
 func _points_with_drag_offset(points: PackedVector2Array, cmd_idx: int) -> PackedVector2Array:
-	if not EditorState.is_transform_previewing():
+	if not EditorState.is_transform_previewing() or EditorState.transform_matrix == Transform2D.IDENTITY:
 		return points
 	var selected_pts: Array = EditorState.selected_point_indices.get(cmd_idx, [])
 	if selected_pts.is_empty():

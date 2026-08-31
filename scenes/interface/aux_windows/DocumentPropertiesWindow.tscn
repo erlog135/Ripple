@@ -57,30 +57,51 @@ theme_override_constants/margin_bottom = 0
 [node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer" unique_id=1625324345]
 layout_mode = 2
 
-[node name="BackgroundColor" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer" unique_id=2056852005]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="Panel/MarginContainer/VBoxContainer/BackgroundColor" unique_id=1830810114]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Background"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="ColorRect" type="ColorRect" parent="Panel/MarginContainer/VBoxContainer/BackgroundColor" unique_id=1898960185]
+[node name="BackgroundRect" type="ColorRect" parent="Panel/MarginContainer/VBoxContainer" unique_id=1898960185]
+clip_contents = true
+custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_horizontal = 3
 color = Color(0.6666667, 0.6666667, 0.6666667, 1)
 
-[node name="ClipBoundsToggle" type="CheckButton" parent="Panel/MarginContainer/VBoxContainer" unique_id=257828607]
-layout_mode = 2
-focus_mode = 0
-text = "Clip to Bounds"
+[node name="Label" type="Label" parent="Panel/MarginContainer/VBoxContainer/BackgroundRect" unique_id=1830810114]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+text = "BG: Light Gray"
+horizontal_alignment = 1
+vertical_alignment = 1
+text_overrun_behavior = 5
+
+[node name="Border" type="ReferenceRect" parent="Panel/MarginContainer/VBoxContainer/BackgroundRect" unique_id=481163798]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+border_color = Color(1, 1, 1, 0.5019608)
+editor_only = false
 
 [node name="RasterPreviewToggle" type="CheckButton" parent="Panel/MarginContainer/VBoxContainer" unique_id=1984382342]
 layout_mode = 2
 focus_mode = 0
 text = "Raster Preview"
+
+[node name="SnappingToggle" type="CheckButton" parent="Panel/MarginContainer/VBoxContainer" unique_id=1273046507]
+layout_mode = 2
+focus_mode = 0
+text = "Snap to Grid"
+
+[node name="ClipBoundsToggle" type="CheckButton" parent="Panel/MarginContainer/VBoxContainer" unique_id=257828607]
+layout_mode = 2
+focus_mode = 0
+text = "Clip to Bounds"
 
 [node name="ResizeButton" type="Button" parent="Panel/MarginContainer/VBoxContainer" unique_id=302689405]
 layout_mode = 2

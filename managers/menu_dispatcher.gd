@@ -7,6 +7,7 @@ func _ready() -> void:
 	EditorState.render_mode_changed.connect(func(_mode): menu_state_changed.emit())
 	EditorState.options_changed.connect(func(): menu_state_changed.emit())
 	EditorState.clip_to_bounds_changed.connect(func(_enabled): menu_state_changed.emit())
+	EditorState.grid_snap_changed.connect(func(_enabled): menu_state_changed.emit())
 	EditorState.validate_line_angles_changed.connect(func(_enabled): menu_state_changed.emit())
 
 
@@ -77,7 +78,6 @@ func execute(action_id: String) -> void:
 			EditorState.set_render_mode(next_mode)
 		"view_grid_snap":
 			EditorState.grid_snap = not EditorState.grid_snap
-			menu_state_changed.emit()
 		"view_clip_to_bounds":
 			EditorState.clip_to_document_bounds = not EditorState.clip_to_document_bounds
 		"view_validate_angles":

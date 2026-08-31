@@ -21,6 +21,7 @@ signal line_pen_hover_changed()
 signal playback_state_changed(playing: bool)
 signal render_mode_changed(mode: RenderMode)
 signal clip_to_bounds_changed(enabled: bool)
+signal grid_snap_changed(enabled: bool)
 signal validate_line_angles_changed(enabled: bool)
 signal shape_preview_changed
 signal onion_skin_changed(enabled: bool)
@@ -112,7 +113,12 @@ var validate_line_angles: bool = false:
 		validate_line_angles_changed.emit(value)
 
 ## When true, point placement snaps to the pixel grid after draw-type rules (whole pixels, or half-pixels when [member grid_odd_snap] applies to odd strokes).
-var grid_snap: bool = true
+var grid_snap: bool = true:
+	set(value):
+		if grid_snap == value:
+			return
+		grid_snap = value
+		grid_snap_changed.emit(value)
 ## When [member grid_snap] is true and stroke width is odd, snap to cell centers (…, -0.5, 0.5, 1.5, …). Ignored for even stroke width.
 var grid_odd_snap: bool = true
 
