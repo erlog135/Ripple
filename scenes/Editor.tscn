@@ -13,7 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://bsuhmppbhkr2x" path="res://scenes/interface/aux_windows/AnimatorWindow.tscn" id="5_wa12f"]
 [ext_resource type="Script" uid="uid://duv2cdubi3vdb" path="res://scenes/accent_color_rect.gd" id="10_5x8yu"]
 [ext_resource type="PackedScene" uid="uid://gyavlbbasx5h" path="res://scenes/interface/aux_windows/PreviewWindow.tscn" id="11_wumwc"]
-[ext_resource type="PackedScene" uid="uid://b3ptvlek05nu6" path="res://scenes/interface/aux_windows/Hints.tscn" id="13_3pq7e"]
+[ext_resource type="PackedScene" uid="uid://b3ptvlek05nu6" path="res://scenes/interface/aux_windows/Status.tscn" id="13_3pq7e"]
 [ext_resource type="PackedScene" uid="uid://cj01vv5tc5ava" path="res://scenes/interface/LoadingOverlay.tscn" id="14_overlay"]
 
 [sub_resource type="Gradient" id="Gradient_wfgtv"]
@@ -165,7 +165,7 @@ custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Hints" parent="MarginContainer/VBoxContainer" unique_id=602643241 instance=ExtResource("13_3pq7e")]
+[node name="Status" parent="MarginContainer/VBoxContainer" unique_id=602643241 instance=ExtResource("13_3pq7e")]
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 

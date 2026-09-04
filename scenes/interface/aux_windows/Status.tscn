@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://b3ptvlek05nu6"]
 
-[ext_resource type="Script" uid="uid://dgc5n50gy6qah" path="res://scenes/interface/aux_windows/hints.gd" id="1_x57ga"]
+[ext_resource type="Script" uid="uid://dgc5n50gy6qah" path="res://scenes/interface/aux_windows/status.gd" id="1_x57ga"]
 
-[node name="Hints" type="Control" unique_id=602643241]
+[node name="Status" type="Control" unique_id=602643241]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -31,6 +31,16 @@ theme_override_constants/margin_top = 4
 theme_override_constants/margin_right = 4
 theme_override_constants/margin_bottom = 4
 
-[node name="Label" type="Label" parent="Panel/MarginContainer" unique_id=735878704]
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/MarginContainer" unique_id=630619485]
 layout_mode = 2
+
+[node name="ActivityLabel" type="Label" parent="Panel/MarginContainer/HBoxContainer" unique_id=735878704]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.6392157, 0.6392157, 0.6392157, 1)
 vertical_alignment = 1
+text_overrun_behavior = 5
+
+[node name="VersionLabel" type="Label" parent="Panel/MarginContainer/HBoxContainer" unique_id=1577611071]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6392157, 0.6392157, 0.6392157, 1)

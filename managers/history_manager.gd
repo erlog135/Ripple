@@ -1,5 +1,7 @@
 extends Node
 
+signal history_updated(action_name: String)
+
 const _EditAction = preload("res://data/actions/edit_action.gd")
 
 
@@ -20,6 +22,7 @@ func commit(action: _EditAction, merge_mode: UndoRedo.MergeMode = UndoRedo.MERGE
 	ur.commit_action()
 	
 	_check_dirty_state(doc)
+	history_updated.emit(action.action_name)
 
 
 ## Clears the undo/redo history of the currently active tab only.
@@ -28,6 +31,7 @@ func clear() -> void:
 	if doc:
 		doc.undo_redo.clear_history()
 		_check_dirty_state(doc)
+		history_updated.emit("")
 
 
 ## Clears all per-tab history stacks and frees every UndoRedo instance.
@@ -36,13 +40,16 @@ func clear_all() -> void:
 	for doc in ProjectData.open_documents:
 		doc.undo_redo.clear_history()
 		_check_dirty_state(doc)
+	history_updated.emit("")
 
 
 func undo() -> void:
 	var doc = ProjectData.get_current_document()
 	if doc and doc.undo_redo.has_undo():
+		var action_name = doc.undo_redo.get_current_action_name()
 		doc.undo_redo.undo()
 		_check_dirty_state(doc)
+		history_updated.emit("Undo " + action_name if not action_name.is_empty() else "Undo")
 
 
 func redo() -> void:
@@ -50,6 +57,8 @@ func redo() -> void:
 	if doc and doc.undo_redo.has_redo():
 		doc.undo_redo.redo()
 		_check_dirty_state(doc)
+		var action_name = doc.undo_redo.get_current_action_name()
+		history_updated.emit("Redo " + action_name if not action_name.is_empty() else "Redo")
 
 
 ## Keeps compatibility with other code closing tabs.

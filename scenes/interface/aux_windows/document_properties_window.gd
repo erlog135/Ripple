@@ -33,6 +33,8 @@ func _ready() -> void:
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			_open_color_picker("color_picker_bg", bg_color_rect.color, _on_bg_color_selected))
 	
+
+	
 	resize_button.pressed.connect(func(): PopupManager.open("resize_document", "res://scenes/interface/popups/ResizeDocumentPopup.tscn"))
 	_sync_from_editor_state()
 

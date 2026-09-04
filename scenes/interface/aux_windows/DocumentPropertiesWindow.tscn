@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bg1ar0lfuwc5p"]
 
 [ext_resource type="Script" uid="uid://cmlan13ju7m8h" path="res://scenes/interface/aux_windows/document_properties_window.gd" id="1_6vwm8"]
+[ext_resource type="Texture2D" uid="uid://cpdl6fnldpm7h" path="res://assets/frames/transparent_underlay.png" id="2_88bkp"]
 
 [node name="DocumentPropertiesWindow" type="Control" unique_id=1121416412]
 layout_mode = 3
@@ -63,6 +64,17 @@ custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 size_flags_horizontal = 3
 color = Color(0.6666667, 0.6666667, 0.6666667, 1)
+
+[node name="Transparent" type="TextureRect" parent="Panel/MarginContainer/VBoxContainer/BackgroundRect" unique_id=1421238580]
+z_index = -1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_88bkp")
+stretch_mode = 1
 
 [node name="Label" type="Label" parent="Panel/MarginContainer/VBoxContainer/BackgroundRect" unique_id=1830810114]
 layout_mode = 1

@@ -42,6 +42,7 @@ SettingsManager="*uid://cf1h5j2ijphhh"
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
+window/size/mode=2
 window/stretch/aspect="expand"
 
 [editor]
