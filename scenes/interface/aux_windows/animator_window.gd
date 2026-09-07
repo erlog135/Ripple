@@ -31,6 +31,7 @@ var _playback_timer := 0.0
 var _suppress_duration := false
 var _suppress_current_frame_spin := false
 var _dragging_playhead := false
+var _pending_duration_ms := -1
 
 
 func _ready() -> void:
@@ -52,12 +53,12 @@ func _ready() -> void:
 	playback_speed_spin.value_changed.connect(_on_playback_speed_spin_changed)
 
 	frame_duration.max_value = 60000.0
-	frame_duration.value_changed.connect(_on_frame_duration_changed)
+	frame_duration.value_changed.connect(_on_frame_duration_value_changed)
 	current_frame_spin.value_changed.connect(_on_current_frame_spin_changed)
 
 	# Rule 3B: pressing Enter in any SpinBox releases focus back to the canvas.
 	_connect_spinbox_enter_release(playback_speed_spin)
-	_connect_spinbox_enter_release(frame_duration)
+	_connect_spinbox_enter_release_and_commit(frame_duration)
 	_connect_spinbox_enter_release(current_frame_spin)
 
 	ProjectData.data_changed.connect(_on_project_data_changed)
@@ -146,18 +147,23 @@ func _on_project_data_changed(_by_user: bool, affected_frame: int) -> void:
 	if RenderManager.preview_layout_changed:
 		_rebuild_timeline()
 		return
-	if affected_frame >= 0 and _refresh_frame_thumbnail(affected_frame):
+	if affected_frame >= 0 and _refresh_frame_item(affected_frame):
 		return
 	_rebuild_timeline()
 
 
-func _refresh_frame_thumbnail(frame_index: int) -> bool:
+func _refresh_frame_item(frame_index: int) -> bool:
 	if frame_index < 0 or frame_index >= frames_container.get_child_count():
 		return false
 	var item := frames_container.get_child(frame_index)
 	if not item.has_method("update_thumbnail"):
 		return false
 	item.update_thumbnail(RenderManager.get_frame_texture(frame_index))
+	# Also refresh the FrameItem width in case the delay changed (e.g. undo/redo).
+	var seq := ProjectData.current_sequence
+	if seq != null and frame_index < seq.frame_durations_ms.size() and item.has_method("apply_zoom_only"):
+		item.apply_zoom_only(EditorState.timeline_zoom, int(seq.frame_durations_ms[frame_index]))
+		_update_playhead_and_ui()
 	return true
 
 
@@ -276,9 +282,21 @@ func _on_onion_skin_toggled(pressed: bool) -> void:
 	EditorState.onion_skin_enabled = pressed
 
 
-func _on_frame_duration_changed(value: float) -> void:
+## Called on every keystroke in the frame duration SpinBox.
+## Only records the pending value; the action is committed on submit/focus-out.
+func _on_frame_duration_value_changed(value: float) -> void:
 	if _suppress_duration:
 		return
+	_pending_duration_ms = maxi(1, int(value))
+
+
+## Commits a ChangeFrameDelayAction for the current pending duration, if it
+## differs from the value stored in the sequence.
+func _commit_frame_duration() -> void:
+	if _pending_duration_ms < 0:
+		return
+	var pending := _pending_duration_ms
+	_pending_duration_ms = -1
 	var seq := ProjectData.current_sequence
 	if seq == null:
 		return
@@ -286,10 +304,9 @@ func _on_frame_duration_changed(value: float) -> void:
 	if idx < 0 or idx >= seq.frame_durations_ms.size():
 		return
 	var old_ms := int(seq.frame_durations_ms[idx])
-	var new_ms := maxi(1, int(value))
-	if new_ms == old_ms:
+	if pending == old_ms:
 		return
-	HistoryManager.commit(ChangeFrameDelayAction.new(idx, old_ms, new_ms))
+	HistoryManager.commit(ChangeFrameDelayAction.new(idx, old_ms, pending))
 
 
 func _sync_process_state() -> void:
@@ -468,5 +485,23 @@ func _connect_spinbox_enter_release(box: SpinBox) -> void:
 		le.text_submitted.connect(_on_spinbox_text_submitted.bind(le))
 
 
+## Like _connect_spinbox_enter_release but also commits the frame duration
+## action on text_submitted and focus_exited (used only for frame_duration).
+func _connect_spinbox_enter_release_and_commit(box: SpinBox) -> void:
+	var le := box.get_line_edit()
+	if le == null:
+		return
+	if not le.text_submitted.is_connected(_on_spinbox_text_submitted):
+		le.text_submitted.connect(_on_spinbox_text_submitted.bind(le))
+	if not le.text_submitted.is_connected(_on_duration_text_submitted):
+		le.text_submitted.connect(_on_duration_text_submitted)
+	if not le.focus_exited.is_connected(_commit_frame_duration):
+		le.focus_exited.connect(_commit_frame_duration)
+
+
 func _on_spinbox_text_submitted(_new_text: String, le: LineEdit) -> void:
 	le.release_focus()
+
+
+func _on_duration_text_submitted(_new_text: String) -> void:
+	_commit_frame_duration()

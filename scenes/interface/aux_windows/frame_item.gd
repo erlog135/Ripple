@@ -29,6 +29,11 @@ func _ready() -> void:
 	drag_handle.gui_input.connect(_on_drag_handle_gui_input)
 	panel.gui_input.connect(_on_panel_gui_input)
 	insertion_indicator.visible = false
+	# The Panel child is MOUSE_FILTER_STOP so it captures all input including
+	# Godot's drag-probe calls. Forward those back to this node's implementations.
+	panel.set_drag_forwarding(_get_drag_data_panel, _can_drop_data_panel, _drop_data_panel)
+	# Hide the insertion indicator when the drag cursor leaves this item.
+	panel.mouse_exited.connect(func() -> void: insertion_indicator.visible = false)
 
 
 func setup(idx: int, duration_ms: int, thumbnail: Texture2D, zoom: float, selected: bool) -> void:
@@ -133,20 +138,45 @@ func _drag_source_index(data: Variant) -> int:
 	return int((data as Dictionary)["frame_index"])
 
 
-func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
+## Forwarding callbacks registered via panel.set_drag_forwarding().
+## Godot probes the Panel (MOUSE_FILTER_STOP) for drag events; these
+## functions relay the calls to the shared helpers below.
+
+func _get_drag_data_panel(_at_position: Vector2) -> Variant:
+	# Reorder drags are initiated imperatively with force_drag() in
+	# _on_panel_gui_input; we never use get_drag_data, so return null.
+	return null
+
+
+func _can_drop_data_panel(at_position: Vector2, data: Variant) -> bool:
+	# at_position is in Panel-local space; Panel fills the FrameItem so it
+	# is equivalent to FrameItem-local space — pass it straight through.
+	return _check_can_drop(at_position, data)
+
+
+func _drop_data_panel(at_position: Vector2, data: Variant) -> void:
+	insertion_indicator.visible = false
 	if not _drag_kind_matches(data):
+		return
+	var from_idx := _drag_source_index(data)
+	var insert_at := _insert_index(at_position.x, from_idx)
+	if insert_at < 0:
+		return
+	reorder_requested.emit(from_idx, insert_at)
+
+
+## Returns true if the drag can be accepted and updates the insertion
+## indicator accordingly.
+func _check_can_drop(at_position: Vector2, data: Variant) -> bool:
+	if not _drag_kind_matches(data):
+		insertion_indicator.visible = false
 		return false
 	var from_idx := _drag_source_index(data)
 	if from_idx == frame_index:
 		insertion_indicator.visible = false
 		return false
-	var insert_before := frame_index
-	if at_position.x >= size.x * 0.5:
-		insert_before = frame_index + 1
-	var insert_at := insert_before
-	if from_idx < insert_at:
-		insert_at -= 1
-	if from_idx == insert_at:
+	var insert_at := _insert_index(at_position.x, from_idx)
+	if insert_at < 0:
 		insertion_indicator.visible = false
 		return false
 	insertion_indicator.visible = true
@@ -154,17 +184,15 @@ func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
 	return true
 
 
-func _drop_data(at_position: Vector2, data: Variant) -> void:
-	insertion_indicator.visible = false
-	if not _drag_kind_matches(data):
-		return
-	var from_idx := _drag_source_index(data)
+## Computes the insertion index (post-removal) for a drag from [param from_idx]
+## dropped at horizontal pixel [param local_x].  Returns -1 for no-ops.
+func _insert_index(local_x: float, from_idx: int) -> int:
 	var insert_before := frame_index
-	if at_position.x >= size.x * 0.5:
+	if local_x >= size.x * 0.5:
 		insert_before = frame_index + 1
 	var insert_at := insert_before
 	if from_idx < insert_at:
 		insert_at -= 1
 	if from_idx == insert_at:
-		return
-	reorder_requested.emit(from_idx, insert_at)
+		return -1
+	return insert_at

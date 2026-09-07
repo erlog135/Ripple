@@ -4,6 +4,11 @@ const SHOW_ICON = preload("res://assets/icons/show.png")
 const HIDE_ICON = preload("res://assets/icons/hide.png")
 const VISIBILITY_BUTTON_ID := 1
 
+const LAYER_CIRCLE = preload("res://assets/icons/layer_circle.svg")
+const LAYER_CLOSED = preload("res://assets/icons/layer_closed.svg")
+const LAYER_OPEN = preload("res://assets/icons/layer_open.svg")
+
+
 @onready var tree: Tree = $Tree
 var _items_by_command_index: Dictionary = {}
 var _syncing_tree_selection := false
@@ -13,7 +18,6 @@ func _ready() -> void:
 	tree.hide_root = true
 	tree.select_mode = Tree.SELECT_MULTI
 	tree.drop_mode_flags = Tree.DROP_MODE_DISABLED
-	tree.set_column_custom_minimum_width(1, 24)
 	tree.set_column_expand(1, false)
 	tree.set_drag_forwarding(
 		Callable(self, "_tree_get_drag_data"),
@@ -59,8 +63,12 @@ func _rebuild_tree() -> void:
 	for command_idx in range(commands.size() - 1, -1, -1):
 		var cmd: DrawCommand = commands[command_idx]
 		var item := tree.create_item(root)
+		item.set_icon(0,_icon_for_command(cmd))
+		
 		item.set_text(0, _layer_name_for_command(cmd))
+		
 		item.set_metadata(0, command_idx)
+		
 		item.add_button(
 			1,
 			SHOW_ICON if not cmd.hidden else HIDE_ICON,
@@ -75,9 +83,15 @@ func _rebuild_tree() -> void:
 func _layer_name_for_command(cmd: DrawCommand) -> String:
 	var openness := "open" if cmd.path_open else "closed"
 	if cmd.draw_type == DrawCommand.Type.CIRCLE:
-		return "r %d %s circle" % [cmd.circle_radius, openness]
-	return "%d pt %s command" % [cmd.points.size(), openness]
+		return "r %d circle" % [cmd.circle_radius]
+	return "%d pt %s" % [cmd.points.size(), openness]
 
+func _icon_for_command(cmd: DrawCommand) -> Texture2D:
+	if cmd.draw_type == DrawCommand.Type.CIRCLE:
+		return LAYER_CIRCLE
+	if cmd.path_open:
+		return LAYER_OPEN
+	return LAYER_CLOSED
 
 func _tree_get_drag_data(at_position: Vector2) -> Variant:
 	var item := tree.get_item_at_position(at_position)

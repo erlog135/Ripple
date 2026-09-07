@@ -9,6 +9,7 @@ func _ready() -> void:
 	EditorState.clip_to_bounds_changed.connect(func(_enabled): menu_state_changed.emit())
 	EditorState.grid_snap_changed.connect(func(_enabled): menu_state_changed.emit())
 	EditorState.validate_line_angles_changed.connect(func(_enabled): menu_state_changed.emit())
+	EditorState.merge_points_changed.connect(func(_enabled): menu_state_changed.emit())
 
 
 func execute(action_id: String) -> void:
@@ -17,6 +18,11 @@ func execute(action_id: String) -> void:
 			PopupManager.open("new_file", "res://scenes/interface/popups/NewFilePopup.tscn")
 		"file_open":
 			Fileman.open_file_dialog()
+		"file_clear_recent":
+			SettingsManager.clear_recent_files()
+		_ when action_id.begins_with("file_open_recent::"):
+			var path := action_id.substr(len("file_open_recent::"))
+			Fileman.load_project(path)
 		"file_import_svg":
 			Fileman.import_svg_dialog()
 		"file_import_svg_sequence":
@@ -82,6 +88,8 @@ func execute(action_id: String) -> void:
 			EditorState.clip_to_document_bounds = not EditorState.clip_to_document_bounds
 		"view_validate_angles":
 			EditorState.validate_line_angles = not EditorState.validate_line_angles
+		"view_merge_points":
+			EditorState.merge_points = not EditorState.merge_points
 		"view_ui_scale_up":
 			if is_instance_valid(SettingsManager):
 				SettingsManager.set_editor_scale(SettingsManager.editor_scale + 0.1)
@@ -128,4 +136,6 @@ func get_state(action_id: String) -> bool:
 			return EditorState.clip_to_document_bounds
 		"view_validate_angles":
 			return EditorState.validate_line_angles
+		"view_merge_points":
+			return EditorState.merge_points
 	return false

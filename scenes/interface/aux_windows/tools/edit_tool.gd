@@ -408,12 +408,17 @@ func _commit(matrix: Transform2D) -> void:
 				if transformed[0] == transformed[transformed.size() - 1]:
 					path_close_indices.append(cmd_idx)
 
-			var merged := _merge_coincident(transformed, sel_pts)
-			command_indices.append(cmd_idx)
-			new_points_arrays.append(merged["points"])
-			new_radii.append(radius_new)
-			if not merged["new_sel"].is_empty() and merged["points"].size() < transformed.size():
-				remapped_sel_pts[cmd_idx] = merged["new_sel"]
+			if EditorState.merge_points:
+				var merged := _merge_coincident(transformed, sel_pts)
+				command_indices.append(cmd_idx)
+				new_points_arrays.append(merged["points"])
+				new_radii.append(radius_new)
+				if not merged["new_sel"].is_empty() and merged["points"].size() < transformed.size():
+					remapped_sel_pts[cmd_idx] = merged["new_sel"]
+			else:
+				command_indices.append(cmd_idx)
+				new_points_arrays.append(transformed)
+				new_radii.append(radius_new)
 		else:
 			command_indices.append(cmd_idx)
 			new_points_arrays.append(transformed)

@@ -60,6 +60,11 @@ func _build_menu_data() -> Dictionary:
 				"shortcut": shortcut(KEY_O, true),
 			},
 			{
+				"id": "file_open_recent",
+				"type": "dynamic_recent",
+				"label": "Open Recent",
+			},
+			{
 				"id": "file_import_svg",
 				"type": "action",
 				"label": "Import SVG...",
@@ -237,18 +242,25 @@ func _build_menu_data() -> Dictionary:
 				"type": "action",
 				"label": "UI Scale Up",
 				"shortcut": shortcut(KEY_EQUAL, true, true),
+				"sticky": true,
 			},
 			{
 				"id": "view_ui_scale_down",
 				"type": "action",
 				"label": "UI Scale Down",
 				"shortcut": shortcut(KEY_MINUS, true, true),
+				"sticky": true,
 			},
 			{"type": "separator"},
 			{
 				"id": "view_validate_angles",
 				"type": "checkbox",
 				"label": "Validate Line Angles",
+			},
+			{
+				"id": "view_merge_points",
+				"type": "checkbox",
+				"label": "Merge Identical Points",
 			},
 		],
 		"IMAGE": [
@@ -281,9 +293,9 @@ func _build_menu_data() -> Dictionary:
 		],
 		"HELP": [
 			{
-				"id":"help_src",
-				"type":"action",
-				"label":"Project source"
+				"id": "help_src",
+				"type": "action",
+				"label": "Project source"
 			},
 			{"type": "separator"},
 			{

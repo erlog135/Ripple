@@ -23,6 +23,7 @@ signal render_mode_changed(mode: RenderMode)
 signal clip_to_bounds_changed(enabled: bool)
 signal grid_snap_changed(enabled: bool)
 signal validate_line_angles_changed(enabled: bool)
+signal merge_points_changed(enabled: bool)
 signal shape_preview_changed
 signal onion_skin_changed(enabled: bool)
 signal editor_scale_changed(scale: float)
@@ -121,6 +122,14 @@ var grid_snap: bool = true:
 		grid_snap_changed.emit(value)
 ## When [member grid_snap] is true and stroke width is odd, snap to cell centers (…, -0.5, 0.5, 1.5, …). Ignored for even stroke width.
 var grid_odd_snap: bool = true
+
+## When true, moving points that land on the same location are merged into one.
+var merge_points: bool = true:
+	set(value):
+		if merge_points == value:
+			return
+		merge_points = value
+		merge_points_changed.emit(value)
 
 var line_pen_hover_world := Vector2.ZERO
 

@@ -13,6 +13,8 @@ func _build_menus() -> void:
 	for category: String in MenuSchema.menu_data.keys():
 		var popup := PopupMenu.new()
 		popup.title = category
+		popup.hide_on_item_selection = false
+		popup.hide_on_checkable_item_selection = false
 		popup.hide_on_state_item_selection = true
 		add_child(popup)
 		_populate_popup(popup, MenuSchema.menu_data[category])
@@ -33,6 +35,8 @@ func _populate_popup(popup: PopupMenu, items: Array) -> void:
 				popup.set_item_metadata(popup.item_count - 1, "")
 			"submenu":
 				var sub := PopupMenu.new()
+				sub.hide_on_item_selection = false
+				sub.hide_on_checkable_item_selection = false
 				sub.hide_on_state_item_selection = true
 				popup.add_child(sub)
 				popup.add_submenu_node_item(label, sub)
@@ -40,6 +44,18 @@ func _populate_popup(popup: PopupMenu, items: Array) -> void:
 				_populate_popup(sub, item_data.get("children", []))
 				sub.index_pressed.connect(_on_index_pressed.bind(sub))
 				sub.about_to_popup.connect(_refresh_popup_states.bind(sub))
+			"dynamic_recent":
+				var recent_sub := PopupMenu.new()
+				recent_sub.hide_on_item_selection = false
+				recent_sub.hide_on_checkable_item_selection = false
+				recent_sub.hide_on_state_item_selection = true
+				popup.add_child(recent_sub)
+				popup.add_submenu_node_item(label, recent_sub)
+				popup.set_item_metadata(popup.item_count - 1, "")
+				_rebuild_recent_submenu(recent_sub)
+				recent_sub.index_pressed.connect(_on_index_pressed.bind(recent_sub))
+				recent_sub.about_to_popup.connect(_rebuild_recent_submenu.bind(recent_sub))
+				SettingsManager.recent_files_changed.connect(_rebuild_recent_submenu.bind(recent_sub))
 			"checkbox":
 				if sc:
 					popup.add_check_shortcut(sc, -1, true)
@@ -66,10 +82,32 @@ func _populate_popup(popup: PopupMenu, items: Array) -> void:
 				popup.set_item_metadata(idx, action_id)
 
 
+func _rebuild_recent_submenu(sub: PopupMenu) -> void:
+	sub.clear()
+	var recents: Array[String] = SettingsManager.recent_files
+	if recents.is_empty():
+		sub.add_item("No Recent Files")
+		sub.set_item_disabled(0, true)
+	else:
+		for path: String in recents:
+			sub.add_item(path.get_file())
+			var idx := sub.item_count - 1
+			sub.set_item_metadata(idx, "file_open_recent::" + path)
+			sub.set_item_tooltip(idx, path)
+		sub.add_separator()
+		sub.add_item("Clear Recent Files")
+		sub.set_item_metadata(sub.item_count - 1, "file_clear_recent")
+
+
 func _on_index_pressed(index: int, popup: PopupMenu) -> void:
 	var action_id: String = popup.get_item_metadata(index)
-	if not action_id.is_empty():
-		MenuDispatcher.execute(action_id)
+	if action_id.is_empty():
+		return
+	var item_data := MenuSchema.get_item_by_id(action_id)
+	var is_sticky: bool = item_data.get("sticky", false)
+	MenuDispatcher.execute(action_id)
+	if not is_sticky:
+		popup.hide()
 
 
 func _on_menu_state_changed() -> void:
