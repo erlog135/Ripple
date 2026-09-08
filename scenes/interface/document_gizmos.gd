@@ -389,9 +389,14 @@ func get_best_point_in_rect(rect: Rect2, world_pos: Vector2) -> Array:
 		var dist := world_pos.distance_squared_to(
 			_point_with_drag_offset(frame.commands[hit[0]].points[hit[1]], hit[0], hit[1])
 		)
-		if dist < best_dist:
+		if dist < best_dist - 0.0001:
 			best_dist = dist
 			best_hit = hit
+		elif absf(dist - best_dist) <= 0.0001:
+			# When equidistant (e.g. overlapping points), prefer topmost layer (highest command index).
+			if hit[0] > best_hit[0]:
+				best_dist = dist
+				best_hit = hit
 	return best_hit
 
 ## Returns [cmd_idx, pt_idx_a, pt_idx_b] for the nearest PATH/PRECISE_PATH segment

@@ -292,10 +292,33 @@ func set_canvas_viewport_size(size: Vector2) -> void:
 	update_canvas_area_rect(Rect2(Vector2.ZERO, size))
 
 
+func set_view(new_pos: Vector2, new_zoom: float) -> void:
+	_update_view(new_pos, new_zoom)
+
+
 func _update_view(new_pos: Vector2, new_zoom: float) -> void:
 	current_camera_pos = new_pos
 	current_zoom = clampf(new_zoom, MIN_ZOOM, MAX_ZOOM)
 	view_changed.emit()
+
+
+## Saves the live viewport state into the given document model.
+func save_view_to_document(doc: ProjectDocument) -> void:
+	if doc == null:
+		return
+	doc.camera_zoom = current_zoom
+	doc.camera_pos = current_camera_pos
+	doc.view_initialized = true
+
+
+## Restores viewport state from a document model, or fits the document if new.
+func restore_view_from_document(doc: ProjectDocument) -> void:
+	if doc == null:
+		return
+	if doc.view_initialized:
+		_update_view(doc.camera_pos, doc.camera_zoom)
+	else:
+		fit_document_to_view()
 
 
 func zoom_in(screen_pos: Vector2) -> void:
@@ -336,6 +359,11 @@ func zoom_to_document(viewport_size: Vector2) -> void:
 	var scale_y := viewport_size.y / doc_size.y
 	var fit_scale := minf(scale_x, scale_y) * padding
 	_update_view(doc_size / 2.0, fit_scale)
+	var doc := ProjectData.get_current_document()
+	if doc:
+		doc.camera_zoom = current_zoom
+		doc.camera_pos = current_camera_pos
+		doc.view_initialized = true
 
 
 func zoom_to_selection(viewport_size: Vector2) -> void:

@@ -33,9 +33,13 @@ const EXAMPLE_PATHS := [
 @onready var example_4_button: Button = $Control/Examples/Example4Button
 
 @onready var recent_files: ItemList = $Control/Recent/ItemList
+@onready var version_label: Label = $Control/VersionLabel
 
 
 func _ready() -> void:
+	var version_num_string: String = ProjectSettings.get_setting("application/config/version","1.0.0")
+	version_label.text = "version %s (%s)\nby Logan Head" % [version_num_string,OS.get_name()]
+	
 	exclusive = true
 	close_requested.connect(queue_free)
 

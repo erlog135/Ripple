@@ -88,6 +88,7 @@ func _rebuild_recent_submenu(sub: PopupMenu) -> void:
 	if recents.is_empty():
 		sub.add_item("No Recent Files")
 		sub.set_item_disabled(0, true)
+		sub.set_item_metadata(0, "")
 	else:
 		for path: String in recents:
 			sub.add_item(path.get_file())
@@ -100,9 +101,10 @@ func _rebuild_recent_submenu(sub: PopupMenu) -> void:
 
 
 func _on_index_pressed(index: int, popup: PopupMenu) -> void:
-	var action_id: String = popup.get_item_metadata(index)
-	if action_id.is_empty():
+	var meta: Variant = popup.get_item_metadata(index)
+	if not (meta is String) or (meta as String).is_empty():
 		return
+	var action_id: String = meta as String
 	var item_data := MenuSchema.get_item_by_id(action_id)
 	var is_sticky: bool = item_data.get("sticky", false)
 	MenuDispatcher.execute(action_id)
@@ -123,9 +125,10 @@ func _refresh_popup_states(popup: PopupMenu) -> void:
 		if sub != null:
 			_refresh_popup_states(sub)
 			continue
-		var action_id: String = popup.get_item_metadata(idx)
-		if action_id.is_empty():
+		var meta: Variant = popup.get_item_metadata(idx)
+		if not (meta is String) or (meta as String).is_empty():
 			continue
+		var action_id: String = meta as String
 		var item_data := MenuSchema.get_item_by_id(action_id)
 		var item_type: String = item_data.get("type", "")
 		if item_type in ["checkbox", "radio"]:

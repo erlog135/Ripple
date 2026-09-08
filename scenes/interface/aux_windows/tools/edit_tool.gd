@@ -34,6 +34,7 @@ var _handle_origin := Vector2.ZERO
 var _scale_anchor := Vector2.ZERO
 var _scale_axes := Vector2.ZERO
 var _rotate_pivot := Vector2.ZERO
+var _point_already_selected_on_press := false
 
 # Each entry: { cmd_idx, points (PackedVector2Array), sel_pts, draw_type,
 #               stroke_width, is_circle, circle_radius, path_open }
@@ -43,11 +44,13 @@ var _snapshot: Array = []
 func handle_mouse_motion(world_pos: Vector2, gizmos) -> void:
 	match _mode:
 		_Mode.TRANSFORMING:
-			_drag_has_moved = _drag_has_moved or world_pos != _drag_start_transform
+			var drag_dist := (world_pos - _drag_start_transform).length() * EditorState.current_zoom
+			_drag_has_moved = _drag_has_moved or drag_dist > 2.0
 			EditorState.update_transform_matrix(_compute_matrix(world_pos))
 		_Mode.RECT_SELECT:
 			_drag_end_world = world_pos
-			_drag_has_moved = _drag_has_moved or _drag_end_world != _drag_start_world
+			var drag_dist := (_drag_end_world - _drag_start_world).length() * EditorState.current_zoom
+			_drag_has_moved = _drag_has_moved or drag_dist > 2.0
 			if _drag_has_moved:
 				gizmos.set_drag_selection_rect(_normalized_rect(_drag_start_world, _drag_end_world), true)
 		_Mode.IDLE:
@@ -59,8 +62,11 @@ func handle_left_press(world_pos: Vector2, additive: bool, gizmos) -> void:
 
 	if current_hover_mode != EditorState.TransformMode.NONE:
 		# Cursor is over a handle or inside the existing selection — transform it.
+		_point_already_selected_on_press = true
 		_begin_transform_drag(world_pos)
 		return
+
+	_point_already_selected_on_press = false
 
 	# Hover is NONE: cursor is outside any existing selection (or nothing is selected).
 	# Try to pick a point or segment directly under the cursor first.
@@ -104,6 +110,9 @@ func handle_left_release(world_pos: Vector2, gizmos) -> void:
 			if _drag_has_moved:
 				var matrix := _compute_matrix(world_pos)
 				_commit(matrix)
+			else:
+				if _point_already_selected_on_press:
+					_try_cycle_overlapping_point(world_pos)
 			_snapshot.clear()
 			EditorState.end_transform()
 			update_hover(world_pos)
@@ -115,6 +124,7 @@ func handle_left_release(world_pos: Vector2, gizmos) -> void:
 			)
 			gizmos.set_drag_selection_rect(Rect2(), false)
 
+	_point_already_selected_on_press = false
 	_mode = _Mode.IDLE
 
 
@@ -141,6 +151,7 @@ func cancel(gizmos) -> void:
 		_snapshot.clear()
 		if EditorState.is_transform_previewing():
 			EditorState.end_transform()
+	_point_already_selected_on_press = false
 	_mode = _Mode.IDLE
 	current_hover_mode = EditorState.TransformMode.NONE
 	hovered_handle = -1
@@ -522,11 +533,134 @@ func _apply_rect_selection(rect: Rect2, additive: bool, single_hit_only: bool, w
 ## Returns the DrawCommand index under world_pos (nearest point or segment), or -1.
 func _command_at(world_pos: Vector2, gizmos) -> int:
 	var half := Vector2(0.5, 0.5)
-	var rect := Rect2(world_pos - half, Vector2.ONE)
-	var best_hit: Array = gizmos.get_best_point_in_rect(rect, world_pos)
+	var pick_rect := Rect2(world_pos - half, Vector2.ONE)
+	var best_hit: Array = gizmos.get_best_point_in_rect(pick_rect, world_pos)
 	if not best_hit.is_empty():
 		return best_hit[0]
 	var seg_hit: Array = gizmos.get_segment_at(world_pos, 4.0)
 	if not seg_hit.is_empty():
 		return seg_hit[0]
 	return -1
+
+
+## Returns true if exactly one point is selected in EditorState.
+func _is_single_point_selected() -> bool:
+	if EditorState.selected_point_indices.size() != 1:
+		return false
+	for cmd_idx in EditorState.selected_point_indices:
+		return EditorState.selected_point_indices[cmd_idx].size() == 1
+	return false
+
+
+## Returns all candidate points [[cmd_idx, pt_idx], ...] from visible layers that have
+## a point at [param pos], ordered from topmost layer (highest cmd_idx) down to
+## deepest layer (lowest cmd_idx). At most one point is returned per layer.
+func _get_overlapping_points_at_pos(pos: Vector2) -> Array:
+	var frame: DrawCommandImage = ProjectData.get_current_image()
+	if frame == null:
+		return []
+	var candidates: Array = []
+	for cmd_idx in range(frame.commands.size() - 1, -1, -1):
+		var cmd: DrawCommand = frame.commands[cmd_idx]
+		if cmd.hidden:
+			continue
+		var best_pt_idx := -1
+		var best_dist := INF
+		for pt_idx in range(cmd.points.size()):
+			var p: Vector2 = cmd.points[pt_idx]
+			var d := p.distance_to(pos)
+			if d < best_dist:
+				best_dist = d
+				best_pt_idx = pt_idx
+		if best_pt_idx != -1 and (cmd.points[best_pt_idx].is_equal_approx(pos) or best_dist <= 0.5):
+			candidates.append([cmd_idx, best_pt_idx])
+	return candidates
+
+
+## Cycles the selection to the next layer in depth if the clicked point overlaps
+## across multiple layers. Returns true if cycling occurred.
+func _try_cycle_overlapping_point(world_pos: Vector2) -> bool:
+	if not _is_single_point_selected():
+		return false
+
+	var current_cmd_idx := -1
+	var current_pt_idx := -1
+	for cmd_idx in EditorState.selected_point_indices:
+		current_cmd_idx = cmd_idx
+		var pts: Array = EditorState.selected_point_indices[cmd_idx]
+		if not pts.is_empty():
+			current_pt_idx = pts[0]
+		break
+
+	var frame: DrawCommandImage = ProjectData.get_current_image()
+	if frame == null or current_cmd_idx < 0 or current_cmd_idx >= frame.commands.size():
+		return false
+	var cmd: DrawCommand = frame.commands[current_cmd_idx]
+	if current_pt_idx < 0 or current_pt_idx >= cmd.points.size():
+		return false
+
+	var target_pos := cmd.points[current_pt_idx]
+	var g := EditorState.get_gizmo_scale()
+	var handle := HANDLE_SIZE * g
+	var hit_rect := Rect2(target_pos - Vector2(handle, handle), Vector2(handle, handle) * 2.0)
+	if not hit_rect.has_point(world_pos):
+		return false
+
+	var candidates := _get_overlapping_points_at_pos(target_pos)
+	if candidates.size() <= 1:
+		return false
+
+	var current_candidate_idx := -1
+	for i in range(candidates.size()):
+		if candidates[i][0] == current_cmd_idx:
+			current_candidate_idx = i
+			break
+
+	var next_candidate_idx := (current_candidate_idx + 1) % candidates.size()
+	var next_hit: Array = candidates[next_candidate_idx]
+
+	EditorState.deselect_all()
+	EditorState.select_point(next_hit[0], next_hit[1], true)
+	update_hover(world_pos)
+	return true
+
+
+## Checks if there are multiple overlapping layers with points at [param world_pos].
+## Used by input_layer.gd to avoid treating rapid clicks as double-click path selection.
+func has_overlapping_points_at(world_pos: Vector2, gizmos) -> bool:
+	if _is_single_point_selected():
+		var current_cmd_idx := -1
+		var current_pt_idx := -1
+		for cmd_idx in EditorState.selected_point_indices:
+			current_cmd_idx = cmd_idx
+			var pts: Array = EditorState.selected_point_indices[cmd_idx]
+			if not pts.is_empty():
+				current_pt_idx = pts[0]
+			break
+		var frame: DrawCommandImage = ProjectData.get_current_image()
+		if frame != null and current_cmd_idx >= 0 and current_cmd_idx < frame.commands.size():
+			var cmd: DrawCommand = frame.commands[current_cmd_idx]
+			if current_pt_idx >= 0 and current_pt_idx < cmd.points.size():
+				var target_pos := cmd.points[current_pt_idx]
+				var g := EditorState.get_gizmo_scale()
+				var handle := HANDLE_SIZE * g
+				var hit_rect := Rect2(target_pos - Vector2(handle, handle), Vector2(handle, handle) * 2.0)
+				if hit_rect.has_point(world_pos):
+					var candidates := _get_overlapping_points_at_pos(target_pos)
+					if candidates.size() > 1:
+						return true
+
+	var half := Vector2(0.5, 0.5)
+	var pick_rect := Rect2(world_pos - half, Vector2.ONE)
+	var best_hit: Array = gizmos.get_best_point_in_rect(pick_rect, world_pos)
+	if not best_hit.is_empty():
+		var frame: DrawCommandImage = ProjectData.get_current_image()
+		if frame != null and best_hit[0] < frame.commands.size():
+			var cmd: DrawCommand = frame.commands[best_hit[0]]
+			if best_hit[1] < cmd.points.size():
+				var target_pos := cmd.points[best_hit[1]]
+				var candidates := _get_overlapping_points_at_pos(target_pos)
+				if candidates.size() > 1:
+					return true
+
+	return false

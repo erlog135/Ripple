@@ -35,7 +35,7 @@ var active_sequence_index: int:
 	get:
 		return active_document_index
 	set(value):
-		active_document_index = value
+		set_active_sequence(value)
 
 ## The currently active DrawCommandSequence. Read-only; use set_active_sequence
 ## or add_sequence to change which sequence is active.
@@ -126,20 +126,34 @@ func get_current_commands() -> Array:
 # ---------------------------------------------------------------------------
 
 ## Switches the active document tab. Resets the frame index and clears the
-## selection so they are valid for the new document.
+## selection so they are valid for the new document. Preserves viewport state per tab.
 func set_active_sequence(index: int) -> void:
 	if index < 0 or index >= open_documents.size():
 		return
 	if index == active_document_index:
 		return
+
+	var outgoing_doc := get_current_document()
+	if outgoing_doc:
+		EditorState.save_view_to_document(outgoing_doc)
+
 	active_document_index = index
 	EditorState.set_current_frame(0)
 	EditorState.clear_selection()
+
+	var incoming_doc := get_current_document()
+	if incoming_doc:
+		EditorState.restore_view_from_document(incoming_doc)
+
 	data_changed.emit(true, -1)
 
 
 ## Adds a new sequence as a new tab and switches to it.
 func add_sequence(seq: DrawCommandSequence, path: String = "") -> void:
+	var outgoing_doc := get_current_document()
+	if outgoing_doc:
+		EditorState.save_view_to_document(outgoing_doc)
+
 	var doc = ProjectDocument.new()
 	doc.sequence = seq
 	doc.file_path = path
@@ -150,6 +164,7 @@ func add_sequence(seq: DrawCommandSequence, path: String = "") -> void:
 	active_document_index = open_documents.size() - 1
 	EditorState.set_current_frame(0)
 	EditorState.clear_selection()
+	EditorState.restore_view_from_document(doc)
 	tab_list_changed.emit()
 	# Use seq.frames.size() as affected_frame (always out-of-range for the new sequence)
 	# so _on_data_changed clears the stale frame cache and triggers bulk rasterization
@@ -165,11 +180,18 @@ func close_sequence(index: int) -> void:
 		return
 	if index < 0 or index >= open_documents.size():
 		return
+	var was_active := (index == active_document_index)
 	open_documents.remove_at(index)
-	if active_document_index >= open_documents.size():
+	if index < active_document_index:
+		active_document_index -= 1
+	elif active_document_index >= open_documents.size():
 		active_document_index = open_documents.size() - 1
 	EditorState.set_current_frame(0)
 	EditorState.clear_selection()
+	if was_active:
+		var incoming_doc := get_current_document()
+		if incoming_doc:
+			EditorState.restore_view_from_document(incoming_doc)
 	tab_removed.emit(index)
 	tab_list_changed.emit()
 	data_changed.emit(true, -1)
@@ -189,6 +211,9 @@ func replace_sequences(seqs: Array[DrawCommandSequence], paths: Array[String]) -
 	active_document_index = 0
 	EditorState.set_current_frame(0)
 	EditorState.clear_selection()
+	var doc := get_current_document()
+	if doc:
+		EditorState.restore_view_from_document(doc)
 	tab_list_changed.emit()
 	data_changed.emit(true, -1)
 

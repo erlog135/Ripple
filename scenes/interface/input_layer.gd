@@ -56,10 +56,11 @@ func _gui_input(event: InputEvent) -> void:
 		if event.pressed and event.double_click:
 			if EditorState.active_tool == EditorState.Tool.EDIT:
 				var world_pos_dc := _screen_to_world(event.position)
-				var additive := Input.is_key_pressed(KEY_SHIFT) or Input.is_key_pressed(KEY_CTRL)
-				_edit_tool.handle_double_click(world_pos_dc, additive, _gizmos)
-				accept_event()
-				return
+				if not _edit_tool.has_overlapping_points_at(world_pos_dc, _gizmos):
+					var additive := Input.is_key_pressed(KEY_SHIFT) or Input.is_key_pressed(KEY_CTRL)
+					_edit_tool.handle_double_click(world_pos_dc, additive, _gizmos)
+					accept_event()
+					return
 
 		if EditorState.active_tool == EditorState.Tool.EDIT:
 			var world_pos := _screen_to_world(event.position)

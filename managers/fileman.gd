@@ -8,9 +8,41 @@ const FileAccessWebClass := preload("res://addons/FileAccessWeb/core/file_access
 ## Shared FileAccessWeb instance used for all browser-side file picks on HTML5.
 var _web_uploader: FileAccessWeb
 
+## Path to the most recently saved or opened file in this session.
+var last_saved_path: String = ""
+
 ## Returns true when running in a browser (HTML5 export).
 func _is_web() -> bool:
 	return OS.get_name() == "Web"
+
+
+## Returns the directory of the last saved tab's file, if any exists.
+## Checks the current tab, then last_saved_path, then open tabs with a saved path,
+## and finally recent files in SettingsManager.
+func get_last_saved_dir() -> String:
+	# 1. Active tab's saved file directory (if saved to disk)
+	var active_path := ProjectData.current_path
+	if not active_path.is_empty() and not active_path.begins_with("web://") and not active_path.begins_with("res://"):
+		return active_path.get_base_dir()
+
+	# 2. Last explicitly saved/loaded tab path from this session
+	if not last_saved_path.is_empty() and not last_saved_path.begins_with("web://") and not last_saved_path.begins_with("res://"):
+		return last_saved_path.get_base_dir()
+
+	# 3. Any open document tab with a saved file path (searched in reverse order)
+	var docs := ProjectData.open_documents
+	for i in range(docs.size() - 1, -1, -1):
+		var doc: ProjectDocument = docs[i]
+		if not doc.file_path.is_empty() and not doc.file_path.begins_with("web://") and not doc.file_path.begins_with("res://"):
+			return doc.file_path.get_base_dir()
+
+	# 4. Fallback to the most recent file from settings
+	if is_instance_valid(SettingsManager) and not SettingsManager.recent_files.is_empty():
+		for recent: String in SettingsManager.recent_files:
+			if not recent.is_empty() and not recent.begins_with("web://") and not recent.begins_with("res://"):
+				return recent.get_base_dir()
+
+	return ""
 
 signal pdc_loaded(pdc: DrawCommandSequence)
 signal file_loaded(size_bytes: int)
@@ -67,6 +99,7 @@ func load_project(path: String) -> void:
 			push_error("Failed to parse SVG: " + path)
 			return
 		ProjectData.add_sequence(sequence, path)
+		last_saved_path = path
 		if is_instance_valid(SettingsManager) and not path.begins_with("res://") and not path.begins_with("web://"):
 			SettingsManager.add_recent_file(path)
 		EditorState.fit_document_to_view()
@@ -103,12 +136,21 @@ func open_file_dialog():
 
 	var file_dialog = FileDialog.new()
 	get_tree().root.add_child(file_dialog)
-	file_dialog.file_selected.connect(func(path: String): pdc_to_gd(path))
+	file_dialog.file_selected.connect(func(path: String):
+		pdc_to_gd(path)
+		file_dialog.queue_free()
+	)
+	file_dialog.canceled.connect(func():
+		file_dialog.queue_free()
+	)
 
 	file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	file_dialog.access = FileDialog.ACCESS_FILESYSTEM
 	file_dialog.filters = ["*.pdc", "*.pdcs"]
 	file_dialog.use_native_dialog = true
+	var dir := get_last_saved_dir()
+	if not dir.is_empty():
+		file_dialog.current_dir = dir
 	
 	file_dialog.popup_centered()
 
@@ -133,12 +175,21 @@ func save_as_file_dialog():
 
 	var file_dialog = FileDialog.new()
 	get_tree().root.add_child(file_dialog)
-	file_dialog.file_selected.connect(func(path: String): gd_to_pdc(path, ProjectData.current_sequence))
+	file_dialog.file_selected.connect(func(path: String):
+		gd_to_pdc(path, ProjectData.current_sequence)
+		file_dialog.queue_free()
+	)
+	file_dialog.canceled.connect(func():
+		file_dialog.queue_free()
+	)
 
 	file_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
 	file_dialog.access = FileDialog.ACCESS_FILESYSTEM
 	file_dialog.filters = ["*.pdc", "*.pdcs"]
 	file_dialog.use_native_dialog = true
+
+	var ext := "pdcs" if (ProjectData.current_sequence != null and ProjectData.current_sequence.frames.size() > 1) else "pdc"
+	_prefill_dialog(file_dialog, ext)
 
 	file_dialog.popup_centered()
 
@@ -183,6 +234,7 @@ func pdc_to_gd(path: String) -> DrawCommandSequence:
 		file.close()
 	# Add as a new tab and switch to it, then notify listeners.
 	ProjectData.add_sequence(sequence, path)
+	last_saved_path = path
 	if is_instance_valid(SettingsManager) and not path.begins_with("res://") and not path.begins_with("web://"):
 		SettingsManager.add_recent_file(path)
 	file_loaded.emit(size_bytes)
@@ -454,6 +506,7 @@ func gd_to_pdc(path: String, sequence: DrawCommandSequence) -> bool:
 	if _is_web():
 		_web_save_pdc(sequence)
 		ProjectData.current_path = path
+		last_saved_path = path
 		HistoryManager.mark_as_saved(ProjectData.get_current_document(), path)
 		return true
 
@@ -474,6 +527,7 @@ func gd_to_pdc(path: String, sequence: DrawCommandSequence) -> bool:
 		_pdc_write_sequence(file, sequence)
 
 	ProjectData.current_path = path
+	last_saved_path = path
 	HistoryManager.mark_as_saved(ProjectData.get_current_document(), path)
 	if is_instance_valid(SettingsManager) and not path.begins_with("res://") and not path.begins_with("web://"):
 		SettingsManager.add_recent_file(path)
@@ -668,13 +722,22 @@ func save_frame_as_pdc() -> void:
 
 
 ## Pre-fills a save FileDialog with the project directory and a suggested filename.
-## Does nothing when no project has been saved/opened yet.
+## Defaults to the last saved tab's directory if the current tab is not yet saved.
 func _prefill_dialog(dialog: FileDialog, ext: String) -> void:
+	var dir := get_last_saved_dir()
+	if not dir.is_empty():
+		dialog.current_dir = dir
+
 	var proj := ProjectData.current_path
-	if proj.is_empty():
+	if not proj.is_empty() and not proj.begins_with("res://") and not proj.begins_with("web://"):
+		dialog.current_file = proj.get_file().get_basename() + "." + ext
 		return
-	dialog.current_dir = proj.get_base_dir()
-	dialog.current_file = proj.get_file().get_basename() + "." + ext
+
+	var current_doc := ProjectData.get_current_document()
+	if current_doc:
+		dialog.current_file = current_doc.get_file_name() + "." + ext
+	else:
+		dialog.current_file = "Untitled." + ext
 
 
 ## Rasterizer background pixels are filled with 0xAA across all channels; drawn pixels get A=0xFF.

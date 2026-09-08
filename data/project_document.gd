@@ -9,6 +9,11 @@ var is_dirty: bool = false
 var undo_redo: UndoRedo = UndoRedo.new()
 var saved_history_version: int = 0
 
+# Per-document viewport preferences
+var camera_zoom: float = 1.0
+var camera_pos: Vector2 = Vector2.ZERO
+var view_initialized: bool = false
+
 func get_file_name() -> String:
 	if file_path == "":
 		return "Untitled"

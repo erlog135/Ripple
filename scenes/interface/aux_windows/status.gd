@@ -4,7 +4,8 @@ extends Control
 @onready var version_label: Label = $Panel/MarginContainer/HBoxContainer/VersionLabel
 
 func _ready() -> void:
-	version_label.text = "Ripple 0.0 (%s)" % OS.get_name()
+	var version_num_string: String = ProjectSettings.get_setting("application/config/version","1.0.0")
+	version_label.text = "Ripple %s (%s)" % [version_num_string,OS.get_name()]
 	HistoryManager.history_updated.connect(_on_history_updated)
 	ProjectData.tab_list_changed.connect(_on_tab_list_changed)
 	_update_current_activity()
