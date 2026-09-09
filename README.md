@@ -11,7 +11,9 @@ It's designed to let you create, edit, and convert PDC ([Pebble Draw Command](ht
 This app is wholly a [Godot](https://godotengine.org/) project (apart from the Pebble previewing app). App code and architecture were devised in other places, including Cursor and Google AI Studio. Despite being intended for games, the Godot Engine has a surprisingly mature GUI framework, which made some parts of app construction easier. Another big advantage is that it's multiplatform, so I can export this app for Windows, macOS, Linux, and the web! (Plus Android and iOS if I wanted to)
 
 ### Why I built it
-Ripple was built to solve a very niche problem: there is no free, accessible, modern software that lets you edit vector graphic animations (PDC compatible or otherwise) frame by frame, and import/export in a standard vector file batch. *Please disprove me, because I spent way too much time looking for equivalent software and working on this project.*
+Ripple was built to solve a very niche problem: there is no free, accessible, modern software that lets you edit vector graphic animations (PDC compatible or otherwise) frame by frame, and import/export in a standard vector file batch.
+> [!NOTE]
+> I've since learned about [Friction](https://friction.graphics/), which has more powerful features. However, it is tailored towards keyframe-based animations and single-file exports. 
 
 Also, this project is intended to be the ancestor of a monumental effort of mine (a glimpse of which is over at [estherapp.org](https://estherapp.org/)), coming some time in the future. With Ripple, I was able to familiarize myself a little bit with a few aspects and best practices of a Model View Controller architecture. I may also use it as a sort of testing ground for more trendy features (like MCP) that I want to try out.
 
