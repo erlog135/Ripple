@@ -1009,9 +1009,11 @@ func export_frame_as_svg_dialog() -> void:
 		push_error("Fileman: no project loaded, cannot export SVG")
 		return
 
+	var frame_idx := EditorState.current_frame
+	var viewbox := _svg_viewbox_for_frame(seq, frame_idx)
+
 	if _is_web():
-		var frame_idx := EditorState.current_frame
-		var svg_str = SvgPdcHelper.frame_to_svg(seq, frame_idx)
+		var svg_str = SvgPdcHelper.frame_to_svg(seq, frame_idx, viewbox)
 		_web_download_bytes(svg_str.to_utf8_buffer(), "frame.svg")
 		return
 	
@@ -1023,8 +1025,7 @@ func export_frame_as_svg_dialog() -> void:
 	dialog.use_native_dialog = true
 	_prefill_dialog(dialog, "svg")
 	dialog.file_selected.connect(func(path: String) -> void:
-		var frame_idx := EditorState.current_frame
-		var svg_str = SvgPdcHelper.frame_to_svg(seq, frame_idx)
+		var svg_str = SvgPdcHelper.frame_to_svg(seq, frame_idx, viewbox)
 		var file := FileAccess.open(path, FileAccess.WRITE)
 		if file == null:
 			push_error("Fileman: failed to open '%s' for writing SVG" % path)
@@ -1041,8 +1042,10 @@ func export_sequence_as_animated_svg_dialog() -> void:
 		push_error("Fileman: no project loaded, cannot export SVG sequence")
 		return
 
+	var viewbox := _svg_viewbox_for_sequence(seq)
+
 	if _is_web():
-		var svg_str = SvgPdcHelper.sequence_to_animated_svg(seq)
+		var svg_str = SvgPdcHelper.sequence_to_animated_svg(seq, viewbox)
 		_web_download_bytes(svg_str.to_utf8_buffer(), "animation.svg")
 		return
 	
@@ -1054,7 +1057,7 @@ func export_sequence_as_animated_svg_dialog() -> void:
 	dialog.use_native_dialog = true
 	_prefill_dialog(dialog, "svg")
 	dialog.file_selected.connect(func(path: String) -> void:
-		var svg_str = SvgPdcHelper.sequence_to_animated_svg(seq)
+		var svg_str = SvgPdcHelper.sequence_to_animated_svg(seq, viewbox)
 		var file := FileAccess.open(path, FileAccess.WRITE)
 		if file == null:
 			push_error("Fileman: failed to open '%s' for writing animated SVG" % path)
@@ -1071,10 +1074,15 @@ func export_sequence_as_multiple_svgs_dialog() -> void:
 		push_error("Fileman: no project loaded, cannot export SVGs")
 		return
 
+	# For multi-frame export: clip = document bounds per frame;
+	# no-clip = union of all frames' extents (same viewbox for every frame so they tile consistently).
+	var sequence_vb := _svg_viewbox_for_sequence(seq)
+
 	if _is_web():
 		# Download each frame individually via the browser.
 		for i in range(seq.frames.size()):
-			var frame_svg = SvgPdcHelper.frame_to_svg(seq, i)
+			var frame_vb := _svg_viewbox_override_for_frame(seq, i, sequence_vb)
+			var frame_svg = SvgPdcHelper.frame_to_svg(seq, i, frame_vb)
 			_web_download_bytes(frame_svg.to_utf8_buffer(), "frame_%03d.svg" % i)
 		return
 		
@@ -1093,7 +1101,8 @@ func export_sequence_as_multiple_svgs_dialog() -> void:
 			ext = "svg"
 			
 		for i in range(seq.frames.size()):
-			var frame_svg = SvgPdcHelper.frame_to_svg(seq, i)
+			var frame_vb := _svg_viewbox_override_for_frame(seq, i, sequence_vb)
+			var frame_svg = SvgPdcHelper.frame_to_svg(seq, i, frame_vb)
 			var frame_path = base_dir.path_join("%s_%03d.%s" % [base_name, i, ext])
 			var file := FileAccess.open(frame_path, FileAccess.WRITE)
 			if file == null:
@@ -1103,3 +1112,37 @@ func export_sequence_as_multiple_svgs_dialog() -> void:
 			file.close()
 	)
 	dialog.popup_centered()
+
+
+## Returns the SVG viewbox to use for a single-frame export, honouring [member EditorState.clip_to_document_bounds].
+## Clip enabled → declared document bounds. Clip disabled → bounding box of visible point geometry
+## (falls back to document bounds when the frame is empty).
+func _svg_viewbox_for_frame(seq: DrawCommandSequence, frame_idx: int) -> Rect2:
+	var frame: DrawCommandImage = seq.frames[clampi(frame_idx, 0, seq.frames.size() - 1)]
+	if EditorState.clip_to_document_bounds:
+		return Rect2(Vector2.ZERO, Vector2(frame.bounds))
+	var vb := SvgPdcHelper.compute_viewbox(frame)
+	if vb.size == Vector2.ZERO:
+		return Rect2(Vector2.ZERO, Vector2(frame.bounds))
+	return vb
+
+
+## Returns the SVG viewbox to use for a whole-sequence export, honouring [member EditorState.clip_to_document_bounds].
+## Clip enabled → declared document bounds of frame 0. Clip disabled → union of all frames' point extents.
+func _svg_viewbox_for_sequence(seq: DrawCommandSequence) -> Rect2:
+	if EditorState.clip_to_document_bounds:
+		return Rect2(Vector2.ZERO, Vector2(seq.frames[0].bounds))
+	var vb := SvgPdcHelper.compute_sequence_viewbox(seq)
+	if vb.size == Vector2.ZERO:
+		return Rect2(Vector2.ZERO, Vector2(seq.frames[0].bounds))
+	return vb
+
+
+## For multi-frame exports the viewbox for each individual frame is:
+## clip enabled → that frame's document bounds; clip disabled → the pre-computed sequence-wide union
+## so all frames share a consistent coordinate space.
+func _svg_viewbox_override_for_frame(seq: DrawCommandSequence, frame_idx: int, sequence_vb: Rect2) -> Rect2:
+	if EditorState.clip_to_document_bounds:
+		var frame: DrawCommandImage = seq.frames[clampi(frame_idx, 0, seq.frames.size() - 1)]
+		return Rect2(Vector2.ZERO, Vector2(frame.bounds))
+	return sequence_vb

@@ -554,6 +554,53 @@ static func svg_files_to_sequence(svg_contents: Array[String], durations: Array[
 		sequence.frame_durations_ms.append(dur)
 	return sequence
 
+## Returns the axis-aligned bounding rect of all visible point geometry in [param frame].
+## Circles are expanded by their radius. Returns Rect2() when there is no visible geometry.
+static func compute_viewbox(frame: DrawCommandImage) -> Rect2:
+	var has := false
+	var mn := Vector2(INF, INF)
+	var mx := Vector2(-INF, -INF)
+	for cmd: DrawCommand in frame.commands:
+		if cmd.hidden:
+			continue
+		var pts := cmd.points
+		if pts.is_empty():
+			continue
+		if cmd.draw_type == DrawCommand.Type.CIRCLE:
+			var r := float(cmd.circle_radius)
+			var c: Vector2 = pts[0]
+			mn = mn.min(c - Vector2(r, r))
+			mx = mx.max(c + Vector2(r, r))
+			has = true
+		else:
+			for p: Vector2 in pts:
+				mn = mn.min(p)
+				mx = mx.max(p)
+				has = true
+	if not has:
+		return Rect2()
+	# Snap to integer pixel boundaries (floor min, ceil max) so the viewBox
+	# values are always whole numbers and %d formatting can be used safely.
+	var snapped_min := Vector2(floorf(mn.x), floorf(mn.y))
+	var snapped_max := Vector2(ceilf(mx.x), ceilf(mx.y))
+	return Rect2(snapped_min, snapped_max - snapped_min)
+
+
+## Returns the union of [method compute_viewbox] across all frames in [param sequence].
+## Returns Rect2() when there is no visible geometry in any frame.
+static func compute_sequence_viewbox(sequence: DrawCommandSequence) -> Rect2:
+	var result := Rect2()
+	for frame: DrawCommandImage in sequence.frames:
+		var vb := compute_viewbox(frame)
+		if vb.size == Vector2.ZERO:
+			continue
+		if result.size == Vector2.ZERO:
+			result = vb
+		else:
+			result = result.merge(vb)
+	return result
+
+
 # Serializes style properties of DrawCommand into SVG attribute strings
 static func color_to_svg_attrs(color: Color, prefix: String) -> String:
 	if color.a == 0:
@@ -591,28 +638,46 @@ static func serialize_commands_to_svg(commands: Array[DrawCommand]) -> String:
 				xml += '  <path d="%s" %s %s />\n' % [d_path, stroke_attrs, fill_attrs]
 	return xml
 
-# Exports a specific frame in the sequence to a static SVG string
-static func frame_to_svg(sequence: DrawCommandSequence, frame_idx: int) -> String:
+## Exports a specific frame in the sequence to a static SVG string.
+## When [param viewbox] is non-zero it overrides the default document-bounds viewBox,
+## allowing callers to fit the export to point extents (clip-to-bounds disabled) or to
+## the declared canvas (clip-to-bounds enabled). width/height attributes always mirror
+## the viewBox so the SVG renders at a 1:1 pixel ratio.
+static func frame_to_svg(sequence: DrawCommandSequence, frame_idx: int, viewbox: Rect2 = Rect2()) -> String:
 	if sequence == null or sequence.frames.is_empty():
 		return ""
 	var idx = clampi(frame_idx, 0, sequence.frames.size() - 1)
 	var frame = sequence.frames[idx]
-	var w = frame.bounds.x
-	var h = frame.bounds.y
-	
+
+	var vb: Rect2
+	if viewbox.size != Vector2.ZERO:
+		vb = viewbox
+	else:
+		vb = Rect2(Vector2.ZERO, Vector2(frame.bounds))
+
 	var svg = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n'
-	svg += '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d" width="%d" height="%d">\n' % [w, h, w, h]
+	svg += '<svg xmlns="http://www.w3.org/2000/svg" viewBox="%d %d %d %d" width="%d" height="%d">\n' % [
+		int(vb.position.x), int(vb.position.y), int(vb.size.x), int(vb.size.y), int(vb.size.x), int(vb.size.y)
+	]
 	svg += serialize_commands_to_svg(frame.commands)
 	svg += '</svg>\n'
 	return svg
 
-# Exports the sequence as a single animated SVG using show/hide CSS rules
-static func sequence_to_animated_svg(sequence: DrawCommandSequence) -> String:
+## Exports the sequence as a single animated SVG using show/hide CSS rules.
+## [param viewbox] overrides the default document-bounds viewBox when non-zero.
+static func sequence_to_animated_svg(sequence: DrawCommandSequence, viewbox: Rect2 = Rect2()) -> String:
 	if sequence == null or sequence.frames.is_empty():
 		return ""
 	var first_frame = sequence.frames[0]
-	var w = first_frame.bounds.x
-	var h = first_frame.bounds.y
+
+	var vb: Rect2
+	if viewbox.size != Vector2.ZERO:
+		vb = viewbox
+	else:
+		vb = Rect2(Vector2.ZERO, Vector2(first_frame.bounds))
+
+	var w := vb.size.x
+	var h := vb.size.y
 	
 	var total_duration = 0
 	for d in sequence.frame_durations_ms:
@@ -623,7 +688,9 @@ static func sequence_to_animated_svg(sequence: DrawCommandSequence) -> String:
 	var total_s = total_duration / 1000.0
 	
 	var svg = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n'
-	svg += '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d" width="%d" height="%d">\n' % [w, h, w, h]
+	svg += '<svg xmlns="http://www.w3.org/2000/svg" viewBox="%d %d %d %d" width="%d" height="%d">\n' % [
+		int(vb.position.x), int(vb.position.y), int(w), int(h), int(w), int(h)
+	]
 	svg += '  <style>\n'
 	svg += '    .animated-frame {\n'
 	svg += '      visibility: hidden;\n'

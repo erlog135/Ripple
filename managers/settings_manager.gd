@@ -35,13 +35,16 @@ func load_settings() -> void:
 	var err := config.load(SETTINGS_PATH)
 
 	if err == OK:
-		editor_scale = config.get_value("display", "editor_scale", config.get_value("display", "ui_scale", 1.0))
+		# Load recent_files BEFORE assigning editor_scale: the editor_scale setter
+		# calls save_settings() immediately, which would overwrite the file with
+		# recent_files=[] if the list hadn't been populated yet.
 		var raw_recents = config.get_value("history", "recent_files", [])
 		recent_files.clear()
 		if raw_recents is Array:
 			for item in raw_recents:
 				if item is String and not (item as String).is_empty():
 					recent_files.append(item as String)
+		editor_scale = config.get_value("display", "editor_scale", config.get_value("display", "ui_scale", 1.0))
 		_apply_editor_scale()
 	else:
 		save_settings()
