@@ -5,8 +5,9 @@
 // State
 // ---------------------------------------------------------------------------
 
-static Window *s_window;
-static Layer  *s_canvas_layer;
+static Window         *s_window;
+static Layer          *s_canvas_layer;
+static StatusBarLayer *s_status_bar_layer;
 
 // Currently displayed PDC (image or sequence). Zeroed = nothing loaded.
 // Owned by this module; freed when replaced or on unload.
@@ -28,14 +29,25 @@ static uint32_t  s_data_len = 0;
 // ---------------------------------------------------------------------------
 
 static void prv_canvas_update_proc(Layer *layer, GContext *ctx) {
+  GRect bounds = layer_get_bounds(layer);
+
+  // Transfer-progress bar: drawn at the bottom edge of the status bar area
+  // while a PDC is being received (s_data_cap > 0).
+  if (s_data_cap > 0) {
+    int16_t bar_y    = STATUS_BAR_LAYER_HEIGHT - 2;
+    int16_t bar_w    = (int16_t)((int32_t)bounds.size.w * s_data_len / s_data_cap);
+    graphics_context_set_stroke_color(ctx, GColorBlack);
+    graphics_draw_line(ctx,
+                       GPoint(0, bar_y),
+                       GPoint(bar_w, bar_y));
+  }
+
   if (!s_pdc.image) {  // both union members share the same address — NULL check works for either
     return;
   }
 
-  GRect  bounds   = layer_get_bounds(layer);
   GSize  pdc_size = pdc_get_bounds_size(&s_pdc);
 
-  // Centre the graphic in the layer
   GPoint origin = GPoint(
     (bounds.size.w - pdc_size.w) / 2,
     (bounds.size.h - pdc_size.h) / 2
@@ -173,6 +185,8 @@ static void prv_inbox_received(DictionaryIterator *iter, void *context) {
       s_data_len += chunk_len;
       APP_LOG(APP_LOG_LEVEL_DEBUG, "PDC chunk +%lu bytes (%lu/%lu)",
               (unsigned long)chunk_len, (unsigned long)s_data_len, (unsigned long)s_data_cap);
+      // Redraw so the progress line updates
+      if (s_canvas_layer) layer_mark_dirty(s_canvas_layer);
     } else {
       APP_LOG(APP_LOG_LEVEL_ERROR, "PDC buffer overrun — aborting transfer");
       prv_reset_data_buf();
@@ -250,6 +264,12 @@ static void prv_window_load(Window *window) {
   layer_set_update_proc(s_canvas_layer, prv_canvas_update_proc);
   layer_add_child(root, s_canvas_layer);
 
+  // Status bar — dotted separator, white background, black text
+  s_status_bar_layer = status_bar_layer_create();
+  status_bar_layer_set_colors(s_status_bar_layer, GColorClear, GColorBlack);
+  status_bar_layer_set_separator_mode(s_status_bar_layer, StatusBarLayerSeparatorModeDotted);
+  layer_add_child(root, status_bar_layer_get_layer(s_status_bar_layer));
+
   window_set_click_config_provider(window, prv_click_config_provider);
 }
 
@@ -257,6 +277,8 @@ static void prv_window_unload(Window *window) {
   prv_clear_pdc();
   layer_destroy(s_canvas_layer);
   s_canvas_layer = NULL;
+  status_bar_layer_destroy(s_status_bar_layer);
+  s_status_bar_layer = NULL;
 }
 
 // ---------------------------------------------------------------------------

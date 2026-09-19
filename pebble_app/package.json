@@ -35,7 +35,14 @@
       "URL"
     ],
     "resources": {
-      "media": []
+      "media": [
+        {
+          "type": "bitmap",
+          "name": "MENU_ICON",
+          "file": "Icon_25px.png",
+          "menuIcon": true
+        }
+      ]
     }
   }
 }
