@@ -555,7 +555,9 @@ static func svg_files_to_sequence(svg_contents: Array[String], durations: Array[
 	return sequence
 
 ## Returns the axis-aligned bounding rect of all visible point geometry in [param frame].
-## Circles are expanded by their radius. Returns Rect2() when there is no visible geometry.
+## Circles are expanded by their radius. Stroked paths are expanded by half their stroke
+## width so that thick borders at the canvas edge are not clipped.
+## Returns Rect2() when there is no visible geometry.
 static func compute_viewbox(frame: DrawCommandImage) -> Rect2:
 	var has := false
 	var mn := Vector2(INF, INF)
@@ -568,14 +570,21 @@ static func compute_viewbox(frame: DrawCommandImage) -> Rect2:
 			continue
 		if cmd.draw_type == DrawCommand.Type.CIRCLE:
 			var r := float(cmd.circle_radius)
+			# Expand circle bounds by half stroke width if it has a visible stroke.
+			var half_sw := cmd.stroke_width * 0.5 if cmd.stroke_color.a > 0.0 else 0.0
 			var c: Vector2 = pts[0]
-			mn = mn.min(c - Vector2(r, r))
-			mx = mx.max(c + Vector2(r, r))
+			var expand := Vector2(r + half_sw, r + half_sw)
+			mn = mn.min(c - expand)
+			mx = mx.max(c + expand)
 			has = true
 		else:
+			# Strokes are centered on the path, so each side bleeds out by half
+			# the stroke width beyond the raw geometry points.
+			var half_sw := cmd.stroke_width * 0.5 if cmd.stroke_color.a > 0.0 else 0.0
+			var pad := Vector2(half_sw, half_sw)
 			for p: Vector2 in pts:
-				mn = mn.min(p)
-				mx = mx.max(p)
+				mn = mn.min(p - pad)
+				mx = mx.max(p + pad)
 				has = true
 	if not has:
 		return Rect2()
