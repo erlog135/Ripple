@@ -48,6 +48,11 @@ func _gui_input(event: InputEvent) -> void:
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 		EditorState.zoom_out(event.position)
 
+	if event is InputEventMagnifyGesture:
+		EditorState.zoom_by_factor(event.position, event.factor)
+	elif event is InputEventPanGesture:
+		EditorState.pan(event.delta)
+
 	if event is InputEventMouseButton and event.pressed:
 		# Release focus from any SpinBox/LineEdit so canvas shortcuts work immediately.
 		get_viewport().gui_release_focus()

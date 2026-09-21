@@ -333,6 +333,15 @@ func zoom_out(screen_pos: Vector2) -> void:
 	zoom_changed.emit(screen_pos, factor)
 
 
+## Applies an arbitrary continuous zoom factor (e.g. from a pinch/magnify gesture).
+## [param screen_pos] is the gesture focal point in screen space.
+## [param factor] is a multiplicative scale (>1 zooms in, <1 zooms out).
+func zoom_by_factor(screen_pos: Vector2, factor: float) -> void:
+	var clamped_factor := clampf(current_zoom * factor, MIN_ZOOM, MAX_ZOOM) / current_zoom
+	current_zoom = clamp(current_zoom * clamped_factor, MIN_ZOOM, MAX_ZOOM)
+	zoom_changed.emit(screen_pos, clamped_factor)
+
+
 func zoom_in_centered() -> void:
 	_update_view(current_camera_pos, current_zoom * 1.25)
 

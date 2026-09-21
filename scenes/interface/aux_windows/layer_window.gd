@@ -102,14 +102,27 @@ func _tree_get_drag_data(at_position: Vector2) -> Variant:
 	if command_idx == null:
 		return null
 
+	# Collect all currently selected command indices so the whole group moves.
+	var selected_indices: Array[int] = []
+	var iter: TreeItem = tree.get_next_selected(null)
+	while iter != null:
+		var meta: Variant = iter.get_metadata(0)
+		if meta != null:
+			selected_indices.append(int(meta))
+		iter = tree.get_next_selected(iter)
+
+	# If nothing was selected (shouldn't happen), fall back to just the clicked item.
+	if selected_indices.is_empty():
+		selected_indices.append(int(command_idx))
+
 	var preview := Label.new()
-	preview.text = item.get_text(0)
+	preview.text = "%d layer(s)" % selected_indices.size() if selected_indices.size() > 1 else item.get_text(0)
 	tree.set_drag_preview(preview)
-	return {"command_index": int(command_idx)}
+	return {"command_indices": selected_indices}
 
 
 func _tree_can_drop_data(at_position: Vector2, data: Variant) -> bool:
-	if data == null or not (data is Dictionary) or not data.has("command_index"):
+	if data == null or not (data is Dictionary) or not data.has("command_indices"):
 		tree.drop_mode_flags = Tree.DROP_MODE_DISABLED
 		return false
 
@@ -126,7 +139,7 @@ func _tree_drop_data(at_position: Vector2, data: Variant) -> void:
 	if data == null or not (data is Dictionary):
 		tree.drop_mode_flags = Tree.DROP_MODE_DISABLED
 		return
-	if not data.has("command_index"):
+	if not data.has("command_indices"):
 		tree.drop_mode_flags = Tree.DROP_MODE_DISABLED
 		return
 
@@ -139,8 +152,13 @@ func _tree_drop_data(at_position: Vector2, data: Variant) -> void:
 		tree.drop_mode_flags = Tree.DROP_MODE_DISABLED
 		return
 
-	var source_command_idx := int(data["command_index"])
-	if source_command_idx < 0 or source_command_idx >= command_count:
+	var source_indices_raw: Array = data["command_indices"]
+	var source_indices: Array[int] = []
+	for v in source_indices_raw:
+		var idx := int(v)
+		if idx >= 0 and idx < command_count:
+			source_indices.append(idx)
+	if source_indices.is_empty():
 		tree.drop_mode_flags = Tree.DROP_MODE_DISABLED
 		return
 
@@ -159,24 +177,35 @@ func _tree_drop_data(at_position: Vector2, data: Variant) -> void:
 		tree.drop_mode_flags = Tree.DROP_MODE_DISABLED
 		return
 
-	var source_display_idx := _command_index_to_display_index(command_count, source_command_idx)
+	# Convert drop position to a display-space index, then to a command insert index.
+	# The tree displays commands in reverse order (top layer = display index 0).
 	var target_display_idx := _command_index_to_display_index(command_count, target_command_idx)
-
 	var drop_section := tree.get_drop_section_at_position(at_position)
 	if drop_section == 1:
+		# Dropped below the target row → insert after it in display order.
 		target_display_idx += 1
 
-	if target_display_idx > source_display_idx:
-		target_display_idx -= 1
+	# insert_before_idx is the command index *before which* the group is inserted,
+	# i.e. the group occupies the slot currently at insert_before_idx.
+	var insert_before_idx := _display_index_to_command_insert_index(command_count, target_display_idx)
 
-	if target_display_idx == source_display_idx:
+	# If the group is already entirely in place, skip.
+	source_indices.sort()
+	var all_already_placed := true
+	for i in range(source_indices.size()):
+		if source_indices[i] != insert_before_idx + i:
+			all_already_placed = false
+			break
+	if all_already_placed:
 		tree.drop_mode_flags = Tree.DROP_MODE_DISABLED
 		return
 
-	var destination_command_idx := _display_index_to_command_insert_index(command_count, target_display_idx)
-	var frame_idx := EditorState.current_frame
 	HistoryManager.commit(
-		ReorderDrawCommandAction.new(frame_idx, source_command_idx, destination_command_idx)
+		ReorderMultipleDrawCommandsAction.new(
+			EditorState.current_frame,
+			source_indices,
+			insert_before_idx,
+		)
 	)
 	tree.drop_mode_flags = Tree.DROP_MODE_DISABLED
 

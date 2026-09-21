@@ -77,7 +77,7 @@ static func create_image_flip(horizontal: bool) -> TransformSelectionAction:
 	var image := ProjectData.get_current_image()
 	if not image:
 		return null
-	var center := Vector2(image.bounds) / 2.0
+	var center := _get_transform_center(image)
 	
 	var sf := Vector2(-1, 1) if horizontal else Vector2(1, -1)
 	var t := Transform2D.IDENTITY
@@ -92,13 +92,36 @@ static func create_image_rotate(cw: bool) -> TransformSelectionAction:
 	var image := ProjectData.get_current_image()
 	if not image:
 		return null
-	var center := Vector2(image.bounds) / 2.0
+	var center := _get_transform_center(image)
 	
 	var ang := PI / 2.0 if cw else -PI / 2.0
 	var t := Transform2D(ang, Vector2.ZERO)
 	t.origin = center - t.basis_xform(center)
 	
 	return create_image_transform(t)
+
+
+## Returns the center point to use for image-level transforms.
+## When commands are selected, returns the center of their bounding box;
+## otherwise returns the center of the frame bounds.
+static func _get_transform_center(image: DrawCommandImage) -> Vector2:
+	var sel := EditorState.selected_command_indices
+	if sel.is_empty():
+		return Vector2(image.bounds) / 2.0
+	var selection_rect: Rect2
+	for idx: int in sel:
+		if idx < 0 or idx >= image.commands.size():
+			continue
+		var bounds: Rect2 = image.commands[idx].get_bounding_box()
+		if bounds.size == Vector2.ZERO:
+			continue
+		if selection_rect.size == Vector2.ZERO:
+			selection_rect = bounds
+		else:
+			selection_rect = selection_rect.merge(bounds)
+	if selection_rect.size == Vector2.ZERO:
+		return Vector2(image.bounds) / 2.0
+	return selection_rect.get_center()
 
 
 static func create_image_transform(matrix: Transform2D) -> TransformSelectionAction:
@@ -110,8 +133,13 @@ static func create_image_transform(matrix: Transform2D) -> TransformSelectionAct
 	var new_points_arrays: Array = []
 	var new_radii: Array = []
 	
-	for i in range(image.commands.size()):
-		command_indices.append(i)
+	# Operate on the selection when anything is selected, or on all commands.
+	var sel := EditorState.selected_command_indices
+	if sel.is_empty():
+		for i in range(image.commands.size()):
+			command_indices.append(i)
+	else:
+		command_indices = sel.duplicate()
 	
 	var radius_scale := (matrix.x.length() + matrix.y.length()) / 2.0
 	
