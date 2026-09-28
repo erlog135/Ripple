@@ -18,6 +18,9 @@ static uint32_t  s_current_frame;
 static bool      s_playing;
 static AppTimer *s_anim_timer;
 
+// Backlight toggle state
+static bool s_backlight_on = false;
+
 // Incoming PDC data buffer — dynamically allocated on PDC_SIZE message.
 // Freed after parse or on error. NULL when idle.
 static uint8_t  *s_data_buf = NULL;
@@ -230,6 +233,12 @@ static void prv_outbox_sent(DictionaryIterator *iter, void *context) {
 // Button handlers
 // ---------------------------------------------------------------------------
 
+static void prv_up_click_handler(ClickRecognizerRef recognizer, void *context) {
+  s_backlight_on = !s_backlight_on;
+  light_enable(s_backlight_on);
+  APP_LOG(APP_LOG_LEVEL_INFO, "Backlight %s", s_backlight_on ? "on" : "off");
+}
+
 static void prv_select_click_handler(ClickRecognizerRef recognizer, void *context) {
   // Only sequences with > 1 frame can be toggled
   if (!s_pdc.image || s_pdc.kind != PDC_KIND_SEQUENCE
@@ -249,6 +258,7 @@ static void prv_select_click_handler(ClickRecognizerRef recognizer, void *contex
 }
 
 static void prv_click_config_provider(void *context) {
+  window_single_click_subscribe(BUTTON_ID_UP, prv_up_click_handler);
   window_single_click_subscribe(BUTTON_ID_SELECT, prv_select_click_handler);
 }
 
@@ -287,7 +297,7 @@ static void prv_window_unload(Window *window) {
 
 static void prv_init(void) {
   s_window = window_create();
-  window_set_background_color(s_window, GColorLightGray);
+  window_set_background_color(s_window, PBL_IF_COLOR_ELSE(GColorLightGray, GColorWhite));
   window_set_window_handlers(s_window, (WindowHandlers) {
     .load   = prv_window_load,
     .unload = prv_window_unload,
