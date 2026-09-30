@@ -1,8 +1,7 @@
 extends Window
 
-## Controller for the "New Image" dialog. Gathers the requested dimensions and
-## hands them to Fileman; it never touches project data directly (MVC: the view
-## collects input, the manager performs the destructive reset).
+## Dialog controller for creating a new document. Gathers the requested dimensions
+## and passes them to Fileman to open a new document tab.
 
 @onready var image_width: SpinBox = $Panel/VBoxContainer/HBoxContainer/ImageWidth
 @onready var image_height: SpinBox = $Panel/VBoxContainer/HBoxContainer2/ImageHeight
@@ -17,7 +16,7 @@ func _ready() -> void:
 	cancel_button.pressed.connect(_on_cancel_pressed)
 	close_requested.connect(queue_free)
 
-	# Rule 3B: pressing Enter in a SpinBox releases focus.
+	# Release focus when Enter is pressed so global canvas shortcuts remain active.
 	_connect_spinbox_enter_release(image_width)
 	_connect_spinbox_enter_release(image_height)
 
@@ -32,8 +31,8 @@ func _on_cancel_pressed() -> void:
 	queue_free()
 
 
-## Connects the hidden LineEdit inside [param box] so that pressing Enter
-## drops keyboard focus back to the canvas (Zero-Focus UI, Rule 3B).
+## Connects the internal LineEdit of [param box] so pressing Enter releases focus,
+## returning keyboard focus to the main canvas shortcuts.
 func _connect_spinbox_enter_release(box: SpinBox) -> void:
 	var le := box.get_line_edit()
 	if le != null and not le.text_submitted.is_connected(_on_spinbox_text_submitted):

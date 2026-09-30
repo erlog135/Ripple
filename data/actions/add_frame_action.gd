@@ -1,7 +1,7 @@
 class_name AddFrameAction
 extends EditAction
 
-#TODO: make this configurable as a global constant somewhere
+## Default duration in milliseconds assigned to newly created frames.
 const DEFAULT_DURATION_MS := 35
 
 var _insert_index: int

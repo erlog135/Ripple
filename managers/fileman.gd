@@ -59,10 +59,8 @@ func _ready():
 	if _is_web():
 		_web_uploader = FileAccessWebClass.new()
 
-## Wipes the slate clean and builds a fresh, blank single-frame sequence of the
-## given pixel [param size]. This is intentionally destructive (not undoable):
-## Adds a new blank single-frame document as a new tab. Does not close any
-## existing tabs — use this for File → New exactly like File → Open adds a tab.
+## Creates a fresh single-frame sequence of the given pixel [param size] and opens
+## it as a new document tab. Does not close or modify any existing tabs.
 func new_file(size: Vector2i) -> void:
 	var sequence := DrawCommandSequence.new()
 	var image := DrawCommandImage.new()

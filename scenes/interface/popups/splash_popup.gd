@@ -5,7 +5,7 @@ extends Window
 ## MVC separation: this node is purely View + Controller. It collects the
 ## user's choice and forwards it to the appropriate manager:
 ##   - Fileman.new_file()      → blank document of a preset size
-##   - Fileman.pdc_to_gd()    → load an example PDC from res://test/pdc/
+##   - Fileman.open_example() → load an example PDC from res://test/pdc/
 ##   - Fileman.load_project() → load a recent project file
 ##   - PopupManager.open()    → open the custom-size "New File" dialog
 ##

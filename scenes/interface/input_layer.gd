@@ -6,13 +6,16 @@ const CircleToolScr = preload("res://scenes/interface/aux_windows/tools/circle_t
 const RectangleToolScr = preload("res://scenes/interface/aux_windows/tools/rectangle_tool.gd")
 
 @onready var _gizmos = $"../DocumentLayer/SubViewport/DocumentGizmos"
-@onready var _edit_tool = EditTool.new()
-@onready var _line_pen_tool: RefCounted = PenToolScr.new()
-@onready var _circle_tool = CircleToolScr.new()
-@onready var _rectangle_tool = RectangleToolScr.new()
+
+var _tools: Dictionary = {}
 
 
 func _ready() -> void:
+	_tools[EditorState.Tool.EDIT] = EditTool.new()
+	_tools[EditorState.Tool.LINE_PEN] = PenToolScr.new()
+	_tools[EditorState.Tool.CIRCLE] = CircleToolScr.new()
+	_tools[EditorState.Tool.RECTANGLE] = RectangleToolScr.new()
+
 	EditorState.set_canvas_viewport_size(get_rect().size)
 	EditorState.tool_changed.connect(_on_tool_changed)
 
@@ -22,19 +25,17 @@ func _notification(what: int) -> void:
 		EditorState.set_canvas_viewport_size(get_rect().size)
 
 
+func _get_active_tool() -> BaseTool:
+	return _tools.get(EditorState.active_tool, null)
+
+
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		EditorState.update_mouse_position(event.position)
-		if EditorState.active_tool == EditorState.Tool.LINE_PEN:
-			_line_pen_tool.handle_mouse_motion(_screen_to_world(event.position))
-		elif EditorState.active_tool == EditorState.Tool.EDIT:
-			# Handles hover, active rect-select drag, and active transform drag internally.
-			_edit_tool.handle_mouse_motion(_screen_to_world(event.position), _gizmos)
-			mouse_default_cursor_shape = _edit_tool.cursor_shape
-		elif EditorState.active_tool == EditorState.Tool.CIRCLE:
-			_circle_tool.handle_mouse_motion(_screen_to_world(event.position))
-		elif EditorState.active_tool == EditorState.Tool.RECTANGLE:
-			_rectangle_tool.handle_mouse_motion(_screen_to_world(event.position))
+		var tool := _get_active_tool()
+		if tool != null:
+			tool.handle_mouse_motion(_screen_to_world(event.position), _gizmos)
+			mouse_default_cursor_shape = tool.get_cursor_shape()
 
 	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 		if EditorState.active_tool == EditorState.Tool.PAN:
@@ -58,44 +59,26 @@ func _gui_input(event: InputEvent) -> void:
 		get_viewport().gui_release_focus()
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.pressed and event.double_click:
-			if EditorState.active_tool == EditorState.Tool.EDIT:
-				var world_pos_dc := _screen_to_world(event.position)
-				if not _edit_tool.has_overlapping_points_at(world_pos_dc, _gizmos):
-					var additive := Input.is_key_pressed(KEY_SHIFT) or Input.is_key_pressed(KEY_CTRL)
-					_edit_tool.handle_double_click(world_pos_dc, additive, _gizmos)
+		var tool := _get_active_tool()
+		if tool != null:
+			var world_pos := _screen_to_world(event.position)
+			var additive := Input.is_key_pressed(KEY_SHIFT) or Input.is_key_pressed(KEY_CTRL)
+
+			if event.pressed:
+				if event.double_click and tool.handle_double_click(world_pos, additive, _gizmos):
 					accept_event()
 					return
+				tool.handle_left_press(world_pos, additive, _gizmos)
+			else:
+				tool.handle_left_release(world_pos, _gizmos)
 
-		if EditorState.active_tool == EditorState.Tool.EDIT:
-			var world_pos := _screen_to_world(event.position)
-			if event.pressed:
-				var additive := Input.is_key_pressed(KEY_SHIFT) or Input.is_key_pressed(KEY_CTRL)
-				_edit_tool.handle_left_press(world_pos, additive, _gizmos)
-			else:
-				_edit_tool.handle_left_release(world_pos, _gizmos)
-			mouse_default_cursor_shape = _edit_tool.cursor_shape
-		elif EditorState.active_tool == EditorState.Tool.LINE_PEN:
-			var lp_world_pos := _screen_to_world(event.position)
-			if event.pressed:
-				_line_pen_tool.handle_left_press(lp_world_pos, _gizmos)
-		elif EditorState.active_tool == EditorState.Tool.CIRCLE:
-			var world_pos := _screen_to_world(event.position)
-			if event.pressed:
-				_circle_tool.handle_left_press(world_pos)
-			else:
-				_circle_tool.handle_left_release(world_pos)
-		elif EditorState.active_tool == EditorState.Tool.RECTANGLE:
-			var world_pos := _screen_to_world(event.position)
-			if event.pressed:
-				_rectangle_tool.handle_left_press(world_pos)
-			else:
-				_rectangle_tool.handle_left_release(world_pos)
+			mouse_default_cursor_shape = tool.get_cursor_shape()
 
 
 func _screen_to_world(screen_pos: Vector2) -> Vector2:
 	var canvas_center := get_rect().size / 2.0
 	return EditorState.current_camera_pos + (screen_pos - canvas_center) / EditorState.current_zoom
+
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
@@ -119,7 +102,7 @@ func _delete_selected_points() -> void:
 
 
 func _on_tool_changed(_tool: EditorState.Tool) -> void:
-	_edit_tool.cancel(_gizmos)
-	_circle_tool.cancel()
-	_rectangle_tool.cancel()
-	mouse_default_cursor_shape = _edit_tool.cursor_shape
+	for t: BaseTool in _tools.values():
+		t.cancel(_gizmos)
+	var active := _get_active_tool()
+	mouse_default_cursor_shape = active.get_cursor_shape() if active != null else Control.CURSOR_ARROW

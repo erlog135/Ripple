@@ -107,10 +107,7 @@ func _on_tab_clicked(index: int) -> void:
 	ProjectData.set_active_sequence(index)
 
 
-## Close button pressed: free the per-tab history first, then remove the tab.
-## HistoryManager.remove_tab() is safe to call here because tab_removed is
-## emitted inside ProjectData.close_sequence() which also handles the same cleanup
-## via signal — calling remove_tab() first means the signal handler is a no-op.
+## Close button pressed: prompts for confirmation if dirty, then closes the tab.
 func _on_tab_closed(index: int) -> void:
 	if ProjectData.open_documents.size() <= 1:
 		return  # Cannot close the last tab.
@@ -140,7 +137,6 @@ func _force_close_tab(index: int) -> void:
 			item.tab_clicked.disconnect(_on_tab_clicked)
 		if item.has_signal("tab_closed"):
 			item.tab_closed.disconnect(_on_tab_closed)
-	# History first (remove_tab is idempotent with tab_removed signal).
-	HistoryManager.remove_tab(index)
-	# Then close in ProjectData (emits tab_removed + tab_list_changed + data_changed).
+	# Close in ProjectData (emits tab_removed + tab_list_changed + data_changed).
+	# Per-document UndoRedo is owned directly by ProjectDocument and freed upon document disposal.
 	ProjectData.close_sequence(index)

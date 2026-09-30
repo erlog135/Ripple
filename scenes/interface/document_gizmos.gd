@@ -18,7 +18,6 @@ const TRANSFORM_HANDLE_PX := 4.0
 const SELECTION_BOX_COLOR := Color(0.4, 0.7, 1.0, 0.85)
 const DRAG_SELECTION_BOX_COLOR := Color(0.4, 0.7, 1.0, 0.45)
 const LINE_PEN_PREVIEW_COLOR := Color(0.0, 0.5, 1.0, 0.8)
-const PenToolScr = preload("res://scenes/interface/aux_windows/tools/line_pen_tool.gd")
 
 var _drag_selection_rect := Rect2()
 var _drag_selection_active := false
@@ -170,7 +169,9 @@ func _draw_line_pen_preview() -> void:
 
 	var frame: DrawCommandImage = ProjectData.get_current_image()
 	if frame != null:
-		var ctx: Dictionary = PenToolScr.line_pen_rubber_band_context(frame)
+		var ctx: Dictionary = DrawCommand.get_pen_rubber_band_context(
+			frame, EditorState.selected_point_indices, EditorState.selected_command_indices
+		)
 		if not ctx.is_empty():
 			var cmd_idx: int = ctx[&"cmd_idx"]
 			if cmd_idx >= 0 and cmd_idx < frame.commands.size():

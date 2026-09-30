@@ -1,7 +1,7 @@
-extends RefCounted
+extends BaseTool
 
 
-func handle_mouse_motion(world_pos: Vector2) -> void:
+func handle_mouse_motion(world_pos: Vector2, _gizmos = null) -> void:
 	var frame: DrawCommandImage = ProjectData.get_current_image()
 	var rb: Dictionary = line_pen_rubber_band_context(frame)
 	var draw_type: DrawCommand.Type
@@ -16,7 +16,7 @@ func handle_mouse_motion(world_pos: Vector2) -> void:
 	EditorState.update_line_pen_hover_world(EditorState.snap_world_position(world_pos, draw_type, stroke_w))
 
 
-func handle_left_press(world_pos: Vector2, gizmos) -> void:
+func handle_left_press(world_pos: Vector2, _additive: bool = false, gizmos = null) -> void:
 	var frame: DrawCommandImage = ProjectData.get_current_image()
 	if frame == null:
 		return
@@ -171,18 +171,12 @@ static func normalized_pen_selection(frame: DrawCommandImage) -> Dictionary:
 
 ## Selection context for drawing the rubber band: endpoint + two-point segment only (not a lone interior vertex).
 static func line_pen_rubber_band_context(frame: DrawCommandImage) -> Dictionary:
-	var ctx: Dictionary = normalized_pen_selection(frame)
-	if ctx.is_empty():
-		return {}
-	var pts: Array = ctx[&"pts"]
-	if pts.size() == 2:
-		return ctx
-	var cmd: DrawCommand = ctx[&"cmd"]
-	var i: int = int(pts[0])
-	var n := cmd.points.size()
-	if i == 0 or i == n - 1:
-		return ctx
-	return {}
+	return DrawCommand.get_pen_rubber_band_context(frame, EditorState.selected_point_indices, EditorState.selected_command_indices)
+
+
+func cancel(_gizmos = null) -> void:
+	EditorState.update_line_pen_hover_world(Vector2.ZERO)
+
 
 
 static func _dedupe_point_indices_sorted(raw: Array, point_count: int) -> Array:

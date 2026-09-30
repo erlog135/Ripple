@@ -56,7 +56,7 @@ func _ready() -> void:
 	frame_duration.value_changed.connect(_on_frame_duration_value_changed)
 	current_frame_spin.value_changed.connect(_on_current_frame_spin_changed)
 
-	# Rule 3B: pressing Enter in any SpinBox releases focus back to the canvas.
+	# Release focus when Enter is pressed in any SpinBox so canvas shortcuts remain active.
 	_connect_spinbox_enter_release(playback_speed_spin)
 	_connect_spinbox_enter_release_and_commit(frame_duration)
 	_connect_spinbox_enter_release(current_frame_spin)
@@ -477,8 +477,8 @@ func _update_playhead_and_ui() -> void:
 		idx += 1
 
 
-## Connects the hidden LineEdit inside [param box] so that pressing Enter
-## drops keyboard focus back to the canvas (Zero-Focus UI, Rule 3B).
+## Connects the internal LineEdit of [param box] so pressing Enter releases focus,
+## returning keyboard focus to the main canvas shortcuts.
 func _connect_spinbox_enter_release(box: SpinBox) -> void:
 	var le := box.get_line_edit()
 	if le != null and not le.text_submitted.is_connected(_on_spinbox_text_submitted):

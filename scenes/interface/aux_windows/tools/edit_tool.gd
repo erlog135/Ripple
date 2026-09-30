@@ -1,4 +1,4 @@
-extends RefCounted
+extends BaseTool
 
 ## Hit-zone sizes in screen pixels (scaled by zoom into world units).
 const HANDLE_SIZE := 8.0
@@ -11,10 +11,6 @@ enum _Mode { IDLE, RECT_SELECT, TRANSFORMING }
 
 var current_hover_mode: EditorState.TransformMode = EditorState.TransformMode.NONE
 var hovered_handle: int = -1
-## Desired mouse cursor shape for the current hover/drag state (a Control.CursorShape /
-## Input.CursorShape value). The input layer reads this and applies it to its own
-## `mouse_default_cursor_shape`, since the Control under the mouse owns the cursor.
-var cursor_shape: int = Input.CURSOR_ARROW
 
 # ---- Internal state ----
 var _mode: _Mode = _Mode.IDLE
@@ -41,7 +37,7 @@ var _point_already_selected_on_press := false
 var _snapshot: Array = []
 
 
-func handle_mouse_motion(world_pos: Vector2, gizmos) -> void:
+func handle_mouse_motion(world_pos: Vector2, gizmos = null) -> void:
 	match _mode:
 		_Mode.TRANSFORMING:
 			var drag_dist := (world_pos - _drag_start_transform).length() * EditorState.current_zoom
@@ -57,7 +53,7 @@ func handle_mouse_motion(world_pos: Vector2, gizmos) -> void:
 			update_hover(world_pos)
 
 
-func handle_left_press(world_pos: Vector2, additive: bool, gizmos) -> void:
+func handle_left_press(world_pos: Vector2, additive: bool = false, gizmos = null) -> void:
 	update_hover(world_pos)
 
 	if current_hover_mode != EditorState.TransformMode.NONE:
@@ -104,7 +100,7 @@ func handle_left_press(world_pos: Vector2, additive: bool, gizmos) -> void:
 	_drag_additive = additive
 
 
-func handle_left_release(world_pos: Vector2, gizmos) -> void:
+func handle_left_release(world_pos: Vector2, gizmos = null) -> void:
 	match _mode:
 		_Mode.TRANSFORMING:
 			if _drag_has_moved:
@@ -129,24 +125,28 @@ func handle_left_release(world_pos: Vector2, gizmos) -> void:
 
 
 ## Double-click: select all points of the DrawCommand under the cursor.
-## If [param additive] is true (Shift/Ctrl held), appends to the current selection.
-func handle_double_click(world_pos: Vector2, additive: bool, gizmos) -> void:
+## Returns true if the double-click selected a shape.
+func handle_double_click(world_pos: Vector2, additive: bool = false, gizmos = null) -> bool:
+	if has_overlapping_points_at(world_pos, gizmos):
+		return false
 	var cmd_idx := _command_at(world_pos, gizmos)
 	if cmd_idx < 0:
-		return
+		return false
 	var frame: DrawCommandImage = ProjectData.get_current_image()
 	if frame == null or cmd_idx >= frame.commands.size():
-		return
+		return false
 	if not additive:
 		EditorState.deselect_all()
 	var cmd: DrawCommand = frame.commands[cmd_idx]
 	for pt_idx in range(cmd.points.size()):
 		EditorState.select_point(cmd_idx, pt_idx, true)
+	return true
 
 
-func cancel(gizmos) -> void:
+func cancel(gizmos = null) -> void:
 	if _mode == _Mode.RECT_SELECT:
-		gizmos.set_drag_selection_rect(Rect2(), false)
+		if gizmos:
+			gizmos.set_drag_selection_rect(Rect2(), false)
 	elif _mode == _Mode.TRANSFORMING:
 		_snapshot.clear()
 		if EditorState.is_transform_previewing():

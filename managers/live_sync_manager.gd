@@ -16,7 +16,7 @@ func start_server(target_port: int = 12199):
 		
 	var err = tcp_server.listen(target_port)
 
-	# The Safety Net: Only try 10 random ports before giving up
+	# If target port is unavailable, attempt to bind up to 10 random dynamic ports.
 	var max_retries = 10
 	var attempts = 0
 

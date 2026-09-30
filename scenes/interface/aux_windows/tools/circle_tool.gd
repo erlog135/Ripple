@@ -1,10 +1,10 @@
-extends RefCounted
+extends BaseTool
 
 var _dragging := false
 var _drag_start := Vector2.ZERO
 
 
-func handle_left_press(world_pos: Vector2) -> void:
+func handle_left_press(world_pos: Vector2, _additive: bool = false, _gizmos = null) -> void:
 	var frame: DrawCommandImage = ProjectData.get_current_image()
 	if frame == null:
 		return
@@ -29,7 +29,7 @@ func handle_left_press(world_pos: Vector2) -> void:
 	)
 
 
-func handle_mouse_motion(world_pos: Vector2) -> void:
+func handle_mouse_motion(world_pos: Vector2, _gizmos = null) -> void:
 	if not _dragging:
 		return
 
@@ -62,7 +62,7 @@ func handle_mouse_motion(world_pos: Vector2) -> void:
 	)
 
 
-func handle_left_release(world_pos: Vector2) -> void:
+func handle_left_release(world_pos: Vector2, _gizmos = null) -> void:
 	if not _dragging:
 		return
 
@@ -113,7 +113,7 @@ func handle_left_release(world_pos: Vector2) -> void:
 	HistoryManager.commit(AddCommandAction.new(frame_idx, cmd))
 
 
-func cancel() -> void:
+func cancel(_gizmos = null) -> void:
 	if _dragging:
 		_dragging = false
 		EditorState.update_shape_preview(

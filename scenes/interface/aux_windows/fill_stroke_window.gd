@@ -25,7 +25,7 @@ func _ready() -> void:
 	EditorState.playback_state_changed.connect(_on_playback_state_changed)
 	_sync_from_editor_state()
 
-	# Rule 3B: pressing Enter in the SpinBox releases focus.
+	# Release focus when Enter is pressed so global canvas shortcuts remain active.
 	_connect_spinbox_enter_release(stroke_width_spin)
 
 
@@ -142,8 +142,8 @@ func _on_selection_changed(_by_user: bool) -> void:
 	_syncing = false
 
 
-## Connects the hidden LineEdit inside [param box] so that pressing Enter
-## drops keyboard focus back to the canvas (Zero-Focus UI, Rule 3B).
+## Connects the internal LineEdit of [param box] so pressing Enter releases focus,
+## returning keyboard focus to the main canvas shortcuts.
 func _connect_spinbox_enter_release(box: SpinBox) -> void:
 	var le := box.get_line_edit()
 	if le != null and not le.text_submitted.is_connected(_on_spinbox_text_submitted):
