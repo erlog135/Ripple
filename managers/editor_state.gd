@@ -364,10 +364,40 @@ func zoom_to_document(viewport_size: Vector2) -> void:
 	if doc_size.x <= 0.0 or doc_size.y <= 0.0:
 		return
 	var padding := 0.9
-	var scale_x := viewport_size.x / doc_size.x
-	var scale_y := viewport_size.y / doc_size.y
+	var fit_center: Vector2
+	var fit_size: Vector2
+	if clip_to_document_bounds:
+		# Bounds are clipped — the document rectangle is the meaningful canvas.
+		fit_center = doc_size / 2.0
+		fit_size = doc_size
+	else:
+		# Bounds are not clipped — fit to the max extents of all frames' content.
+		var content_rect := Rect2()
+		var seq := ProjectData.get_current_sequence()
+		if seq != null:
+			for frame: DrawCommandImage in seq.frames:
+				for cmd: DrawCommand in frame.commands:
+					if cmd.hidden:
+						continue
+					var bb: Rect2 = cmd.get_bounding_box()
+					if bb.size == Vector2.ZERO:
+						continue
+					if content_rect.size == Vector2.ZERO:
+						content_rect = bb
+					else:
+						content_rect = content_rect.merge(bb)
+		if content_rect.size == Vector2.ZERO:
+			# No drawable content found — fall back to document bounds.
+			fit_center = doc_size / 2.0
+			fit_size = doc_size
+		else:
+			content_rect = content_rect.grow(5.0)
+			fit_center = content_rect.get_center()
+			fit_size = content_rect.size
+	var scale_x := viewport_size.x / fit_size.x
+	var scale_y := viewport_size.y / fit_size.y
 	var fit_scale := minf(scale_x, scale_y) * padding
-	_update_view(doc_size / 2.0, fit_scale)
+	_update_view(fit_center, fit_scale)
 	var doc := ProjectData.get_current_document()
 	if doc:
 		doc.camera_zoom = current_zoom
