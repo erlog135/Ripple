@@ -11,7 +11,7 @@ It's designed to let you create, edit, and convert PDC ([Pebble Draw Command](ht
 This app is wholly a [Godot](https://godotengine.org/) project (apart from the Pebble previewing app). App code and architecture were devised in other places, including Cursor and Google AI Studio. Despite being intended for games, the Godot Engine has a surprisingly mature GUI framework, which made some parts of app construction easier. Another big advantage is that it's multiplatform, so I can export this app for Windows, macOS, Linux, and the web! (Plus Android and iOS if I wanted to)
 
 ### Why I built it
-Ripple was built to solve a very niche problem: there is no free, accessible, modern software that lets you edit vector graphic animations (PDC compatible or otherwise) frame by frame, and import/export in a standard vector file batch.
+Ripple was built to solve a very niche problem: there is no free, accessible, modern software that lets you edit and preview vector graphic animations (PDC compatible or otherwise) frame by frame, and import/export in a standard vector file batch.
 > [!NOTE]
 > I've since learned about [Friction](https://friction.graphics/), which has more powerful features. However, it is tailored towards keyframe-based animations and single-file exports. 
 
@@ -23,3 +23,10 @@ Also, this project is intended to be the ancestor of a monumental effort of mine
 - SVG imports sometimes crash the editor
 - Focus behaves strangely
 - Can't rearrange any windows
+
+---
+### Credits
+- [FileAccessWeb](https://github.com/Scrawach/godot-file-access-web)
+- [gdgifexporter](https://github.com/jegor377/godot-gdgifexporter)
+- [Pebble & Rebble Icons](https://github.com/pebble-dev/iconography/)
+- [System PDC Sequences](https://github.com/coredevices/PebbleOS/tree/main/resources/normal/snowy/images/animated_pdcs)
